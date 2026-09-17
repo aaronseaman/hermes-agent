@@ -547,6 +547,7 @@ def check_image_generation_requirements() -> bool:
 
 # --- Registry ---
 from tools.registry import registry, tool_error
+from tools.tool_effects import ToolEffects
 
 IMAGE_GENERATE_SCHEMA = {
     "name": "image_generate",
@@ -863,6 +864,7 @@ registry.register(
     handler=_handle_image_generate, check_fn=check_image_generation_requirements, requires_env=[],
     is_async=False,   # sync fal_client API to avoid "Event loop is closed" in gateway
     emoji="🎨", dynamic_schema_overrides=_build_dynamic_image_schema,
+    effects=ToolEffects(parallel_safe=True),
 )
 
 

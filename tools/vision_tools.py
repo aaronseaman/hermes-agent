@@ -824,6 +824,7 @@ def check_vision_requirements() -> bool:
 
 
 from tools.registry import registry, tool_error
+from tools.tool_effects import ToolEffects
 
 VISION_ANALYZE_SCHEMA = {
     "name": "vision_analyze",
@@ -904,7 +905,8 @@ registry.register(
     handler=_handle_vision_analyze,
     check_fn=check_vision_requirements,
     is_async=True,
-    emoji="👁️")
+    emoji="👁️",
+    effects=ToolEffects(parallel_safe=True))
 
 
 # --- video_analyze --------------------------------------------------------

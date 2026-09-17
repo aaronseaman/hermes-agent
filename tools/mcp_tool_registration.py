@@ -18,6 +18,7 @@ from tools.mcp_tool_handlers import (
 from tools.mcp_tool_schema import (
     _UTILITY_CAPABILITY_ATTRS, _build_utility_schemas, _normalize_name_filter, matches_name_filter)
 from tools.mcp_tool_scope import _key_name, _key_scope, _resolve_server_key, _server_key
+from tools.tool_effects import ToolEffects
 
 if TYPE_CHECKING:  # pragma: no cover
     from tools.mcp_tool import MCPServerTask
@@ -241,6 +242,7 @@ class _Candidate:
     origin: str
     schema: dict
     handler: Callable
+    effects: Optional[ToolEffects] = None
 
     @property
     def is_utility(self) -> bool:
@@ -259,7 +261,10 @@ def _tool_candidates(name: str, tools: Iterable[Any], should_register: Callable[
         _schema._scan_mcp_description(name, t.name, t.description or "")
         schema = _schema._convert_mcp_schema(name, t)
         handler = _handlers._make_tool_handler(name, t.name, tool_timeout)
-        out.append(_Candidate(schema["name"], f"tool {t.name!r}", schema, handler))
+        # readOnlyHint reads are idempotent for the no-progress guard; parallelism stays the
+        # server-level ``supports_parallel_tool_calls`` opt-in.
+        effects = ToolEffects(idempotent=True) if _annotation_read_only_hint(t) else None
+        out.append(_Candidate(schema["name"], f"tool {t.name!r}", schema, handler, effects))
     return out
 
 
@@ -345,7 +350,7 @@ def _register_candidates(name: str, candidates: List[_Candidate], *, check_fn: C
             continue
         registry.register(
             name=c.registry_name, toolset=toolset_name, schema=c.schema, handler=c.handler, check_fn=check_fn,
-            is_async=False, description=c.schema.get("description") or "", scope=scope_value)
+            is_async=False, description=c.schema.get("description") or "", scope=scope_value, effects=c.effects)
         if registry.get_toolset_for_tool(c.registry_name) == toolset_name:
             _track_mcp_tool_server(c.registry_name, name)
             if scope_value is not None:

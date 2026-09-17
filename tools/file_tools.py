@@ -1078,6 +1078,7 @@ def search_tool(pattern: str, target: str = "content", path: str = ".",
 # Schemas + Registry
 # ---------------------------------------------------------------------------
 from tools.registry import registry, tool_error
+from tools.tool_effects import ToolEffects
 
 
 def _check_file_reqs():
@@ -1319,8 +1320,8 @@ def _read_file_schema_overrides():
     return {}
 
 
-registry.register(name="read_file", toolset="file", schema=READ_FILE_SCHEMA, handler=_handle_read_file, check_fn=_check_file_reqs, emoji="📖", max_result_size_chars=100_000, dynamic_schema_overrides=_read_file_schema_overrides)
-registry.register(name="write_file", toolset="file", schema=WRITE_FILE_SCHEMA, handler=_handle_write_file, check_fn=_check_file_reqs, emoji="✍️", max_result_size_chars=100_000)
+registry.register(name="read_file", toolset="file", schema=READ_FILE_SCHEMA, handler=_handle_read_file, check_fn=_check_file_reqs, emoji="📖", max_result_size_chars=100_000, dynamic_schema_overrides=_read_file_schema_overrides, effects=ToolEffects(idempotent=True, path_scope="read"))
+registry.register(name="write_file", toolset="file", schema=WRITE_FILE_SCHEMA, handler=_handle_write_file, check_fn=_check_file_reqs, emoji="✍️", max_result_size_chars=100_000, effects=ToolEffects(path_scope="write"))
 def _patch_schema_overrides():
     """Layer the V4A patch mode onto the base replace-only schema for
     OpenAI-family mains (see PATCH_SCHEMA comment). Config/context probe
@@ -1343,8 +1344,8 @@ def _patch_schema_overrides():
         return {}
 
 
-registry.register(name="patch", toolset="file", schema=PATCH_SCHEMA, handler=_handle_patch, check_fn=_check_file_reqs, emoji="🔧", max_result_size_chars=100_000, dynamic_schema_overrides=_patch_schema_overrides)
-registry.register(name="search_files", toolset="file", schema=SEARCH_FILES_SCHEMA, handler=_handle_search_files, check_fn=_check_file_reqs, emoji="🔎", max_result_size_chars=100_000)
+registry.register(name="patch", toolset="file", schema=PATCH_SCHEMA, handler=_handle_patch, check_fn=_check_file_reqs, emoji="🔧", max_result_size_chars=100_000, dynamic_schema_overrides=_patch_schema_overrides, effects=ToolEffects(path_scope="write"))
+registry.register(name="search_files", toolset="file", schema=SEARCH_FILES_SCHEMA, handler=_handle_search_files, check_fn=_check_file_reqs, emoji="🔎", max_result_size_chars=100_000, effects=ToolEffects(idempotent=True, path_scope="read"))
 
 
 # ---- BEGIN PLUGIN-COMPAT (revert-scheduled; see COMPAT_MANIFEST.md) ----

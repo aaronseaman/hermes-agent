@@ -13,6 +13,7 @@ from typing import Any, Dict, Optional
 
 from agent.secret_scope import get_secret
 from tools.registry import registry, tool_error
+from tools.tool_effects import ToolEffects
 
 logger = logging.getLogger(__name__)
 
@@ -332,4 +333,5 @@ for _schema, _handler in (
     (HA_CALL_SERVICE_SCHEMA, _handle_call_service)):
     registry.register(
         name=_schema["name"], toolset="homeassistant", schema=_schema, handler=_handler,
-        check_fn=_check_ha_available, emoji="🏠")
+        check_fn=_check_ha_available, emoji="🏠",
+        effects=None if _schema is HA_CALL_SERVICE_SCHEMA else ToolEffects(parallel_safe=True))

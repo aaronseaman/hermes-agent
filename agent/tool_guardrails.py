@@ -13,23 +13,10 @@ from collections import deque
 from dataclasses import asdict, dataclass, field, fields
 from typing import Any, Mapping
 
+from tools.registry import registry
 from utils import safe_json_loads
 from agent.tool_result_classification import file_mutation_result_landed
 
-
-IDEMPOTENT_TOOL_NAMES = frozenset({
-    "read_file", "search_files", "web_search", "web_extract", "session_search", "skill_view", "skills_list",
-    "browser_snapshot", "browser_console", "browser_get_images", "mcp_filesystem_read_file",
-    "mcp_filesystem_read_text_file", "mcp_filesystem_read_multiple_files", "mcp_filesystem_list_directory",
-    "mcp_filesystem_list_directory_with_sizes", "mcp_filesystem_directory_tree", "mcp_filesystem_get_file_info",
-    "mcp_filesystem_search_files",
-})
-
-MUTATING_TOOL_NAMES = frozenset({
-    "terminal", "execute_code", "write_file", "patch", "todo_list", "memory", "skill_manage",
-    "browser_click", "browser_type", "browser_press", "browser_scroll", "browser_navigate",
-    "send_message", "cronjob_manage", "delegate_task", "process_manage",
-})
 
 # Pollers: legitimately re-invoked with identical args; the identical-call NOTICE never fires.
 STALL_GUARD_REPEATABLE_TOOLS = frozenset({"process_manage"})
@@ -127,8 +114,6 @@ class ToolCallGuardrailConfig:
     same_tool_failure_halt_after: int = 8
     no_progress_warn_after: int = 2
     no_progress_block_after: int = 5
-    idempotent_tools: frozenset[str] = field(default_factory=lambda: IDEMPOTENT_TOOL_NAMES)
-    mutating_tools: frozenset[str] = field(default_factory=lambda: MUTATING_TOOL_NAMES)
     loop_caps: LoopCapConfig = field(default_factory=LoopCapConfig)
 
     @classmethod
@@ -385,7 +370,7 @@ class ToolCallGuardrailController:
             # tools a run of distinct red commands is diagnosis, not a loop — warn, never halt.
             if (
                 # Hard-stop widening (#89069 / #100849 bundle): the per-turn no-progress BLOCK above only
-                # covers tools in idempotent_tools, so a model replaying the same successful
+                # covers tools declared idempotent, so a model replaying the same successful
                 # `terminal`/`skill_view` call with a byte-identical result ran until the iteration budget.
                 # The consecutive-identical streak is tool-agnostic; when hard stops are enabled, halt at
                 # the same idempotent_no_progress threshold. Pollers stay exempt (an unchanged poll is
@@ -424,7 +409,7 @@ class ToolCallGuardrailController:
         return ToolGuardrailDecision(tool_name=tool_name, count=repeat_count, signature=signature)
 
     def _is_idempotent(self, tool_name: str) -> bool:
-        return tool_name not in self.config.mutating_tools and tool_name in self.config.idempotent_tools
+        return registry.get_effects(tool_name).idempotent
 
     def observe_call(
         self, tool_name: str, args: Mapping[str, Any] | None, result: str | None,
@@ -454,7 +439,7 @@ class ToolCallGuardrailController:
         notice = None
         if not is_stall_guard_repeatable(tool_name) and count >= STALL_GUARD_IDENTICAL_CALL_THRESHOLD:
             notice = _IDENTICAL_CALL_NOTICE.format(ordinal=_ordinal(count), tool_name=tool_name)
-            # The no-progress BLOCK in before_call only covers idempotent_tools; this streak
+            # The no-progress BLOCK in before_call only covers tools declared idempotent; this streak
             # is tool-agnostic, so with hard stops on, halt at the same threshold (a model
             # replaying a successful `terminal` call otherwise runs to the budget).
             if self.config.hard_stop_enabled and count >= self.config.no_progress_block_after and self._halt_decision is None:

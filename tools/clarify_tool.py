@@ -295,6 +295,7 @@ CLARIFY_SCHEMA = {
 
 # --- Registry ---
 from tools.registry import registry, tool_error
+from tools.tool_effects import ToolEffects
 
 registry.register(
     name="clarify",
@@ -308,4 +309,5 @@ registry.register(
         callback=kw.get("callback")),
     check_fn=check_clarify_requirements,
     emoji="❓",
+    effects=ToolEffects(interactive=True),
 )

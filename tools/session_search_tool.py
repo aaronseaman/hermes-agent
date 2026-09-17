@@ -770,6 +770,7 @@ SESSION_SEARCH_SCHEMA = {
 
 
 from tools.registry import registry, tool_error  # noqa: E402  (registration at import time)
+from tools.tool_effects import READ_ONLY_PARALLEL  # noqa: E402
 
 registry.register(
     name="session_search",
@@ -781,4 +782,4 @@ registry.register(
         **{k: args.get(k) for k in ("role_filter", "session_id", "around_message_id", "sort", "profile",
                                     "after", "before", "exclude_session_ids")}),
     check_fn=check_session_search_requirements,
-    emoji="🔍")
+    emoji="🔍", effects=READ_ONLY_PARALLEL)

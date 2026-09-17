@@ -5,6 +5,7 @@ seams; no module mocks, no network.
 """
 
 import json
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
@@ -141,9 +142,17 @@ def test_mcp_actions_belong_to_mcp_targets_only():
 
 def test_wait_never_rides_a_parallel_batch():
     """A three-minute block must not hold a gathered batch's siblings hostage."""
-    from agent.tool_dispatch_helpers import _NEVER_PARALLEL_TOOLS
+    import tools.web_tools  # noqa: F401
+    from agent.tool_dispatch_helpers import _plan_tool_batch_segments
 
-    assert "manage_connections" in _NEVER_PARALLEL_TOOLS
+    def call(name):
+        return SimpleNamespace(function=SimpleNamespace(name=name, arguments="{}"))
+
+    batch = [call("web_search"), call("manage_connections"), call("web_search"), call("web_search")]
+    segments = _plan_tool_batch_segments(batch)
+    wait_segment = next(kind for kind, calls in segments if batch[1] in calls)
+    assert wait_segment == "sequential"
+    assert ("parallel", batch[2:]) in segments
 
 
 # ---------------------------------------------------------------------------
