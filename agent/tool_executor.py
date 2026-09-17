@@ -37,7 +37,7 @@ from agent.inline_tool_executors import (
     tool_hook_ids,
 )
 from agent.tool_dispatch_helpers import (
-    _NEVER_PARALLEL_TOOLS,
+    _is_interactive_tool,
     _is_destructive_command,
     _is_multimodal_tool_result,
     _multimodal_text_summary,
@@ -845,7 +845,7 @@ def _run_sequential_tool_execution_middleware(
     timeout_s = None if function_name in _SEQUENTIAL_DEADLINE_EXEMPT_TOOLS else _resolve_sequential_tool_timeout()
     ref = _ToolCallRef(function_name, function_args, effective_task_id, tool_call_id, middleware_trace)
     kwargs = dict(ref.middleware_kwargs(), execute=execute, scope_block=scope_block, display_index=display_index)
-    if function_name in _NEVER_PARALLEL_TOOLS:
+    if _is_interactive_tool(function_name):
         return _run_agent_tool_execution_middleware(agent, **kwargs)
 
     from tools.daemon_pool import DaemonThreadPoolExecutor

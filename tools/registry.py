@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional, Set
 
 from hermes_constants import hermes_home_key
+from tools.tool_effects import UNKNOWN_EFFECTS, ToolEffects
 
 logger = logging.getLogger(__name__)
 
@@ -193,6 +194,7 @@ class ToolEntry:
     # Zero-arg callable whose dict is shallow-merged onto the schema at every get_definitions()
     # — for fields tracking runtime config (delegate_task's description reflects limits).
     dynamic_schema_overrides: Optional[Callable] = None
+    effects: ToolEffects = UNKNOWN_EFFECTS
 
 
 class _PluginOverridePolicy:
@@ -620,7 +622,7 @@ class ToolRegistry:
         check_fn: Callable = None, requires_env: list = None, is_async: bool = False,
         description: str = "", emoji: str = "", max_result_size_chars: int | float | None = None,
         dynamic_schema_overrides: Callable = None, override: bool = False,
-        scope: Optional[str] = None):
+        scope: Optional[str] = None, effects: Optional[ToolEffects] = None):
         """Register a tool (called at import time by each tool file). ``override=True`` is an
         explicit opt-in for plugins replacing a built-in implementation (e.g. a headed-Chrome
         browser backend); without it, cross-toolset shadowing is rejected."""
@@ -684,7 +686,8 @@ class ToolRegistry:
                 requires_env=requires_env or [], is_async=is_async,
                 description=description or schema.get("description", ""), emoji=emoji,
                 max_result_size_chars=max_result_size_chars,
-                dynamic_schema_overrides=dynamic_schema_overrides)
+                dynamic_schema_overrides=dynamic_schema_overrides,
+                effects=effects or UNKNOWN_EFFECTS)
             # Availability is derived per-tool (_toolset_has_exposable_tools), so this map no
             # longer gates a toolset; it still feeds get_toolset_requirements ->
             # TOOLSET_REQUIREMENTS["check_fn"], which banner.py reads (presence only,
@@ -880,6 +883,10 @@ class ToolRegistry:
             return default
         from tools.budget_config import DEFAULT_RESULT_SIZE_CHARS
         return DEFAULT_RESULT_SIZE_CHARS
+
+    def get_effects(self, name: str) -> ToolEffects:
+        """Declared effects for *name*; unregistered or undeclared tools get the conservative default."""
+        return self._attr(name, "effects") or UNKNOWN_EFFECTS
 
     def get_all_tool_names(self) -> List[str]:
         return sorted(entry.name for entry in self._snapshot_entries())

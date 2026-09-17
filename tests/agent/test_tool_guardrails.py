@@ -155,6 +155,8 @@ def test_hard_stop_enabled_blocks_repeated_exact_failure_before_next_execution()
 
 
 def test_skill_read_tools_are_idempotent_and_block_repeated_identical_success_output():
+    import tools.skills_tool  # noqa: F401  (idempotence is declared at registration)
+
     cases = [
         (
             "skill_view",

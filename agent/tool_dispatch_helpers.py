@@ -20,35 +20,21 @@ from agent.message_metadata import stamp_message_timestamp
 from agent.tool_result_classification import (
     FILE_MUTATING_TOOL_NAMES as _FILE_MUTATING_TOOLS,
 )
+from tools.registry import registry
 from tools.threat_patterns import scan_for_threats
 
 logger = logging.getLogger(__name__)
 
-# Interactive / user-facing tools never run concurrently: any of these in a batch is a barrier.
-_NEVER_PARALLEL_TOOLS = frozenset({"clarify", "manage_connections"})
+# Parallel admission reads each tool's declared ``ToolEffects`` (tools/tool_effects.py). The
+# connector batch sentinel is a bridge-level name with no registry entry: a pure remote batch
+# carries per-dispatch idempotency keys, so it is parallel-safe.
+_PARALLEL_SAFE_BRIDGE_NAMES = frozenset({"connectors__execute"})
 
-# Read-only tools with no shared mutable session state.
-_PARALLEL_SAFE_TOOLS = frozenset({
-    "connectors__execute",  # pure remote batches have per-dispatch idempotency keys
-    "ha_get_state",
-    "ha_list_entities",
-    "ha_list_services",
-    "image_generate",
-    "read_file",
-    "search_files",
-    "session_search",
-    "skill_view",
-    "skills_list",
-    "vision_analyze",
-    "web_extract",
-    "web_search",
-})
 
-# Filesystem tools admitted by path overlap: readers may share a subtree, a writer conflicts
-# with ANY overlapping reservation (so a batched read never observes pre-mutation state).
-_PATH_SCOPED_READERS = frozenset({"read_file", "search_files"})
-_PATH_SCOPED_WRITERS = frozenset({"write_file", "patch"})
-_PATH_SCOPED_TOOLS = _PATH_SCOPED_READERS | _PATH_SCOPED_WRITERS
+def _is_interactive_tool(tool_name: str) -> bool:
+    """User-facing tools own their wait and never run concurrently: always a batch barrier."""
+    return registry.get_effects(tool_name).interactive
+
 
 # Terminal commands that may modify/delete files.
 _DESTRUCTIVE_PATTERNS = re.compile(
@@ -135,7 +121,7 @@ def _batch_admission(tool_call, execution_cwd: Optional[Path]) -> tuple[str, Lis
     """Classify one call for the planner: ``None`` = sequential barrier, else
     ``(effective_name, scoped_paths, is_writer)`` (empty paths = unscoped parallel-safe)."""
     tool_name = tool_call.function.name
-    if tool_name in _NEVER_PARALLEL_TOOLS:
+    if _is_interactive_tool(tool_name):
         return None
     try:
         function_args = json.loads(tool_call.function.arguments)
@@ -151,12 +137,14 @@ def _batch_admission(tool_call, execution_cwd: Optional[Path]) -> tuple[str, Lis
         return None
 
     name, args = _peel_bridge_call(tool_name, function_args)
-    if name in _NEVER_PARALLEL_TOOLS:
+    effects = registry.get_effects(name)
+    if effects.interactive:
         return None
-    if name in _PATH_SCOPED_TOOLS:
+    if effects.path_scope:
         scoped = _extract_parallel_scope_paths(name, args, execution_cwd=execution_cwd)
-        return (name, scoped, name in _PATH_SCOPED_WRITERS) if scoped else None
-    if name in _PARALLEL_SAFE_TOOLS or name in _PARALLEL_SAFE_BRIDGE_LOOKUPS or _is_mcp_tool_parallel_safe(name):
+        return (name, scoped, effects.path_scope == "write") if scoped else None
+    if (effects.parallel_safe or name in _PARALLEL_SAFE_BRIDGE_NAMES or name in _PARALLEL_SAFE_BRIDGE_LOOKUPS
+            or _is_mcp_tool_parallel_safe(name)):
         return name, [], False
     return None
 
@@ -166,7 +154,7 @@ def _plan_tool_batch_segments(tool_calls, *, execution_cwd: Optional[Path] = Non
 
     Call order is preserved exactly (a later call never crosses an earlier barrier), so
     result order and side-effect boundaries match fully-sequential execution. Barriers:
-    ``_NEVER_PARALLEL_TOOLS``, unparseable/non-dict args, anything not parallel-safe.
+    interactive tools, unparseable/non-dict args, anything not parallel-safe.
     Path-scoped tools join a run only if they don't conflict with its reservations:
     reader↔reader overlap stays parallel; any overlap involving a writer closes the run so
     the call starts a NEW run after the conflicting one lands. Runs shorter than two calls
@@ -235,7 +223,7 @@ def _extract_parallel_scope_paths(
     """Every canonical path this call reserves for overlap checks. *execution_cwd* is the cwd
     the tool will actually use (may differ from the process cwd on WSL / sandboxed backends);
     V4A ``patch`` scope comes from patch-body headers. Empty = unknown scope = barrier."""
-    if tool_name not in _PATH_SCOPED_TOOLS:
+    if not registry.get_effects(tool_name).path_scope:
         return []
 
     if tool_name == "patch" and (function_args.get("mode") or "replace") == "patch":
@@ -542,8 +530,7 @@ def _maybe_wrap_untrusted(name: str, content: Any) -> Any:
 
 
 __all__ = [
-    "_NEVER_PARALLEL_TOOLS", "_PARALLEL_SAFE_TOOLS", "_PATH_SCOPED_TOOLS", "_PATH_SCOPED_READERS",
-    "_PATH_SCOPED_WRITERS", "_DESTRUCTIVE_PATTERNS", "_REDIRECT_OVERWRITE", "_is_destructive_command",
+    "_is_interactive_tool", "_DESTRUCTIVE_PATTERNS", "_REDIRECT_OVERWRITE", "_is_destructive_command",
     "_plan_tool_batch_segments", "_should_parallelize_tool_batch", "_canonical_path",
     "_extract_parallel_scope_path", "_extract_parallel_scope_paths", "_paths_overlap",
     "_is_multimodal_tool_result", "_multimodal_text_summary", "_append_subdir_hint_to_multimodal",

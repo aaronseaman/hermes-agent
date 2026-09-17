@@ -11,6 +11,7 @@ from tools.connectors.managed import run_managed_action
 from tools.connectors.mcp import run_mcp_operation
 from tools.connectors.targets import ALL_ACTIONS, MCP_ACTIONS, normalize_targets, validate_action
 from tools.registry import registry, tool_error
+from tools.tool_effects import ToolEffects
 
 
 def manage_connections(
@@ -122,4 +123,5 @@ registry.register(
     ),
     check_fn=lambda: gateway_config.connectors_available(),
     emoji="🔗",
+    effects=ToolEffects(interactive=True),
 )

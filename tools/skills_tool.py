@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from hermes_constants import get_hermes_home
 from tools.registry import registry, tool_error
+from tools.tool_effects import READ_ONLY_PARALLEL
 from hermes_cli.config import cfg_get
 from agent.skill_utils import (
     EXCLUDED_SKILL_DIRS as _EXCLUDED_SKILL_DIRS, is_skill_support_path as _is_skill_support_path)
@@ -643,7 +644,7 @@ SKILL_VIEW_SCHEMA = {
 registry.register(
     name="skills_list", toolset="skills", schema=SKILLS_LIST_SCHEMA,
     handler=lambda args, **kw: skills_list(category=args.get("category"), task_id=kw.get("task_id")),
-    check_fn=check_skills_requirements, emoji="📚")
+    check_fn=check_skills_requirements, emoji="📚", effects=READ_ONLY_PARALLEL)
 
 
 def _skill_view_with_bump(args, **kw):
@@ -670,7 +671,7 @@ def _skill_view_with_bump(args, **kw):
 
 registry.register(
     name="skill_view", toolset="skills", schema=SKILL_VIEW_SCHEMA, handler=_skill_view_with_bump,
-    check_fn=check_skills_requirements, emoji="📚")
+    check_fn=check_skills_requirements, emoji="📚", effects=READ_ONLY_PARALLEL)
 
 
 # ---- BEGIN PLUGIN-COMPAT (revert-scheduled; see COMPAT_MANIFEST.md) ----
