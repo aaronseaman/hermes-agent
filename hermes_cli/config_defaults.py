@@ -154,6 +154,16 @@ DEFAULT_CONFIG = {
         "environment_probe": True,
         # Bot Mode teammate-messaging protocol section (silent unless desktop Bot Mode manages it).
         "bot_mode_protocol": True,
+        # Local call ledger: one JSONL record per model call, tool call and turn under
+        # <HERMES_HOME>/call_ledger/, summarised by `hermes insights --ledger`. Never sent anywhere;
+        # tool args are stored only as a hash. Off by default: it is a measurement tool, and on every
+        # turn of every surface it would add a writer thread and disk growth nobody asked for.
+        # Retention: files older than retention_days are deleted, then the oldest until under max_mb.
+        "call_ledger": {
+            "enabled": False,
+            "retention_days": 14,
+            "max_mb": 64,
+        },
         # Embedder-supplied text appended to the system prompt's environment-hints block, so a host
         # wrapping Hermes (sandbox runner, managed platform) can describe proxy/credential/ mount
         # layout without editing SOUL.md. Env HERMES_ENVIRONMENT_HINT overrides it.

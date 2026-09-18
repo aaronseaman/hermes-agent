@@ -29,6 +29,7 @@ from agent.display import (
     redact_tool_args_for_display as _redact_tool_args_for_display,
     _detect_tool_failure,
 )
+from agent.call_ledger import record_tool_call
 from agent.message_sanitization import coalesce_tool_call_id
 from agent.inline_tool_executors import (
     INLINE_TOOL_EXECUTORS,
@@ -979,6 +980,7 @@ def _commit_tool_result(
     blocked: bool,
     effect_disposition,
     observed: bool = False,
+    segment: str = "sequential",
     error_preview: Callable[[Any], Any] = lambda result: result,
     success_log_chars: Optional[int] = None,
     verbose_text: Callable[[Any], Any] = lambda result: result,
@@ -990,8 +992,10 @@ def _commit_tool_result(
     mutation verifier; ``success_log_chars`` (sequential path) also logs the completion line.
     Returns ``(persisted_result, display_result, risk_metadata)`` (``display_result`` =
     pre-persist content for UI previews) or ``None`` when the flush failed (stop the batch).
+    ``segment`` (``sequential`` / ``parallel``) is recorded in the call ledger.
     """
     function_name, function_args, tool_call_id, effective_task_id = ref.name, ref.args, ref.call_id, ref.task_id
+    raw_result = function_result
     if observed:
         if not blocked:
             function_result = agent._append_guardrail_observation(
@@ -1027,6 +1031,10 @@ def _commit_tool_result(
             config=budget,
         )
     _record_persisted_path_for_stub(agent, tool_call_id, persisted_result)
+    record_tool_call(
+        function_name, function_args, segment=segment, duration_s=tool_duration, raw_result=raw_result,
+        final_result=function_result, persisted_result=persisted_result, failed=is_error, blocked=blocked,
+    )
 
     subdir_hints = agent._subdirectory_hints.check_tool_call(function_name, function_args)
     if subdir_hints:
@@ -1396,7 +1404,7 @@ def _append_batch_results(agent, messages: list, effective_task_id: str, batch: 
         committed = _commit_tool_result(
             agent, messages, ref, function_result,
             budget=budget, tool_duration=tool_duration, is_error=is_error, blocked=blocked,
-            effect_disposition=effect_disposition, observed=r is not None,
+            effect_disposition=effect_disposition, observed=r is not None, segment="parallel",
             error_preview=lambda res: _multimodal_text_summary(res)[:200],
         )
         if committed is None:
