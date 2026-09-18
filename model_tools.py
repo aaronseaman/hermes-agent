@@ -348,8 +348,10 @@ def _rewrite_execute_code(td: Dict[str, Any], available: set) -> Optional[Dict[s
     """List only sandbox tools that are actually available."""
     # Without this, the model sees "web_search is available in execute_code" even when the API key isn't
     # configured or the toolset is disabled (#560-discord).
+    from tools.code_execution_semantic import host_rpc_tools
     from tools.code_execution_tool import SANDBOX_ALLOWED_TOOLS, build_execute_code_schema, _get_execution_mode
-    return _fn_def(build_execute_code_schema(SANDBOX_ALLOWED_TOOLS & available, mode=_get_execution_mode()))
+    return _fn_def(build_execute_code_schema((SANDBOX_ALLOWED_TOOLS & available) | host_rpc_tools(),
+                                             mode=_get_execution_mode()))
 
 
 def _discord_rewriter(schema_fn_name: str):

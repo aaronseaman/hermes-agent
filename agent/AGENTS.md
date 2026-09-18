@@ -94,6 +94,11 @@ cache break — keep it the only one. Full detail:
 - **Auxiliary (side-LLM) work** — curator, vision, embedding, title generation, session_search,
   compression — resolves through `agent/auxiliary_client.py::_resolve_auto_route`; each task can pin
   its own `provider/model/base_url/reasoning_effort` under `auxiliary:` in config.yaml.
+- **`semantic_call(capability, inputs, output_schema, policy)`** (`agent/semantic_call.py`) addresses
+  an `auxiliary.<capability>` block by capability, never by model: `agent/capability_resolver.py`
+  picks among its `candidates` (policy constraints fail closed, incumbent stickiness, an explanation
+  per decision) and the model kind dispatches through `call_llm`. New aux tasks with a schema or
+  policy should use it; `sandbox: true` also exposes it to `execute_code` as a host RPC.
 - Fallback models and credential pools are resolution-chain code: E2E them with real imports
   against a temp `HERMES_HOME`, not mocks (root rubric).
 

@@ -241,6 +241,8 @@ class CellAuthority:
         self.task_id = task_id
         self.ctx = contextvars.copy_context()
         self.active = True
+        # The tool thread running the cell: /stop aimed at it also cancels a host RPC in flight.
+        self.owner_tid = threading.get_ident()
         # ((getter, setter), captured value) per thread-local prompt callback (approval, sudo, vault unlock…)
         self._callbacks: list = []
         try:
@@ -261,8 +263,13 @@ class CellAuthority:
                               "belonged to has settled, so its tool authority is retired.")
         return self.ctx.run(self._invoke, tool_name, tool_args)
 
+    def cancelled(self) -> bool:
+        """The cell has settled, or the tool thread running it was interrupted."""
+        from tools.interrupt import is_thread_interrupted
+        return not self.active or is_thread_interrupted(self.owner_tid)
+
     def _invoke(self, tool_name: str, tool_args: dict) -> str:
-        from model_tools import handle_function_call
+        from tools.code_execution_rpc import dispatch_sandbox_call
         previous = None
         if self._callbacks:
             try:
@@ -272,7 +279,7 @@ class CellAuthority:
             except Exception:
                 previous = None
         try:
-            return handle_function_call(tool_name, tool_args, task_id=self.task_id)
+            return dispatch_sandbox_call(tool_name, tool_args, task_id=self.task_id, cancelled=self.cancelled)
         finally:
             if previous is not None:
                 try:

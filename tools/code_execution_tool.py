@@ -31,6 +31,7 @@ from tools.registry import registry, tool_error
 from hermes_time import get_timezone_name
 from tools.code_execution_env import _resolve_child_cwd, _resolve_child_python
 from tools.code_execution_rpc import _rpc_poll_loop
+from tools import code_execution_semantic
 from tools.tool_output_truncate import head_tail_split, truncation_notice
 
 logger = logging.getLogger(__name__)
@@ -140,6 +141,8 @@ _TOOL_STUBS = {
     "terminal": ("command: str, timeout: int = None, workdir: str = None",
         '"""Run a shell command (foreground only). Returns dict with "output" and "exit_code"."""',
         '{"command": command, "timeout": timeout, "workdir": workdir}'),
+    # Host RPC, not a registered tool: present only when a capability sets auxiliary.<name>.sandbox.
+    code_execution_semantic.RPC_NAME: code_execution_semantic.STUB,
 }
 
 
@@ -554,8 +557,10 @@ def _finish_remote_kernel_result(kernel_result: Dict[str, Any], *,
 
 
 def _sandbox_tools_for(enabled_tools: Optional[List[str]]) -> frozenset:
-    """Enabled ∩ SANDBOX_ALLOWED_TOOLS, or every sandbox tool when the intersection is empty."""
-    return frozenset(SANDBOX_ALLOWED_TOOLS & set(enabled_tools or ())) or SANDBOX_ALLOWED_TOOLS
+    """Enabled ∩ SANDBOX_ALLOWED_TOOLS (every sandbox tool when that is empty), plus the host RPCs
+    the active profile's config exposes."""
+    tools = frozenset(SANDBOX_ALLOWED_TOOLS & set(enabled_tools or ())) or SANDBOX_ALLOWED_TOOLS
+    return tools | code_execution_semantic.host_rpc_tools()
 
 
 def _run_remote_per_call(env, env_type: str, code: str, effective_task_id: str,
@@ -837,6 +842,8 @@ def build_execute_code_schema(enabled_sandbox_tools: set = None,
     if mode is None:
         mode = _get_execution_mode()
     tool_lines = "\n".join(doc for name, doc in _TOOL_DOC_LINES if name in enabled_sandbox_tools)
+    if code_execution_semantic.RPC_NAME in enabled_sandbox_tools:
+        tool_lines += "\n" + code_execution_semantic.doc_line()
     import_examples = [n for n in ("web_search", "terminal") if n in enabled_sandbox_tools]
     import_examples = import_examples or sorted(enabled_sandbox_tools)[:2]
     import_str = ", ".join(import_examples) + ", ..." if import_examples else "..."

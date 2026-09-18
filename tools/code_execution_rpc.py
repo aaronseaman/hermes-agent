@@ -25,9 +25,28 @@ logger = logging.getLogger("tools.code_execution_tool")
 _TERMINAL_BLOCKED_PARAMS = {"background", "pty", "notify", "notify_on_complete", "watch_patterns"}
 
 
-def _default_dispatch(task_id):
+def _semantic_call_rpc(tool_args, *, task_id, cancelled):
+    from tools.code_execution_semantic import handle_rpc
+    return handle_rpc(tool_args, task_id=task_id, cancelled=cancelled)
+
+
+# Names served by the host itself rather than a registered tool; they pass the same token check,
+# allow-list and budget as tool calls. ``cancelled`` reports that the calling cell has ended.
+_HOST_RPC_HANDLERS = {"semantic_call": _semantic_call_rpc}
+
+
+def dispatch_sandbox_call(tool_name, tool_args, *, task_id, cancelled=None):
+    """Run one allowed, budgeted sandbox call: a host RPC handler, else the tool registry."""
+    host = _HOST_RPC_HANDLERS.get(tool_name)
+    if host is not None:
+        return host(tool_args, task_id=task_id, cancelled=cancelled)
     from model_tools import handle_function_call
-    return lambda tool_name, tool_args: handle_function_call(tool_name, tool_args, task_id=task_id)
+    return handle_function_call(tool_name, tool_args, task_id=task_id)
+
+
+def _default_dispatch(task_id, cancelled=None):
+    return lambda tool_name, tool_args: dispatch_sandbox_call(tool_name, tool_args, task_id=task_id,
+                                                              cancelled=cancelled)
 
 
 def _rpc_token_ok(request: dict, rpc_token: str) -> bool:
@@ -76,7 +95,7 @@ def _rpc_server_loop(server_sock: socket.socket, task_id: str, tool_call_log: li
     carries the cell's context); session kernels rebind each call to the CURRENT cell's authority.
     """
     if dispatch is None:
-        dispatch = _default_dispatch(task_id)
+        dispatch = _default_dispatch(task_id, cancelled=stop_event.is_set)
     conn = None
     try:
         server_sock.settimeout(0.05)
@@ -133,7 +152,7 @@ def _rpc_poll_loop(env, rpc_dir: str, task_id: str, tool_call_log: list, tool_ca
     """Poll the remote filesystem for request files and answer them. Background thread; each
     ``env.execute()`` is an independent process, so this is safe alongside the script-execution
     thread. Malformed or unauthorized requests are removed without a response."""
-    dispatch = _default_dispatch(task_id)
+    dispatch = _default_dispatch(task_id, cancelled=stop_event.is_set)
     poll_interval = 0.1
     quoted_rpc_dir = shlex.quote(rpc_dir)
     while not stop_event.is_set():
