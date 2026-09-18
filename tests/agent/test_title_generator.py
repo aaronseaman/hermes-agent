@@ -40,7 +40,7 @@ class TestGenerateTitle:
             resp.choices[0].message.content = "Configured Timeout"
             return resp
 
-        with patch("agent.title_generator.call_llm", side_effect=mock_call_llm):
+        with patch("agent.auxiliary_client.call_llm", side_effect=mock_call_llm):
             assert generate_title("question") == "Configured Timeout"
 
         assert captured_kwargs["task"] == "title_generation"
@@ -64,7 +64,7 @@ class TestGenerateTitle:
             resp.choices[0].message.content = '{"title": "Reasoning Off"}'
             return resp
 
-        with patch("agent.title_generator.call_llm", side_effect=mock_call_llm):
+        with patch("agent.auxiliary_client.call_llm", side_effect=mock_call_llm):
             assert generate_title("question") == "Reasoning Off"
 
         assert captured_kwargs.get("reasoning_config") == {"enabled": False}
@@ -81,7 +81,7 @@ class TestGenerateTitle:
             "concisely.</think>Debugging Python Import Errors"
         )
 
-        with patch("agent.title_generator.call_llm", return_value=mock_response):
+        with patch("agent.auxiliary_client.call_llm", return_value=mock_response):
             title = generate_title("help me fix this import")
             assert title == "Debugging Python Import Errors"
             assert "<think>" not in title
@@ -96,7 +96,7 @@ class TestGenerateTitle:
             "<think>Let me reason about a good title for this session"
         )
 
-        with patch("agent.title_generator.call_llm", return_value=mock_response):
+        with patch("agent.auxiliary_client.call_llm", return_value=mock_response):
             title = generate_title("hello")
             # Everything from the unterminated open tag onward is stripped,
             # leaving nothing → None.
@@ -108,7 +108,7 @@ class TestGenerateTitle:
         mock_response.choices = [MagicMock()]
         mock_response.choices[0].message.content = "A" * 100
 
-        with patch("agent.title_generator.call_llm", return_value=mock_response):
+        with patch("agent.auxiliary_client.call_llm", return_value=mock_response):
             title = generate_title("question")
             assert len(title) == 80
             assert title.endswith("...")
@@ -127,7 +127,7 @@ class TestGenerateTitle:
         mock_response.choices = [MagicMock()]
         mock_response.choices[0].message.content = answer
 
-        with patch("agent.title_generator.call_llm", return_value=mock_response):
+        with patch("agent.auxiliary_client.call_llm", return_value=mock_response):
             assert generate_title("how does the registration system work?", "...") is None
 
     def test_rejects_many_short_words(self):
@@ -138,7 +138,7 @@ class TestGenerateTitle:
             "one two three four five six seven eight nine ten eleven twelve thirteen"
         )
 
-        with patch("agent.title_generator.call_llm", return_value=mock_response):
+        with patch("agent.auxiliary_client.call_llm", return_value=mock_response):
             assert generate_title("question", "answer") is None
 
     def test_accepts_normal_title(self):
@@ -147,7 +147,7 @@ class TestGenerateTitle:
         mock_response.choices = [MagicMock()]
         mock_response.choices[0].message.content = "Investigate the title resolver bug"
 
-        with patch("agent.title_generator.call_llm", return_value=mock_response):
+        with patch("agent.auxiliary_client.call_llm", return_value=mock_response):
             assert generate_title("question", "answer") == "Investigate the title resolver bug"
 
     @pytest.mark.parametrize("echo", [
@@ -167,7 +167,7 @@ class TestGenerateTitle:
         mock_response.choices = [MagicMock()]
         mock_response.choices[0].message.content = echo
 
-        with patch("agent.title_generator.call_llm", return_value=mock_response):
+        with patch("agent.auxiliary_client.call_llm", return_value=mock_response):
             assert generate_title("help me with something unrelated") is None
 
     def test_friendly_greeting_example_is_allowed(self):
@@ -177,7 +177,7 @@ class TestGenerateTitle:
         mock_response.choices = [MagicMock()]
         mock_response.choices[0].message.content = "Friendly greeting"
 
-        with patch("agent.title_generator.call_llm", return_value=mock_response):
+        with patch("agent.auxiliary_client.call_llm", return_value=mock_response):
             assert generate_title("hey there!") == "Friendly greeting"
 
     def test_topical_title_resembling_example_passes(self):
@@ -187,7 +187,7 @@ class TestGenerateTitle:
         mock_response.choices = [MagicMock()]
         mock_response.choices[0].message.content = "Fix login button on desktop"
 
-        with patch("agent.title_generator.call_llm", return_value=mock_response):
+        with patch("agent.auxiliary_client.call_llm", return_value=mock_response):
             assert generate_title("the login button is broken on desktop") == (
                 "Fix login button on desktop"
             )
@@ -202,7 +202,7 @@ class TestGenerateTitle:
             captured.append((task, exc))
 
         exc = RuntimeError("openrouter 402: credits exhausted")
-        with patch("agent.title_generator.call_llm", side_effect=exc):
+        with patch("agent.auxiliary_client.call_llm", side_effect=exc):
             result = generate_title("question", "answer", failure_callback=_cb)
 
         assert result is None
@@ -601,7 +601,7 @@ class TestRuntimeValidator:
         def _bad_validator():
             raise RuntimeError("validator gone")
 
-        with patch("agent.title_generator.call_llm", return_value=mock_response) as mock_llm:
+        with patch("agent.auxiliary_client.call_llm", return_value=mock_response) as mock_llm:
             title = generate_title(
                 "question", "answer",
                 runtime_validator=_bad_validator,

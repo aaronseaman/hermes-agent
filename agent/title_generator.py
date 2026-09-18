@@ -12,9 +12,9 @@ import re
 from contextlib import suppress
 from typing import Any, Callable, Optional
 
-from agent.auxiliary_client import call_llm
 from agent.context_compressor import LEGACY_SUMMARY_PREFIX
 from agent.message_content import flatten_message_text
+from agent.semantic_call import OutputSpec, semantic_call
 
 logger = logging.getLogger(__name__)
 
@@ -85,11 +85,12 @@ _LANGUAGE_RULE_MATCH_USER = "- Write the title in the same language as the user'
 _LANGUAGE_RULE_PINNED = "- Write the title in {language}."
 
 # Constrains the response to a single title field ("model answered instead of titling" failure class).
-_TITLE_RESPONSE_FORMAT = {
-    "type": "json_schema",
-    "json_schema": {"name": "session_title", "strict": True, "schema": {
-        "type": "object", "properties": {"title": {"type": "string"}}, "required": ["title"], "additionalProperties": False}},
-}
+# Not enforced host-side: _extract_title_text keeps titling when a provider ignores response_format.
+_TITLE_OUTPUT = OutputSpec(
+    schema={"type": "object", "properties": {"title": {"type": "string"}}, "required": ["title"],
+            "additionalProperties": False},
+    name="session_title", strict=True, enforce=False,
+)
 
 # Control-tag wrappers around machine-authored content inside a nominal "user" message (Codex CLI's
 # RECOGNIZED_CONTROL_WRAPPERS): stripped, titling continues on what remains.
@@ -294,21 +295,19 @@ def generate_title(
         "__LANGUAGE_RULE__", _LANGUAGE_RULE_PINNED.format(language=language) if language else _LANGUAGE_RULE_MATCH_USER,
     )
     try:
-        response = call_llm(
-            task="title_generation",
-            messages=[{"role": "system", "content": prompt}, {"role": "user", "content": user_snippet}],
+        result = semantic_call(
+            "title_generation", [user_snippet], _TITLE_OUTPUT, instructions=prompt,
             # A title is a handful of tokens; a larger ceiling let chatty models burn seconds.
             max_tokens=64, temperature=0.3, timeout=timeout, main_runtime=main_runtime,
-            extra_body={"response_format": _TITLE_RESPONSE_FORMAT},
             # The module contract above promises thinking-disabled operation,
             # but nothing enforced it: with the aux default reasoning_effort
             # "" (provider default), Gemini enables internal thinking and
             # bills thought tokens against max_tokens=64 — the JSON payload
             # never lands, and the prose fallback stores the opening fence
             # ("```json") as the session title (#91927).
-            reasoning_config={"enabled": False},
+            reasoning={"enabled": False},
         )
-        title = _clean_title(_extract_title_text(response.choices[0].message.content or ""))
+        title = _clean_title(_extract_title_text(result.text))
         # Answer-shaped output guard: titling is a 3-7 word task, so a title with many words is a model that
         # ignored the task and answered the user's message instead ("I don't have context on X — that's not
         # something I recognize..."). Truncating would store half an assistant blob as the session title,
