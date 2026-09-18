@@ -59,6 +59,11 @@ curator:
   archive_after_days: 30
   consolidate: false           # LLM umbrella-building pass — opt-in (prune-only by default)
   prune_builtins: true         # archive unused bundled built-in skills too (hub skills always exempt)
+  compiled_skills:
+    enabled: false             # opt-in: see "Compiled skills" below
+    min_sessions: 3
+    scan_sessions: 200
+    max_consecutive_failures: 3
 ```
 
 To disable entirely, set `curator.enabled: false`. To keep the always-on pruning but opt into LLM consolidation, set `curator.consolidate: true`.
@@ -381,6 +386,24 @@ runs and reports its counts normally.
 ### Rename map in the summary
 
 If a run consolidated multiple skills under an umbrella (or merged near-duplicates), the user-visible summary printed at the end of the run includes an explicit rename map showing every `old-name → new-name` pair the curator applied. This is in addition to per-skill transition lines, so when a wave of renames lands you can spot them at a glance without diffing the JSON report. The hint also surfaces under `hermes curator pin` so you can pin the umbrella name immediately if you want to lock the new label in.
+
+## Compiled skills
+
+With `curator.compiled_skills.enabled: true`, every real (non-dry-run) curator pass also looks for **read-only procedures you keep asking for**: the same sequence of tool calls, with different arguments, that succeeded in at least `min_sessions` of your last `scan_sessions` sessions. Each one becomes a **compiled skill**, a normal agent-created skill with two extra files:
+
+- `references/compiled_contract.json`: the parameters (input schema), the exact tool calls it may make, the expected result shape, the working directory and tool schemas it depends on, and a replay corpus of up to five of the original runs;
+- `scripts/compiled_skill.py`: a generated implementation. Its hash is pinned in the contract.
+
+Before a compiled skill is activated, the curator replays its corpus in an isolated Python process that has no tools and no credentials. The implementation must make exactly the recorded calls and reproduce the recorded results. When it's active, `/<skill> name=value ...` runs it **without a model call**: the calls go through the normal tool dispatch (the same hooks and approval checks), the result is checked against the contract, and the output is printed or sent as the command's reply. That reply isn't added to the conversation.
+
+Compiled skills are conservative by design:
+
+- **Read-only only.** Every call in every source run must resolve to idempotent and non-destructive. Writes, unknown MCP tools, `execute_code` and any `terminal` command that isn't provably read-only are never compiled. `terminal` arguments must be the same in every run; they are never parameters.
+- **Explicit invocations only.** The compiled path runs only for `name=value` arguments that match the schema, in the same working directory, with every tool enabled for the session. Anything else, such as free text or another directory, loads the skill normally and the agent follows its written procedure.
+- **Drift falls back.** If a run fails its result check, the agent path takes over for that request and the failure is recorded in `.usage.json` under `compiled`. After `max_consecutive_failures` failures in a row, the compiled path is switched off and the next curator pass **retires** it. The skill itself stays, as a plain procedure under the normal lifecycle.
+- **Edits disable it.** Editing the contract or the implementation switches the compiled path off until the next pass re-validates the files.
+- **Approval gates apply.** Compiled skills are written through `skill_manage`, so `skills.write_approval: true` stages them for `/skills approve` like any other write. They're also recorded in the audit ledger (actor `curator`) and follow the normal archive rules.
+- **No mid-conversation cache break.** Activation only updates the usage record. The new skill appears in the skills index from your next session, the same deferred behaviour as `/skills install`.
 
 ## Restoring an archived skill
 

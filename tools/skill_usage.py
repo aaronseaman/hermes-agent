@@ -525,6 +525,12 @@ def record_installed(skill_name: str) -> None:
     _mutate_and_emit(skill_name, "installed", _apply)
 
 
+def update_compiled(skill_name: str, mutator: Callable[[Dict[str, Any]], Any]) -> Any:
+    """Apply *mutator* to the record's ``compiled`` sub-dict (compiled-skill activation, runs and
+    drift; ``agent/compiled_skill.py``) and return its result; None when nothing landed."""
+    return _mutate(skill_name, lambda rec: mutator(rec.setdefault("compiled", {})))
+
+
 def mark_agent_created(skill_name: str) -> None:
     """Opt a skill into curator management — the only thing that makes it eligible for automatic curation."""
     _set_field(skill_name, "created_by", "agent")

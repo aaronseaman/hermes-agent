@@ -1174,13 +1174,32 @@ class GatewayInboundMixin:
                     return f"Failed to load stacked skills for /{command}."
                 event.text, _loaded, _missing = stacked_result
             else:
-                msg = build_skill_invocation_message(cmd_key, user_instruction, task_id=_quick_key)
+                compiled = self._hm_compiled_skill(source, _quick_key, cmd_key, user_instruction)
+                if compiled.reply is not None:
+                    return compiled.reply  # answered deterministically: no agent turn
+                msg = build_skill_invocation_message(cmd_key, user_instruction, task_id=_quick_key,
+                                                     runtime_note=compiled.runtime_note)
                 if msg:
                     event.text = msg
             # Fall through to normal message processing with skill content
         except Exception as e:
             logger.debug("Skill command check failed (non-fatal): %s", e)
         return None
+
+    def _hm_compiled_skill(self, source: SessionSource, _quick_key: str, cmd_key: str, user_instruction: str):
+        """The compiled-skill seam (``agent/compiled_skill.py``) under this session's tool grant and the
+        task id its agent runs tools under (the session id; a fresh chat has none yet)."""
+        from agent.compiled_skill import run_skill_command, session_tool_names
+        from gateway.run import _load_gateway_config, _platform_config_key
+
+        def _granted():
+            enabled, disabled = self._resolve_turn_toolsets(
+                _load_gateway_config(), source, _platform_config_key(source.platform))
+            return session_tool_names(enabled, disabled)
+        peek = getattr(getattr(self, "session_store", None), "peek_session_id", None)
+        sid = peek(_quick_key) if callable(peek) else None
+        return run_skill_command(cmd_key, user_instruction, task_id=sid if isinstance(sid, str) and sid else _quick_key,
+                                 allowed_tools=_granted)
 
     async def _hm_pending_reply_intercepts(
         self, event: "MessageEvent", source: SessionSource, _quick_key: str

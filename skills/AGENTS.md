@@ -67,7 +67,10 @@ CLI `hermes_cli/curator.py` → `hermes curator status|run|pause|resume|pin|unpi
 prune|backup|rollback`; telemetry `tools/skill_usage.py` owns `~/.hermes/skills/.usage.json`
 (`use_count`, `view_count`, `patch_count`, `last_activity_at`, `state` active/stale/archived,
 `pinned`). Config `curator:` — `enabled, interval_hours, min_idle_hours, stale_after_days,
-archive_after_days, backup.*`; its LLM calls route through `auxiliary` (`agent/AGENTS.md`).
+archive_after_days, backup.*, compiled_skills.*`; its LLM calls route through `auxiliary` (`agent/AGENTS.md`).
+`curator.compiled_skills` (opt-in) makes each pass mine read-only procedures that recurred across sessions
+into compiled skills (contract + replay corpus + generated implementation, `agent/compiled_skill*.py`); state
+lives in the usage record's `compiled` key.
 
 Invariants: touches only `created_by: "agent"` skills (bundled + hub-installed are off-limits);
 never deletes — archive is the maximum; pinned skills are exempt from every auto-transition and
