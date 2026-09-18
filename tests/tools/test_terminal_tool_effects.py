@@ -22,6 +22,10 @@ def _effects(command, **extra):
     ("cat a.txt | grep -n 'x|y;z' | wc -l", True),
     ("rg -n TODO src && git diff --stat", True),
     ("find . -name '*.py'", True),
+    ("find . -name \\*.py", True),          # an escaped char is literal, not a construct
+    ("grep 'foo$' f", True),
+    ('"l"s', True),                         # quoting is read, not rejected
+    ("ls || echo nope", True),
     ('echo "$HOME"', True),
     # Every segment must be a known reader with no writing/executing option.
     ("ls && make", False),
@@ -37,11 +41,13 @@ def _effects(command, **extra):
     ("git -C repo status", False),
     ("git diff --output=out.patch", False),
     ("rg --pre ./decode foo", False),
+    ("rg --hostname-bin ./x foo", False),    # from the approval detector's exec-flag table
     # Redirects, substitution, subshells, backgrounding, comments, line breaks, bad quoting.
     ("ls > files.txt", False),
     ("cat a 2>/dev/null", False),
     ("echo $(whoami)", False),
     ('echo "`whoami`"', False),
+    ('echo "${X:=1}"', False),               # an assignment expansion, inside double quotes
     ("(ls)", False),
     ("ls &", False),
     ("ls # comment", False),

@@ -10,9 +10,10 @@ registry is consulted):
   a safety verdict — ``False`` means "no known destructive shape", not "safe".
 - ``idempotent``: the command is read-only by ALLOWLIST. Every simple command in it must be a
   known reader whose arguments carry no writing or program-running option, and the simple
-  commands may be joined only by ``|``, ``&&``, ``||`` or ``;``. Redirects, command substitution,
-  subshells, backgrounding, escapes, comments, line breaks, env assignments, unknown binaries and
-  background calls all make the call not read-only.
+  commands may be joined only by ``|``, ``&&``, ``||``, ``;`` or a newline. Redirects, command
+  substitution, parameter expansion, subshells, backgrounding, comments, env assignments, unknown
+  binaries and background calls all make the call not read-only. Quoting and escaping are read,
+  not rejected: ``find . -name \\*.py`` is a read and ``"r"m x`` is not.
 
 Terminal calls are never ``parallel_safe``: every call shares the session's cwd and env.
 
@@ -26,6 +27,8 @@ from __future__ import annotations
 import re
 from typing import Any, Callable, List, Mapping, Optional
 
+from tools.approval_detection import (
+    _READ_TOOL_EXEC_FLAGS, _deobfuscate_shell_word_for_detection, _scan_shell)
 from tools.tool_effects import UNKNOWN_EFFECTS, ToolEffects
 
 # Terminal commands that may modify/delete files.
@@ -51,66 +54,68 @@ def is_destructive_command(cmd: str) -> bool:
     return bool(cmd) and bool(_DESTRUCTIVE_PATTERNS.search(cmd) or _REDIRECT_OVERWRITE.search(cmd))
 
 
-# Separators that join simple commands without changing what each one does -> chars consumed.
-_SEPARATORS = {"|": 1, "||": 2, "&&": 2, ";": 1}
-# Unquoted characters that make a command not provably read-only: redirects, subshells, command
-# substitution, backgrounding, escapes, line breaks. ``&&`` is matched as a separator first.
-_REJECT_UNQUOTED = frozenset("<>()&`\\\n\r")
-# Expansions that can run a command or assign a variable (``${X:=v}``, ``$[X=1]``); ``$NAME`` is fine.
+# Unquoted single characters that end one simple command and start the next.
+_SEPARATOR_CHARS = frozenset(";|\n")
+# Unquoted characters that make a command not provably read-only: redirects, subshells, process
+# substitution, and a lone ``&`` (backgrounding). ``&&`` is recognised as a separator first.
+_REJECT_UNQUOTED = frozenset("<>()&")
+# Expansions that can run a command or assign a variable. ``_scan_shell`` reports ``$(``/backticks
+# as substitutions, but not ``${X:=v}`` inside double quotes or ``$[X=1]`` at all; a plain
+# ``$NAME`` is fine and stays a word.
 _EXPANSIONS = ("$(", "${", "$[")
 
 
 def _split_simple_commands(command: str) -> Optional[List[List[str]]]:
     """Split *command* into the word lists of its simple commands, or ``None`` when it uses any
-    shell construct beyond plain words, quotes and the ``_SEPARATORS``.
+    shell construct beyond plain words, quotes, escapes and ``| || && ; <newline>``.
 
-    Neither ``shlex`` nor the existing splitters answer this question: they tokenize a command
-    that is already assumed to be ordinary, so a redirect or a ``$(...)`` comes back as just
-    another word. Here the presence of such a construct is the whole verdict, which needs the
-    quoting state at the character that carries it.
+    Built on ``approval_detection._scan_shell``, the repo's one non-expanding shell state machine,
+    so quoting and escaping are read the same way the approval detector reads them. The detector
+    scans *through* a redirect or a substitution to find a dangerous command inside it; here the
+    mere presence of one is the verdict, so those step kinds end the parse instead.
     """
     segments: List[List[str]] = [[]]
-    word: Optional[str] = None  # None = between words ('' is a started, empty quoted word)
-    quote = ""
-    i = 0
-    while i < len(command):
-        ch = command[i]
-        if quote == "'":
-            if ch == "'":
-                quote = ""
-            else:
-                word += ch
-        elif quote == '"':
-            if ch in '`\\' or command.startswith(_EXPANSIONS, i):
-                return None
-            if ch == '"':
-                quote = ""
-            else:
-                word += ch
-        elif ch in "'\"":
-            quote, word = ch, word or ""
-        elif ch in " \t":
-            if word is not None:
-                segments[-1].append(word)
-                word = None
-        elif (op := command[i:i + 2] if command[i:i + 2] in _SEPARATORS else ch) in _SEPARATORS:
-            if word is not None:
-                segments[-1].append(word)
-                word = None
-            segments.append([])
-            i += _SEPARATORS[op]
+    start: Optional[int] = None  # start offset of the word being read, None = between words
+    end = 0
+    open_quote = False
+    skip = -1  # second character of a two-character operator, already consumed
+
+    def close_word() -> None:
+        nonlocal start
+        if start is not None:
+            segments[-1].append(_deobfuscate_shell_word_for_detection(command[start:end]))
+            start = None
+
+    for kind, i, j, quote in _scan_shell(command, subst="uq", brace=True, comments=True):
+        if i == skip:
             continue
-        elif ch in _REJECT_UNQUOTED or command.startswith(_EXPANSIONS, i) or (ch == "#" and word is None):
-            return None
-        else:
-            word = (word or "") + ch
-        i += 1
-    if quote:
-        return None
-    if word is not None:
-        segments[-1].append(word)
-    # An empty segment means a leading, trailing or doubled separator: not a plain chain.
-    return segments if all(segments) else None
+        if kind in {"subst", "comment"}:
+            return None  # command substitution / ${...} / a trailing comment
+        if kind == "quote":
+            open_quote = not open_quote
+        elif kind == "char":
+            char = command[i]
+            # Single quotes make every character literal; anywhere else an expansion can run.
+            if quote != "'" and command.startswith(_EXPANSIONS, i):
+                return None
+            if quote is None:
+                if char in "&|" and command.startswith(char * 2, i):  # && / ||
+                    skip = i + 1
+                    close_word()
+                    segments.append([])
+                    continue
+                if char in _REJECT_UNQUOTED:
+                    return None
+                if char.isspace() or char in _SEPARATOR_CHARS:
+                    close_word()
+                    if char in _SEPARATOR_CHARS:
+                        segments.append([])
+                    continue
+        # A quote, an escaped char, or an ordinary word char (quoted or not).
+        start, end = (i if start is None else start), j
+    close_word()
+    # Unbalanced quoting, or a leading, trailing or doubled separator: not a plain chain.
+    return None if open_quote else (segments if all(segments) else None)
 
 
 def _any_args(args: List[str]) -> bool:
@@ -119,6 +124,12 @@ def _any_args(args: List[str]) -> bool:
 
 def _no_args_starting(*prefixes: str) -> Callable[[List[str]], bool]:
     return lambda args: not any(a.startswith(prefixes) for a in args)
+
+
+def _no_exec_flags(binary: str, *also: str) -> Callable[[List[str]], bool]:
+    """Reject the options by which this reader runs another program. The option names come from
+    the approval detector's ``_READ_TOOL_EXEC_FLAGS``, so both classifiers learn a new one once."""
+    return _no_args_starting(*sorted(_READ_TOOL_EXEC_FLAGS.get(binary, frozenset())), *also)
 
 
 def _tail_args_ok(args: List[str]) -> bool:
@@ -145,6 +156,7 @@ def _git_args_ok(args: List[str]) -> bool:
 
 # Read-only binaries -> predicate over their arguments (False = an option that writes or execs).
 _READ_ONLY_COMMANDS: dict[str, Callable[[List[str]], bool]] = {
+    "ag": _no_exec_flags("ag"),
     "basename": _any_args,
     "cat": _any_args,
     "cut": _any_args,
@@ -171,7 +183,7 @@ _READ_ONLY_COMMANDS: dict[str, Callable[[List[str]], bool]] = {
     "pwd": _any_args,
     "readlink": _any_args,
     "realpath": _any_args,
-    "rg": _no_args_starting("--pre"),  # --pre runs a preprocessor program
+    "rg": _no_exec_flags("rg"),
     "stat": _any_args,
     "tail": _tail_args_ok,
     "tr": _any_args,
