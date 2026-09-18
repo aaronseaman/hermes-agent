@@ -1651,12 +1651,60 @@ Subcommands:
 
 ```bash
 hermes insights [--days N] [--source platform]
+hermes insights --ledger [--days N] [--session ID] [--ledger-dir DIR ...] [--json]
 ```
 
 | Option | Description |
 |--------|-------------|
 | `--days <n>` | Analyze the last `n` days (default: 30). |
 | `--source <platform>` | Filter by source such as `cli`, `telegram`, or `discord`. |
+| `--ledger` | Report the local call ledger instead of session analytics (see below). |
+| `--ledger-dir <dir>` | Ledger directory to read; repeat to combine runs (default: this profile's `call_ledger/`). |
+| `--session <id>` | With `--ledger`, only this session. |
+| `--json` | With `--ledger`, print the report as JSON. |
+
+### Call ledger baseline
+
+The call ledger records one line per model call, tool call and finished turn under
+`<HERMES_HOME>/call_ledger/` (one JSONL file per day per process). It is local-only: nothing is
+sent anywhere, and tool arguments are stored only as a hash. It is off by default:
+
+```yaml
+agent:
+  call_ledger:
+    enabled: true
+    retention_days: 14   # older files are deleted
+    max_mb: 64           # then the oldest files until the directory is under this size
+```
+
+`hermes insights --ledger` summarises the records per session and in aggregate: LLM and tool calls
+per turn, the repeated-signature rate, the share of tool calls declared idempotent, cached vs
+uncached input tokens, cost per turn, p50/p95 model and tool latency, and deterministic ops (tool
+calls that ran) per LLM call, always next to the turn success rate and cost per successful turn.
+Auxiliary calls (compression, vision, ...) are counted with the turn that made them but carry no
+latency.
+
+A model call is one provider attempt as the turn loop sees it (each retry is its own record with
+its `retry_index`); reconnects inside a single streaming response are not counted separately.
+
+To baseline an eval or `batch_runner.py` run, point it at its own home with the ledger enabled,
+then read that home's ledger:
+
+```bash
+export HERMES_HOME=/tmp/baseline-home        # config.yaml here sets agent.call_ledger.enabled: true
+python batch_runner.py --dataset_file=data.jsonl --batch_size=10 --run_name=baseline
+hermes insights --ledger --days 1 --ledger-dir /tmp/baseline-home/call_ledger
+```
+
+`evals/call_ledger/baseline.py` produces the same report with no API key: it runs real turns
+against a local OpenAI-compatible wire that scripts the tool calls, reports usage with a growing
+cached prefix and publishes `/models` pricing, so the run is priced through
+`agent/usage_pricing.py` as usual. Use it to check the ledger end to end, or as the shape a real
+baseline run should be read with.
+
+```bash
+python evals/call_ledger/baseline.py [--out report.json]
+```
 
 ## `hermes claw`
 
