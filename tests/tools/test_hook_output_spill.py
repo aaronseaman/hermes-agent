@@ -82,6 +82,23 @@ class SpillIfOversizedTests(unittest.TestCase):
             import shutil
             shutil.rmtree(test_home, ignore_errors=True)
 
+    def test_identical_blob_is_stored_once_with_a_stable_placeholder(self):
+        """A hook injecting the same oversized context every turn yields one file and a
+        byte-identical placeholder, so nothing accumulates per turn."""
+        import hashlib
+
+        cfg = self._cfg(max_chars=10)
+        blob = "same hook context\n" * 50
+        first = hos.spill_if_oversized(blob, session_id="sess", config=cfg)
+        second = hos.spill_if_oversized(blob, session_id="sess", config=cfg)
+        self.assertEqual(first, second)
+        files = list((Path(self.tmpdir) / "sess").iterdir())
+        self.assertEqual(len(files), 1)
+        self.assertIn(str(files[0]), first)
+        data = files[0].read_bytes()
+        self.assertEqual(data, blob.encode("utf-8"))
+        self.assertEqual(files[0].name, hashlib.sha256(data).hexdigest() + ".txt")
+
 
 if __name__ == "__main__":
     unittest.main()

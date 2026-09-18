@@ -1,5 +1,7 @@
 """Tests for tools/tool_result_storage.py -- 3-layer tool result persistence."""
 
+import hashlib
+
 import pytest
 from unittest.mock import MagicMock, patch
 
@@ -14,7 +16,6 @@ from tools.tool_result_storage import (
     STORAGE_DIR,
     _build_persisted_message,
     _resolve_storage_dir,
-    _safe_result_filename,
     _write_to_sandbox,
     cleanup_spillover_cache,
     enforce_turn_budget,
@@ -22,6 +23,11 @@ from tools.tool_result_storage import (
     get_spillover_dir,
     maybe_persist_tool_result,
 )
+
+
+def _handle(content: str) -> str:
+    """Spill file name for *content*: the sha256 of its stored bytes."""
+    return hashlib.sha256(content.encode("utf-8")).hexdigest() + ".txt"
 
 
 # ── generate_preview ──────────────────────────────────────────────────
@@ -121,16 +127,18 @@ class TestWriteToSandbox:
         content = "héllo wörld ✓" * 10
         assert len(content.encode("utf-8")) == 170 != len(content)
         if stdin_mode == "host":
-            filename = "tc_verify_host.txt"
+            filename = _handle(content)
             real_stat = os.stat
 
             def fake_stat(p, *a, **kw):
-                if probed is not None and str(p).endswith(filename):
+                if probed is not None and str(p).endswith(".tmp"):
                     return type("S", (), {"st_size": probed})()
                 return real_stat(p, *a, **kw)
 
-            with patch("tools.tool_result_storage.os.stat", side_effect=fake_stat):
-                path = _write_to_spillover(content, filename)
+            with patch("tools.spill_safety.os.stat", side_effect=fake_stat):
+                path = _write_to_spillover(content.encode("utf-8"))
+            # A failed store leaves neither the named file nor its temp file behind.
+            assert [p.name for p in get_spillover_dir().iterdir()] == ([filename] if ok else [])
             assert (path is not None) is ok
             assert (get_spillover_dir() / filename).exists() is ok
             if path is not None:
@@ -169,19 +177,6 @@ class TestResolveStorageDir:
         env = MagicMock()
         env.get_temp_dir.return_value = "/data/data/com.termux/files/usr/tmp"
         assert _resolve_storage_dir(env) == "/data/data/com.termux/files/usr/tmp/hermes-results"
-
-
-class TestSafeResultFilename:
-    def test_preserves_normal_tool_call_id(self):
-        assert _safe_result_filename("tc_456") == "tc_456.txt"
-
-    def test_replaces_path_and_shell_metacharacters(self):
-        filename = _safe_result_filename("../outside/$(whoami);x")
-        assert filename.startswith("outside_whoami_x_")
-        assert filename.endswith(".txt")
-        assert "/" not in filename
-        assert "$" not in filename
-        assert ";" not in filename
 
 
 # ── _build_persisted_message ──────────────────────────────────────────
@@ -239,7 +234,7 @@ class TestMaybePersistToolResult:
             threshold=30_000,
         )
         assert PERSISTED_OUTPUT_TAG in result
-        assert "tc_456.txt" in result
+        assert _handle(content) in result
         assert len(result) < len(content)
 
     def test_persists_full_content_as_is(self):
@@ -270,6 +265,7 @@ class TestMaybePersistToolResult:
 
 
     def test_tool_use_id_cannot_escape_storage_dir(self):
+        import shlex
         env = MagicMock()
         # Readability probe fails -> in-sandbox write is the reference path.
         env.execute.side_effect = [
@@ -289,12 +285,10 @@ class TestMaybePersistToolResult:
         cmd = env.execute.call_args_list[1][0][0]
         target = cmd.split("cat > ", 1)[1].split(" <<", 1)[0]
 
-        assert "Full output saved to: /tmp/hermes-results/outside_whoami_x_" in result
-        assert "/tmp/hermes-results/../" not in result
-        assert target.startswith("/tmp/hermes-results/outside_whoami_x_")
-        assert "/../" not in target
-        assert "$(whoami)" not in target
-        assert ";" not in target
+        # The name comes from the content, never the model-influenced call id.
+        assert f"Full output saved to: /tmp/hermes-results/{_handle(content)}" in result
+        assert target == shlex.quote(f"/tmp/hermes-results/{_handle(content)}")
+        assert "whoami" not in target and "whoami" not in result
 
 
     def test_threshold_zero_forces_persist(self):
@@ -404,7 +398,7 @@ class TestSpillover:
         )
         assert PERSISTED_OUTPUT_TAG in result
         assert "could not be saved" not in result
-        spill_file = get_spillover_dir() / "tc_mcp_1.txt"
+        spill_file = get_spillover_dir() / _handle(content)
         assert spill_file.exists()
         assert spill_file.read_text(encoding="utf-8") == content
         assert str(spill_file) in result
@@ -423,7 +417,7 @@ class TestSpillover:
             threshold=30_000,
         )
         assert PERSISTED_OUTPUT_TAG in result
-        assert (get_spillover_dir() / "tc_local_1.txt").exists()
+        assert (get_spillover_dir() / _handle(content)).exists()
         env.execute.assert_not_called()
 
     def test_remote_env_probe_success_references_mounted_path(self):
@@ -442,7 +436,7 @@ class TestSpillover:
         )
         assert PERSISTED_OUTPUT_TAG in result
         # Canonical host copy always exists now.
-        assert (get_spillover_dir() / "tc_remote_1.txt").exists()
+        assert (get_spillover_dir() / _handle(content)).exists()
         # Only the readability probe ran — no cat-into-sandbox call.
         assert env.execute.call_count == 1
         assert "test -r" in env.execute.call_args[0][0]
@@ -466,10 +460,10 @@ class TestSpillover:
             threshold=30_000,
         )
         assert PERSISTED_OUTPUT_TAG in result
-        assert "/tmp/hermes-results/tc_remote_2.txt" in result
+        assert f"/tmp/hermes-results/{_handle(content)}" in result
         assert env.execute.call_count == 3
         # Host canonical copy exists regardless.
-        assert (get_spillover_dir() / "tc_remote_2.txt").exists()
+        assert (get_spillover_dir() / _handle(content)).exists()
 
     def test_spillover_write_failure_falls_back_to_inline(self, monkeypatch):
         import tools.tool_result_storage as trs
@@ -528,7 +522,109 @@ class TestSpillover:
         )
 
         assert not old.exists()
-        assert (spill_dir / "tc_prune_1.txt").exists()
+        assert (spill_dir / _handle("v" * 60_000)).exists()
+
+
+# ── Content-addressed handles ─────────────────────────────────────────
+
+class TestContentAddressedSpill:
+    """Spill identity is the sha256 of the stored bytes (real I/O against a temp HERMES_HOME)."""
+
+    @pytest.fixture(autouse=True)
+    def _isolated_home(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("HERMES_HOME", str(tmp_path / ".hermes"))
+        import tools.tool_result_storage as trs
+        monkeypatch.setattr(trs, "_spillover_pruned_homes", set())
+
+    @staticmethod
+    def _saved_path(message: str) -> str:
+        from tools.tool_result_storage import extract_persisted_path
+        path = extract_persisted_path(message)
+        assert path, message
+        return path
+
+    def test_identical_results_share_one_verifiable_file_that_retention_keeps(self):
+        """Two calls with the same output reference one file whose name is the hash of its bytes;
+        the second reference restarts the retention clock so it cannot dangle an hour later."""
+        import os
+        import time as _time
+
+        content = "résumé line\n" * 5_000
+        first = self._saved_path(maybe_persist_tool_result(
+            content=content, tool_name="terminal", tool_use_id="tc_a", env=None, threshold=1_000))
+        stale = _time.time() - 48 * 3600
+        os.utime(first, (stale, stale))
+        second = self._saved_path(maybe_persist_tool_result(
+            content=content, tool_name="terminal", tool_use_id="tc_b", env=None, threshold=1_000))
+        other = self._saved_path(maybe_persist_tool_result(
+            content=content + "!", tool_name="terminal", tool_use_id="tc_c", env=None, threshold=1_000))
+
+        assert first == second != other
+        spill_dir = get_spillover_dir()
+        assert sorted(p.name for p in spill_dir.iterdir()) == sorted({_handle(content), _handle(content + "!")})
+        with open(first, "rb") as fh:
+            data = fh.read()
+        assert data == content.encode("utf-8")
+        assert hashlib.sha256(data).hexdigest() + ".txt" == os.path.basename(first)
+        assert cleanup_spillover_cache(max_age_hours=24) == 0
+        assert os.path.exists(first)
+
+    @pytest.mark.parametrize("plant", ["symlink", "tampered"])
+    def test_a_planted_or_tampered_handle_is_never_trusted(self, tmp_path, plant):
+        """The name is predictable from the content, so whatever already sits at it (a symlink
+        onto a user file, bytes edited through a sandbox bind mount) is replaced, not reused and
+        never written through."""
+        import os
+
+        content = "secret-looking output\n" * 4_000
+        target = get_spillover_dir() / _handle(content)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        victim = tmp_path / "victim.txt"
+        victim.write_text("original", encoding="utf-8")
+        if plant == "symlink":
+            target.symlink_to(victim)
+        else:
+            target.write_text(content.replace("secret", "poison"), encoding="utf-8")
+
+        path = self._saved_path(maybe_persist_tool_result(
+            content=content, tool_name="terminal", tool_use_id="tc_x", env=None, threshold=1_000))
+
+        assert path == str(target)
+        assert not os.path.islink(path)
+        with open(path, encoding="utf-8") as fh:
+            assert fh.read() == content
+        assert victim.read_text(encoding="utf-8") == "original"
+
+    def test_remote_backend_reads_the_same_handle_through_translated_mount(self, monkeypatch):
+        """Docker backend: the model gets the in-container path of the one host file, probed for
+        readability by the sandbox. The fake env resolves ``/root/.hermes`` onto the host home the
+        way the bind mount does and runs the real ``test -r``, so translation + probe are exercised
+        end to end without a container."""
+        import os
+        import subprocess
+
+        monkeypatch.setenv("TERMINAL_ENV", "docker")
+        home = os.environ["HERMES_HOME"]
+
+        class BindMountEnv:
+            commands: list[str] = []
+
+            def execute(self, cmd, timeout=None, stdin_data=None):
+                self.commands.append(cmd)
+                proc = subprocess.run(cmd.replace("/root/.hermes", home), shell=True, input=stdin_data,
+                                      text=True, capture_output=True, timeout=timeout)
+                return {"returncode": proc.returncode, "output": proc.stdout}
+
+        env = BindMountEnv()
+        content = "remote output\n" * 6_000
+        paths = [self._saved_path(maybe_persist_tool_result(
+            content=content, tool_name="terminal", tool_use_id=call_id, env=env, threshold=1_000))
+            for call_id in ("tc_r1", "tc_r2")]
+
+        assert paths == [f"/root/.hermes/cache/spillover/{_handle(content)}"] * 2
+        # Only readability probes ran: no in-sandbox copy was needed or written.
+        assert env.commands and all(c.startswith("test -r ") for c in env.commands)
+        assert [p.name for p in get_spillover_dir().iterdir()] == [_handle(content)]
 
 
 # ── recovery hint in the persisted preview ────────────────────────────

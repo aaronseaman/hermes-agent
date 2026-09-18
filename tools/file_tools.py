@@ -35,7 +35,8 @@ from tools.file_tools_read_tracking import (
     _bump_consecutive, _cap_read_tracker_data, _check_file_staleness, _check_not_found_cache,
     _mark_full_write_baseline, _mark_verification_stale, _note_read_coverage, _patch_failure_lock,
     _patch_failure_tracker, _read_tracker, _read_tracker_lock, _record_not_found,
-    _record_patch_failure, _reset_patch_failures, _task_data, _update_read_timestamp)
+    _record_patch_failure, _reset_patch_failures, _task_data, _update_read_timestamp,
+    read_fingerprint)
 
 logger = logging.getLogger(__name__)
 
@@ -516,11 +517,13 @@ def _dedup_stub_or_block(task_data: dict, dedup_key: tuple, path: str) -> str:
 def _record_successful_read(task_data: dict, task_id: str, path: str, resolved_str: str,
                             offset: int, limit: int, dedup_key: tuple, *, partial: bool,
                             redacted: bool = False, end_line: int | None = None,
-                            total_lines=None) -> int:
+                            total_lines=None, fingerprint=None) -> int:
     """Bookkeeping after a real (non-stub) read; returns the consecutive-read count.
 
     Per-task tracker under the lock (stub counter, history, consecutive count,
-    mtime for dedup + staleness, page coverage, and the write_file baseline once
+    the reuse ``fingerprint`` — taken BEFORE the read, so a write racing the read
+    leaves a stale fingerprint that never matches again — mtime for staleness,
+    page coverage, and the write_file baseline once
     the task has seen every line UNREDACTED — in one page or by paging
     contiguously through a file too big for one; a redacted page returned a
     non-round-trippable ``«redacted:…»`` sentinel, so it must not bless an
@@ -535,9 +538,12 @@ def _record_successful_read(task_data: dict, task_id: str, path: str, resolved_s
         task_data["dedup_generation_reads"].add(dedup_key)
         task_data["read_history"].add((path, offset, limit))
         count = _bump_consecutive(task_data, ("read", path, offset, limit))
+        if fingerprint is None:
+            task_data["dedup"].pop(dedup_key, None)
+        else:
+            task_data["dedup"][dedup_key] = fingerprint
         try:
             _mtime_now = os.path.getmtime(resolved_str)
-            task_data["dedup"][dedup_key] = _mtime_now
             task_data.setdefault("read_timestamps", {})[resolved_str] = _mtime_now
             if partial and end_line is not None:
                 complete, redacted = _note_read_coverage(
@@ -630,23 +636,24 @@ def read_file_tool(path: str, offset: int = 1, limit: int = DEFAULT_READ_LIMIT, 
         if cached_not_found is not None:
             return cached_not_found
 
-        # Dedup: identical (path, offset, limit) on an unchanged file returns a
-        # lightweight stub instead of re-sending the content.
+        # Reuse: a read whose fingerprint (path, offset, limit + the file's stat state)
+        # matches the one this task already has in context skips the read and returns a
+        # lightweight stub. Only host-visible files have observable state; a sandbox's
+        # own filesystem never gets a fingerprint, so it is never reused.
         dedup_key = (resolved_str, offset, limit)
+        file_ops = _get_file_ops(task_id)
+        fingerprint = read_fingerprint(resolved_str, offset, limit,
+                                       host_paths=_file_ops_uses_host_paths(file_ops))
         with _read_tracker_lock:
             task_data = _task_data(task_id)
-            cached_mtime = task_data["dedup"].get(dedup_key)
+            cached = task_data["dedup"].get(dedup_key)
             # First unchanged read after a compaction boundary serves full content
             # (the summary may have dropped exact bytes); later ones get the stub.
             content_served_in_generation = dedup_key in task_data["dedup_generation_reads"]
-        if cached_mtime is not None:
-            try:
-                if os.path.getmtime(resolved_str) == cached_mtime and content_served_in_generation:
-                    return _dedup_stub_or_block(task_data, dedup_key, path)
-            except OSError:
-                pass  # stat failed — fall through to full read
+        if fingerprint is not None and cached == fingerprint and content_served_in_generation:
+            return _dedup_stub_or_block(task_data, dedup_key, path)
 
-        result = _get_file_ops(task_id).read_file(path, offset, limit)
+        result = file_ops.read_file(path, offset, limit)
         result_dict = result.to_dict()
 
         # Cache a not-found result for retries. Deliberately NO early return:
@@ -688,7 +695,8 @@ def read_file_tool(path: str, offset: int = 1, limit: int = DEFAULT_READ_LIMIT, 
                 end_line = min(end_line, total_lines)
         count = _record_successful_read(task_data, task_id, path, resolved_str, offset, limit,
                                         dedup_key, partial=(offset > 1) or bool(result_dict.get("truncated")),
-                                        redacted=redacted, end_line=end_line, total_lines=total_lines)
+                                        redacted=redacted, end_line=end_line, total_lines=total_lines,
+                                        fingerprint=fingerprint)
         if count >= 4:
             return tool_error(
                 f"BLOCKED: You have read this exact file region {count} times in a row. "

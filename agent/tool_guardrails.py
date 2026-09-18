@@ -162,6 +162,31 @@ class ToolCallSignature:
 
 
 @dataclass(frozen=True)
+class CallFingerprint:
+    """State-aware call identity: ``hash(tool, canonical args, state deps)``. Two equal
+    fingerprints mean a fresh execution would return what the first one returned, so the
+    first result may be reused. ``ToolCallSignature`` is the state-blind half (what the loop
+    guard counts); ``state_hash`` covers everything else the result depends on."""
+
+    signature: ToolCallSignature
+    state_hash: str
+
+    @classmethod
+    def for_call(
+        cls, tool_name: str, args: Mapping[str, Any] | None, state_deps: Any,
+    ) -> "CallFingerprint | None":
+        """The fingerprint of a reusable call, or None. Reusable = the call's resolved
+        effects are idempotent and not destructive AND its state deps are known
+        (``state_deps is None`` means "not observable": terminal, unknown tools, a
+        file the host cannot stat)."""
+        args = _coerce_args(args)
+        effects = registry.resolve_effects(tool_name, args)
+        if state_deps is None or not effects.idempotent or effects.destructive:
+            return None
+        return cls(ToolCallSignature.from_call(tool_name, args), _sha256(_canonical_json(state_deps)))
+
+
+@dataclass(frozen=True)
 class ToolGuardrailDecision:
     """Decision returned by the tool-call guardrail controller."""
 
