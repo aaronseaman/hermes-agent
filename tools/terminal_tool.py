@@ -15,7 +15,8 @@ import/patch target): ``terminal_tool_config`` (TERMINAL_* reads, ``_quiet``),
 ``terminal_tool_lifecycle`` (reaper/teardown/ensure_task_env),
 ``terminal_tool_sudo`` (sudo password + shell rewrites), ``terminal_tool_guards``
 (pre-exec blocks), ``terminal_tool_background`` (background spawn),
-``terminal_tool_result`` (foreground result post-processing).
+``terminal_tool_result`` (foreground result post-processing),
+``terminal_tool_effects`` (per-call effects: destructive / read-only command classifier).
 """
 
 import json
@@ -1306,6 +1307,7 @@ def check_terminal_requirements() -> bool:
 
 
 from tools.registry import registry
+from tools.terminal_tool_effects import terminal_call_effects
 
 TERMINAL_SCHEMA = {
     "name": "terminal",
@@ -1415,6 +1417,7 @@ registry.register(
     check_fn=check_terminal_requirements,
     emoji="💻",
     max_result_size_chars=100_000,
+    effects_fn=terminal_call_effects,
 )
 
 
