@@ -1407,6 +1407,15 @@ DEFAULT_CONFIG = {
         # TTL purge of skills/.archive/: 0 = never; > 0 lets the explicit `hermes curator purge`
         # delete older archived skills (never automatic; logged in the ledger).
         "archive_ttl_days": 0,
+        # Compiled skills: each real pass mines READ-ONLY tool-call procedures that recurred across
+        # sessions, compiles them into skills with a contract + replay corpus, and `/<skill> k=v`
+        # then runs them without a model call (agent/compiled_skill.py). Opt-in.
+        "compiled_skills": {
+            "enabled": False,
+            "min_sessions": 3,  # distinct sessions a procedure must have succeeded in
+            "scan_sessions": 200,  # most recent sessions read per pass
+            "max_consecutive_failures": 3,  # failed runs before the curator retires the compiled path
+        },
         # Before every real (non-dry-run) pass, snapshot ~/.hermes/skills/ to
         # ~/.hermes/skills/.curator_backups/<utc-iso>/skills.tar.gz (`hermes curator rollback`).
         "backup": {

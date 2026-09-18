@@ -3371,7 +3371,14 @@ class HermesCLI(CLIProcessNotificationsMixin, CLIAgentSetupMixin, CLICommandsMix
                 msg, f"Loading {len(loaded_names)} stacked skills: {', '.join(loaded_names)}", missing
             )
             return
-        msg = build_skill_invocation_message(base_cmd, rest, task_id=self.session_id)
+        from agent.compiled_skill import run_skill_command, session_tool_names
+        compiled = run_skill_command(
+            base_cmd, rest, task_id=self.session_id,
+            allowed_tools=lambda: session_tool_names(self.enabled_toolsets, self.disabled_toolsets))
+        if compiled.reply is not None:
+            _cprint(compiled.reply)
+            return
+        msg = build_skill_invocation_message(base_cmd, rest, task_id=self.session_id, runtime_note=compiled.runtime_note)
         if msg:
             self._queue_loaded_skills(msg, f"Loading skill: {skill_info['name']}", None)
         else:

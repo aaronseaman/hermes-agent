@@ -584,7 +584,13 @@ def _dispatch_skill(rid, params, session, name, arg):
         sc = _tools_mod("agent.skill_commands")
         cmds, key = sc.get_skill_commands(), f"/{name}"
         if key in cmds:
-            msg = sc.build_skill_invocation_message(key, arg, task_id=session.get("session_key", "") if session else "")
+            task_id = session.get("session_key", "") if session else ""
+            # Only a live agent tells us the session's tool surface; without one the compiled path stays off.
+            compiled = _tools_mod("agent.compiled_skill").run_skill_command(
+                key, arg, task_id=task_id, allowed_tools=getattr((session or {}).get("agent"), "valid_tool_names", None))
+            if compiled.reply is not None:
+                return _exec_out(rid, compiled.reply)
+            msg = sc.build_skill_invocation_message(key, arg, task_id=task_id, runtime_note=compiled.runtime_note)
             if msg:  # UIs render `display`, never `message`.
                 return _ok(rid, {
                     "type": "skill", "message": msg, "name": cmds[key].get("name", name),
