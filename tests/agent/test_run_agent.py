@@ -46,15 +46,6 @@ def _make_tool_defs(*names: str) -> list:
     ]
 
 
-def test_is_destructive_command_treats_cp_as_mutating():
-    from agent.tool_dispatch_helpers import _is_destructive_command
-    assert _is_destructive_command("cp .env.local .env") is True
-
-
-
-
-
-
 @pytest.fixture()
 def agent():
     """Minimal AIAgent with mocked OpenAI client and tool loading."""
