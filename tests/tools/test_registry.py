@@ -17,6 +17,7 @@ from tools.registry import (
     discover_builtin_tools,
     tool_error,
 )
+from tools.tool_effects import UNKNOWN_EFFECTS, ToolEffects
 
 
 def _dummy_handler(args, **kwargs):
@@ -479,6 +480,24 @@ class TestEntryLookup:
     def test_get_entry_returns_none_for_unknown_tool(self):
         reg = ToolRegistry()
         assert reg.get_entry("missing") is None
+
+
+class TestResolveEffects:
+    def test_per_call_resolver_falls_back_to_static_and_bad_input_is_conservative(self):
+        reg = ToolRegistry()
+        static = ToolEffects(idempotent=True)
+        reg.register(name="static", toolset="core", schema=_make_schema("static"), handler=_dummy_handler,
+                     effects=static)
+        reg.register(name="dyn", toolset="core", schema=_make_schema("dyn"), handler=_dummy_handler,
+                     effects=static, effects_fn=lambda args: ToolEffects(idempotent=args["mode"] == "read"))
+
+        assert reg.resolve_effects("static", {"any": 1}) == reg.get_effects("static") == static
+        assert reg.resolve_effects("dyn", {"mode": "read"}).idempotent
+        assert not reg.resolve_effects("dyn", {"mode": "write"}).idempotent
+        # A raising resolver or non-mapping args never borrow the static declaration.
+        assert reg.resolve_effects("dyn", {}) == UNKNOWN_EFFECTS
+        assert reg.resolve_effects("static", "not-a-mapping") == UNKNOWN_EFFECTS
+        assert reg.resolve_effects("missing", {}) == UNKNOWN_EFFECTS
 
 
 class TestSecretCaptureResultContract:

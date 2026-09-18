@@ -343,7 +343,7 @@ class ToolCallGuardrailController:
         exact_count = 0 if self._progress_since_failure.get(signature) else self._exact_failure_counts.get(signature, 0)
         if exact_count >= self.config.exact_failure_block_after:
             return self._decide("block", "repeated_exact_failure_block", tool_name, exact_count, signature)
-        record = self._no_progress.get(signature) if self._is_idempotent(tool_name) else None
+        record = self._no_progress.get(signature) if self._is_idempotent(tool_name, args) else None
         if record is not None and record[1] >= self.config.no_progress_block_after:
             return self._decide("block", "idempotent_no_progress_block", tool_name, record[1], signature)
         return allow
@@ -396,7 +396,7 @@ class ToolCallGuardrailController:
         if tool_name in PROGRESS_RESET_TOOL_NAMES or file_mutation_result_landed(tool_name, result):
             self._progress_since_failure.update(dict.fromkeys(self._exact_failure_counts, True))
             self._same_tool_failure_counts.clear()
-        if not self._is_idempotent(tool_name):
+        if not self._is_idempotent(tool_name, args):
             self._no_progress.pop(signature, None)
             return ToolGuardrailDecision(tool_name=tool_name, signature=signature)
 
@@ -408,8 +408,9 @@ class ToolCallGuardrailController:
             return self._decide("warn", "idempotent_no_progress_warning", tool_name, repeat_count, signature)
         return ToolGuardrailDecision(tool_name=tool_name, count=repeat_count, signature=signature)
 
-    def _is_idempotent(self, tool_name: str) -> bool:
-        return registry.get_effects(tool_name).idempotent
+    def _is_idempotent(self, tool_name: str, args: Mapping[str, Any]) -> bool:
+        # Per call: a read-only ``terminal`` command is idempotent, a build or write is not.
+        return registry.resolve_effects(tool_name, args).idempotent
 
     def observe_call(
         self, tool_name: str, args: Mapping[str, Any] | None, result: str | None,

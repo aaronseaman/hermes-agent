@@ -25,7 +25,8 @@ from tools.threat_patterns import scan_for_threats
 
 logger = logging.getLogger(__name__)
 
-# Parallel admission reads each tool's declared ``ToolEffects`` (tools/tool_effects.py). The
+# Parallel admission reads each call's ``ToolEffects`` (tools/tool_effects.py) via
+# ``registry.resolve_effects``, so argument-dependent effects are honoured. The
 # connector batch sentinel is a bridge-level name with no registry entry: a pure remote batch
 # carries per-dispatch idempotency keys, so it is parallel-safe.
 _PARALLEL_SAFE_BRIDGE_NAMES = frozenset({"connectors__execute"})
@@ -34,29 +35,6 @@ _PARALLEL_SAFE_BRIDGE_NAMES = frozenset({"connectors__execute"})
 def _is_interactive_tool(tool_name: str) -> bool:
     """User-facing tools own their wait and never run concurrently: always a batch barrier."""
     return registry.get_effects(tool_name).interactive
-
-
-# Terminal commands that may modify/delete files.
-_DESTRUCTIVE_PATTERNS = re.compile(
-    r"""(?:^|\s|&&|\|\||;|`)(?:
-        rm\s|rmdir\s|
-        cp\s|install\s|
-        mv\s|
-        sed\s+-i|
-        truncate\s|
-        dd\s|
-        shred\s|
-        git\s+(?:reset|clean|checkout)\s
-    )""",
-    re.VERBOSE,
-)
-# Output redirects that overwrite files (> but not >>)
-_REDIRECT_OVERWRITE = re.compile(r'[^>]>[^>]|^>[^>]')
-
-
-def _is_destructive_command(cmd: str) -> bool:
-    """Heuristic: does this terminal command look like it modifies/deletes files?"""
-    return bool(cmd) and bool(_DESTRUCTIVE_PATTERNS.search(cmd) or _REDIRECT_OVERWRITE.search(cmd))
 
 
 def _is_mcp_tool_parallel_safe(tool_name: str) -> bool:
@@ -137,7 +115,7 @@ def _batch_admission(tool_call, execution_cwd: Optional[Path]) -> tuple[str, Lis
         return None
 
     name, args = _peel_bridge_call(tool_name, function_args)
-    effects = registry.get_effects(name)
+    effects = registry.resolve_effects(name, args)
     if effects.interactive:
         return None
     if effects.path_scope:
@@ -223,7 +201,7 @@ def _extract_parallel_scope_paths(
     """Every canonical path this call reserves for overlap checks. *execution_cwd* is the cwd
     the tool will actually use (may differ from the process cwd on WSL / sandboxed backends);
     V4A ``patch`` scope comes from patch-body headers. Empty = unknown scope = barrier."""
-    if not registry.get_effects(tool_name).path_scope:
+    if not registry.resolve_effects(tool_name, function_args).path_scope:
         return []
 
     if tool_name == "patch" and (function_args.get("mode") or "replace") == "patch":
@@ -530,7 +508,7 @@ def _maybe_wrap_untrusted(name: str, content: Any) -> Any:
 
 
 __all__ = [
-    "_is_interactive_tool", "_DESTRUCTIVE_PATTERNS", "_REDIRECT_OVERWRITE", "_is_destructive_command",
+    "_is_interactive_tool",
     "_plan_tool_batch_segments", "_should_parallelize_tool_batch", "_canonical_path",
     "_extract_parallel_scope_path", "_extract_parallel_scope_paths", "_paths_overlap",
     "_is_multimodal_tool_result", "_multimodal_text_summary", "_append_subdir_hint_to_multimodal",

@@ -13,9 +13,10 @@ import logging
 import sys
 import threading
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set
 
 from hermes_constants import hermes_home_key
 from tools.tool_effects import UNKNOWN_EFFECTS, ToolEffects
@@ -195,6 +196,9 @@ class ToolEntry:
     # — for fields tracking runtime config (delegate_task's description reflects limits).
     dynamic_schema_overrides: Optional[Callable] = None
     effects: ToolEffects = UNKNOWN_EFFECTS
+    # ``(args) -> ToolEffects`` for tools whose effects depend on arguments (terminal); read via
+    # ``resolve_effects``, which falls back to ``effects`` when this is unset.
+    effects_fn: Optional[Callable[[Mapping[str, Any]], ToolEffects]] = None
 
 
 class _PluginOverridePolicy:
@@ -622,7 +626,8 @@ class ToolRegistry:
         check_fn: Callable = None, requires_env: list = None, is_async: bool = False,
         description: str = "", emoji: str = "", max_result_size_chars: int | float | None = None,
         dynamic_schema_overrides: Callable = None, override: bool = False,
-        scope: Optional[str] = None, effects: Optional[ToolEffects] = None):
+        scope: Optional[str] = None, effects: Optional[ToolEffects] = None,
+        effects_fn: Optional[Callable[[Mapping[str, Any]], ToolEffects]] = None):
         """Register a tool (called at import time by each tool file). ``override=True`` is an
         explicit opt-in for plugins replacing a built-in implementation (e.g. a headed-Chrome
         browser backend); without it, cross-toolset shadowing is rejected."""
@@ -687,7 +692,7 @@ class ToolRegistry:
                 description=description or schema.get("description", ""), emoji=emoji,
                 max_result_size_chars=max_result_size_chars,
                 dynamic_schema_overrides=dynamic_schema_overrides,
-                effects=effects or UNKNOWN_EFFECTS)
+                effects=effects or UNKNOWN_EFFECTS, effects_fn=effects_fn)
             # Availability is derived per-tool (_toolset_has_exposable_tools), so this map no
             # longer gates a toolset; it still feeds get_toolset_requirements ->
             # TOOLSET_REQUIREMENTS["check_fn"], which banner.py reads (presence only,
@@ -887,6 +892,20 @@ class ToolRegistry:
     def get_effects(self, name: str) -> ToolEffects:
         """Declared effects for *name*; unregistered or undeclared tools get the conservative default."""
         return self._attr(name, "effects") or UNKNOWN_EFFECTS
+
+    def resolve_effects(self, name: str, args: Any) -> ToolEffects:
+        """Effects of one call: the tool's per-call ``effects_fn`` when registered, else its static
+        declaration. Non-mapping args or a raising resolver get the conservative default."""
+        if not isinstance(args, Mapping):
+            return UNKNOWN_EFFECTS
+        effects_fn = self._attr(name, "effects_fn")
+        if effects_fn is None:
+            return self.get_effects(name)
+        try:
+            return effects_fn(args)
+        except Exception as exc:  # plugin-supplied resolvers must not break dispatch
+            logger.debug("effects_fn for tool %r failed; using conservative effects: %s", name, exc)
+            return UNKNOWN_EFFECTS
 
     def get_all_tool_names(self) -> List[str]:
         return sorted(entry.name for entry in self._snapshot_entries())

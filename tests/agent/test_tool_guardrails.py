@@ -191,6 +191,20 @@ def test_skill_read_tools_are_idempotent_and_block_repeated_identical_success_ou
         assert blocked.code == "idempotent_no_progress_block"
 
 
+def test_terminal_no_progress_guard_follows_per_call_effects():
+    import tools.terminal_tool  # noqa: F401  (terminal resolves idempotence per command)
+
+    controller = ToolCallGuardrailController(
+        ToolCallGuardrailConfig(hard_stop_enabled=True, no_progress_warn_after=2, no_progress_block_after=2)
+    )
+    read, build = {"command": "git status --short"}, {"command": "make test"}
+    for _ in range(2):
+        controller.after_call("terminal", read, "M a.py\n", failed=False)
+        controller.after_call("terminal", build, "ok\n", failed=False)
+    assert controller.before_call("terminal", read).code == "idempotent_no_progress_block"
+    assert controller.before_call("terminal", build).action == "allow"
+
+
 def test_mutating_or_unknown_tools_are_not_blocked_for_repeated_identical_success_output_by_default():
     controller = ToolCallGuardrailController(
         ToolCallGuardrailConfig(no_progress_warn_after=2, no_progress_block_after=2)

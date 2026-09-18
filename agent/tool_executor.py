@@ -38,13 +38,13 @@ from agent.inline_tool_executors import (
 )
 from agent.tool_dispatch_helpers import (
     _is_interactive_tool,
-    _is_destructive_command,
     _is_multimodal_tool_result,
     _multimodal_text_summary,
     _append_subdir_hint_to_multimodal,
     _plan_tool_batch_segments,
     make_tool_result_message,
 )
+from tools.terminal_tool_effects import terminal_call_effects
 from tools.terminal_tool_lifecycle import get_active_env
 from tools.thread_context import propagate_context_to_thread
 from tools.tool_result_storage import (
@@ -945,7 +945,9 @@ def _begin_tool_execution(agent, ref: _ToolCallRef, display_index: int | None) -
             _ensure_file_checkpoint(agent, function_name, function_args, effective_task_id)
         elif function_name == "terminal":
             command = function_args.get("command", "")
-            if _is_destructive_command(command):
+            # The classifier, not registry.resolve_effects: a plugin replacing the terminal
+            # handler without an effects_fn would otherwise silently lose the checkpoint.
+            if terminal_call_effects(function_args).destructive:
                 from agent.runtime_cwd import scope_terminal_cwd
                 cwd = function_args.get("workdir") or scope_terminal_cwd() or os.getcwd()
                 agent._checkpoint_mgr.ensure_checkpoint(cwd, f"before terminal: {command[:60]}")
