@@ -48,18 +48,20 @@ def record_aux_usage(
 ) -> None:
     """Record an auxiliary response's token usage against the ambient session.
 
-    Strictly best-effort (accounting must never break an aux call). No-ops outside an
-    agent turn, for main-loop-accounted tasks (``_EXCLUDED_TASKS``), or without usage.
+    Strictly best-effort (accounting must never break an aux call); also feeds the call ledger
+    when a ledger turn is bound. No-ops outside an agent turn, for main-loop-accounted tasks
+    (``_EXCLUDED_TASKS``), or without usage.
     The model is read from ``response.model`` (accurate after aux provider fallback);
     *provider*/*base_url* reflect the originally-resolved route.
     """
     try:
         if not task or task in _EXCLUDED_TASKS:
             return
+        from agent.call_ledger import active_turn_bound, record_aux_call
+
         ctx = _accounting.get()
-        if ctx is None:
+        if ctx is None and not active_turn_bound():
             return
-        session_db, session_id = ctx
         raw_usage = getattr(response, "usage", None)
         if raw_usage is None:
             return
@@ -81,6 +83,10 @@ def record_aux_usage(
                 estimated_cost = float(cost.amount_usd)
         except Exception:
             logger.debug("Aux usage cost estimation failed", exc_info=True)
+        record_aux_call(task, model=model, provider=provider, usage=usage, cost_usd=estimated_cost)
+        if ctx is None:
+            return
+        session_db, session_id = ctx
         session_db.record_auxiliary_usage(
             session_id, task, model=model, billing_provider=provider, billing_base_url=base_url,
             input_tokens=usage.input_tokens, output_tokens=usage.output_tokens,

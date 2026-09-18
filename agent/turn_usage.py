@@ -15,6 +15,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
+from agent.call_ledger import record_model_call
 from agent.image_token_cost import calibrate_from_usage
 from agent.usage_anchor import capture_usage_anchor, set_usage_anchor
 from agent.usage_pricing import estimate_usage_cost, normalize_usage
@@ -96,6 +97,7 @@ def record_response_usage(
             "API call #%d: model=%s provider=%s in=? out=? total=? latency=%.1fs usage=unavailable",
             agent.session_api_calls, agent.model, agent.provider or "unknown", api_duration,
         )
+        record_model_call(agent, usage=None, cost_usd=None, latency_s=api_duration)
         return ResponseUsageOutcome(compression_attempts=compression_attempts, rearmed=rearmed)
 
     canonical_usage = normalize_usage(response.usage, provider=agent.provider, api_mode=agent.api_mode)
@@ -242,6 +244,7 @@ def record_response_usage(
             _cost_delta = (_cost_delta or 0.0) + _moa_cost
     agent.session_cost_status = cost_result.status
     agent.session_cost_source = cost_result.source
+    record_model_call(agent, usage=canonical_usage, cost_usd=_cost_delta, latency_s=api_duration)
 
     # Persist per-call token deltas for any session_id so non-CLI runs can't lose
     # accounting; gateway/session-store writes use absolute totals and safely overwrite
