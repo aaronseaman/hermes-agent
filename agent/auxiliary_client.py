@@ -109,6 +109,7 @@ def aux_probe_mode():
 from agent.credential_pool import load_pool
 from agent.model_metadata import MINIMUM_CONTEXT_LENGTH, get_model_context_length
 from hermes_cli.config import get_hermes_home
+from agent.auxiliary_fallback_fence import fallback_fence_reason
 from agent.auxiliary_health import _custom_health_base_url, _unhealthy_cache_key
 from hermes_constants import OPENROUTER_BASE_URL, hermes_home_key
 from utils import base_url_host_matches, base_url_hostname, base_url_origin, env_float, is_truthy_value, model_forces_max_completion_tokens, normalize_proxy_env_vars
@@ -6777,7 +6778,7 @@ def _resolve_call_client(
             model=resolved_model or model, base_url=resolved_base_url or base_url,
             api_key=resolved_api_key or api_key, async_mode=async_mode, main_runtime=main_runtime,
         )
-        if client is None and resolved_provider != "auto" and not resolved_base_url:
+        if client is None and resolved_provider != "auto" and not resolved_base_url and not fallback_fence_reason():
             logger.warning("Vision provider %s unavailable, falling back to auto vision backends",
                            resolved_provider)
             effective_provider, client, final_model = resolve_vision_provider_client(
@@ -6795,9 +6796,10 @@ def _resolve_call_client(
             # Explicit provider with no credentials: honor the task fallback_chain before
             # raising (fallback entries may use OAuth / credential-pool auth).
             _explicit = (resolved_provider or "").strip().lower()
+            _fenced = fallback_fence_reason()
             if _explicit and _explicit not in {"auto", "openrouter", "custom"}:
-                fb_client, fb_model, fb_label = _try_configured_fallback_for_unavailable_client(
-                    task, _explicit)
+                fb_client, fb_model, fb_label = (None, None, "") if _fenced else (
+                    _try_configured_fallback_for_unavailable_client(task, _explicit))
                 if fb_client is None:
                     raise RuntimeError(
                         f"Provider '{_explicit}' is set in config.yaml but no API key was found. "
@@ -6811,7 +6813,7 @@ def _resolve_call_client(
                 effective_provider = resolved_provider
             # Auto/custom with no credentials: walk the full auto chain (not just OpenRouter).
             # model=None so each provider uses its own default.
-            if client is None and not resolved_base_url:
+            if client is None and not resolved_base_url and not _fenced:
                 logger.info("Auxiliary %s: provider %s unavailable, trying auto-detection chain",
                             task or "call", resolved_provider)
                 client, final_model = _get_cached_client(
@@ -7152,6 +7154,11 @@ def _ladder_provider_fallback(first_err: Exception, route: _LadderRoute):
         _mark_provider_unhealthy(
             _recoverable_pool_provider(resolved_provider, route.client, main_runtime=route.main_runtime)
             or resolved_provider, base_url=route.base_info)
+    fence = fallback_fence_reason()
+    if fence:
+        logger.info("Auxiliary %s%s: %s on %s; cross-provider fallback fenced (%s)",
+                    task or "call", tag, reason, resolved_provider, fence)
+        return None
     logger.info("Auxiliary %s%s: %s on %s (%s), trying fallback",
                 task or "call", tag, reason, resolved_provider, first_err)
     # Skip only the failed model for model-specific failures; 401/402 are provider-wide, so
