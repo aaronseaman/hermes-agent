@@ -165,6 +165,12 @@ class ApiRequestHooksMixin:
         max_retries: Optional[int] = None, retryable: Optional[bool] = None,
         reason: Optional[str] = None,
     ) -> None:
+        # Every failed provider attempt passes here once (API errors and invalid responses).
+        from agent.call_ledger import record_model_call
+        record_model_call(
+            self, usage=None, cost_usd=None, latency_s=time.time() - api_start_time,
+            outcome="error", error_class=reason or error_type, retryable=retryable,
+        )
         # Lazy module import (not from-import) so tests can replace lifecycle dispatch at this call site.
         with suppress(Exception):
             from hermes_cli import lifecycle as _lifecycle
