@@ -237,6 +237,11 @@ def apply_automatic_transitions(now: Optional[datetime] = None) -> Dict[str, int
     return counts
 
 
+# compiled-skill pass outcomes surfaced in the run summary (agent/compiled_skill.py::curator_pass)
+_COMPILED_SUMMARY = (("created", "compiled"), ("staged", "staged for approval"), ("activated", "activated"),
+                     ("deactivated", "deactivated"), ("retired", "retired"))
+
+
 # --- Review prompt for the forked agent ---
 
 CURATOR_DRY_RUN_BANNER = (
@@ -683,6 +688,7 @@ def _write_file(path: Path, label: str, render: Any) -> None:
 def _write_run_report(
     *, started_at: datetime, elapsed_seconds: float, auto_counts: Dict[str, int], auto_summary: str,
     before_report: List[Dict[str, Any]], before_names: Set[str], after_report: List[Dict[str, Any]], llm_meta: Dict[str, Any],
+    compiled: Optional[Dict[str, int]] = None,
 ) -> Optional[Path]:
     """Write run.json + REPORT.md under logs/curator/{YYYYMMDD-HHMMSS}[-N]/ (N disambiguates a crash-rerun in the same
     second). Returns the report dir, or None if it couldn't be created (reporting is best-effort)."""
@@ -717,6 +723,7 @@ def _write_run_report(
         "pruned_names": [p["name"] for p in diff.pruned], "added": diff.added, "state_transitions": transitions, "cron_rewrites": cron_rewrites,
         "llm_final": llm_meta.get("final", ""), "llm_summary": llm_meta.get("summary", ""),
         "llm_error": llm_meta.get("error"), "tool_calls": llm_meta.get("tool_calls", []),
+        "compiled_skills": compiled or {},
     }
     _write_file(run_dir / "run.json", "run.json", payload)
     _write_file(run_dir / "REPORT.md", "REPORT.md", lambda: _render_report_markdown(payload))
@@ -784,6 +791,9 @@ def _render_report_markdown(p: Dict[str, Any]) -> str:
         *([f"> ⚠ LLM pass error: `{error}`\n"] if error else []),
         "## Auto-transitions (pure, no LLM)\n", f"- checked: {auto.get('checked', 0)}", f"- marked stale: {auto.get('marked_stale', 0)}",
         f"- archived (no LLM, pure time-based staleness): {auto.get('archived', 0)}", f"- reactivated: {auto.get('reactivated', 0)}", "",
+        *(["## Compiled skills (deterministic, no LLM)\n",
+            *(f"- {label}: {n}" for label, n in sorted((p.get("compiled_skills") or {}).items())), ""]
+          if p.get("compiled_skills") else []),
         "## LLM consolidation pass\n",
         f"- tool calls: **{counts.get('tool_calls_total', 0)}** (by name: {', '.join(f'{k}={v}' for k, v in sorted(tc_counts.items())) or 'none'})",
         f"- consolidated into umbrellas: **{counts.get('consolidated_this_run', 0)}**",
@@ -888,6 +898,7 @@ def run_curator_review(
     recorded in ``state.last_report_path`` so users can read what WOULD have happened."""
     consolidate = get_consolidate() if consolidate is None else consolidate
     start = datetime.now(timezone.utc)
+    compiled: Dict[str, int] = {}
     if dry_run:  # count candidates without mutating state
         counts = {"checked": len(_safe_curated_report()), "marked_stale": 0, "archived": 0, "reactivated": 0}
     else:
@@ -901,8 +912,11 @@ def run_curator_review(
         except Exception as e:
             logger.debug("Curator pre-run snapshot failed: %s", e, exc_info=True)
         counts = apply_automatic_transitions(now=start)
+        from agent.compiled_skill import curator_pass  # deterministic, no LLM; {} unless enabled
+        compiled = curator_pass()
     auto_summary = ", ".join(
-        f"{counts[key]} {label}" for key, label in (("marked_stale", "marked stale"), ("archived", "archived"), ("reactivated", "reactivated")) if counts[key]
+        [f"{counts[key]} {label}" for key, label in (("marked_stale", "marked stale"), ("archived", "archived"), ("reactivated", "reactivated")) if counts[key]]
+        + [f"{compiled[key]} compiled skill(s) {label}" for key, label in _COMPILED_SUMMARY if compiled.get(key)]
     ) or "no changes"
 
     # Persist before the LLM pass so a crash mid-review still records the run.
@@ -931,6 +945,7 @@ def run_curator_review(
             report_path = _write_run_report(
                 started_at=start, elapsed_seconds=elapsed, auto_counts=counts, auto_summary=auto_summary,
                 before_report=before_report, before_names=before_names, after_report=_safe_curated_report(), llm_meta=llm_meta,
+                compiled=compiled,
             )
             if report_path is not None:
                 state2["last_report_path"] = str(report_path)
