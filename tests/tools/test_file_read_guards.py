@@ -50,6 +50,7 @@ class _FakeReadResult:
 
 def _make_fake_ops(content="hello\n", total_lines=1, file_size=6):
     fake = MagicMock()
+    fake.env = None  # host file ops: the temp files these tests stat are the ones "read"
     fake.read_file = lambda path, offset=1, limit=500: _FakeReadResult(
         content=content, total_lines=total_lines, file_size=file_size,
     )

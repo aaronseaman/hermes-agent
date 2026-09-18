@@ -1,11 +1,14 @@
 """Tool result persistence -- preserves large outputs instead of truncating. Layers against
 context overflow: (1) per-tool caps inside each tool; (2) ``maybe_persist_tool_result`` —
 output over the tool's threshold is persisted and replaced by a preview + path; canonical home
-is ALWAYS host-side ``$HERMES_HOME/cache/spillover/{id}.txt`` (works for sessions that never
+is ALWAYS host-side ``$HERMES_HOME/cache/spillover/{sha256}.txt`` (works for sessions that never
 ran a terminal), remote backends get the translated in-sandbox path (probed for readability)
-else a copy in the sandbox temp dir; (3) ``enforce_turn_budget``."""
+else a copy in the sandbox temp dir; (3) ``enforce_turn_budget``.
 
-import hashlib
+The file name is the sha256 of the stored bytes (``spill_safety.store_content_addressed``): an
+identical output — a re-run command, a budget re-persist, the same page fetched twice — points at
+the one existing file instead of writing another, and the name verifies the bytes."""
+
 import logging
 import os
 import re
@@ -14,6 +17,7 @@ import threading
 import time
 
 from tools.budget_config import DEFAULT_PREVIEW_SIZE_CHARS, BudgetConfig, DEFAULT_BUDGET
+from tools.spill_safety import content_address, store_content_addressed
 
 logger = logging.getLogger(__name__)
 PERSISTED_OUTPUT_TAG = "<persisted-output>"
@@ -22,8 +26,6 @@ STORAGE_DIR = "/tmp/hermes-results"
 SPILLOVER_SUBDIR = "cache/spillover"
 SPILLOVER_MAX_AGE_HOURS = 24
 _BUDGET_TOOL_NAME = "__budget_enforcement__"
-_UNSAFE_RESULT_FILENAME_CHARS = re.compile(r"[^A-Za-z0-9_.-]+")
-_MAX_RESULT_FILENAME_STEM = 120
 
 _spillover_prune_lock = threading.Lock()
 _spillover_pruned_homes: set = set()  # profile home keys already swept this process
@@ -83,34 +85,22 @@ def _is_host_side_env(env) -> bool:
         return False
 
 
-def _write_to_spillover(content: str, filename: str):
-    """Write host-side to $HERMES_HOME/cache/spillover; returns path str or None.
+def _write_to_spillover(data: bytes):
+    """Store *data* host-side in $HERMES_HOME/cache/spillover under its content address; returns
+    the path str or None.
 
-    The write is size-verified before the caller tells the model "Full output saved":
-    a partially-flushed file (quota, ENOSPC race) fails closed to the bounded inline
-    truncation instead of referencing an archive that silently lost bytes.
+    The store is size-verified before the caller tells the model "Full output saved": a
+    partially-flushed file (quota, ENOSPC race) fails closed to the bounded inline truncation
+    instead of referencing an archive that silently lost bytes.
     """
-    data = content.encode("utf-8", errors="replace")
     try:
-        spill_dir = get_spillover_dir()
-        spill_dir.mkdir(parents=True, exist_ok=True)
-        path = spill_dir / filename
-        path.write_bytes(data)
-        persisted_size = os.stat(path).st_size
+        # Not private: the dir is bind-mounted/synced into remote backends (credential_files).
+        path, reused = store_content_addressed(get_spillover_dir(), data, private=False)
     except OSError as exc:
-        logger.warning("Spillover write failed for %s: %s", filename, exc)
+        logger.warning("Spillover write failed (%d bytes): %s", len(data), exc)
         return None
-    if persisted_size != len(data):
-        logger.warning(
-            "Spillover write for %s is not lossless (%d bytes on disk, "
-            "expected %d) — discarding archive",
-            filename, persisted_size, len(data),
-        )
-        try:
-            path.unlink()
-        except OSError:
-            pass
-        return None
+    if reused:
+        logger.debug("Spillover reused identical result %s", path.name)
     _prune_spillover_once()
     return str(path)
 
@@ -149,19 +139,6 @@ def _resolve_storage_dir(env) -> str:
         except Exception as exc:
             logger.debug("Could not resolve env temp dir: %s", exc)
     return f"{temp_dir.rstrip('/') or '/'}/hermes-results" if temp_dir else STORAGE_DIR
-
-
-def _safe_result_filename(tool_use_id: str) -> str:
-    """Return a single safe filename for a tool result id."""
-    raw_id = str(tool_use_id or "tool_result")
-    safe_stem = _UNSAFE_RESULT_FILENAME_CHARS.sub("_", raw_id).strip("._-")
-    changed = safe_stem != raw_id
-    safe_stem = safe_stem or "tool_result"
-    if changed or len(safe_stem) > _MAX_RESULT_FILENAME_STEM:
-        digest = hashlib.sha256(raw_id.encode("utf-8")).hexdigest()[:12]
-        safe_stem = safe_stem[:_MAX_RESULT_FILENAME_STEM].rstrip("._-") or "tool_result"
-        safe_stem = f"{safe_stem}_{digest}"
-    return f"{safe_stem}.txt"
 
 
 def generate_preview(content: str, max_chars: int = DEFAULT_PREVIEW_SIZE_CHARS) -> tuple[str, bool]:
@@ -254,7 +231,8 @@ def maybe_persist_tool_result(content: str, tool_name: str, tool_use_id: str, en
         threshold = config.resolve_threshold(tool_name)
     if threshold == float("inf") or len(content) <= threshold:
         return content
-    filename = _safe_result_filename(tool_use_id)
+    data = content.encode("utf-8", errors="replace")
+    filename = f"{content_address(data)}.txt"
     preview, has_more = generate_preview(content, max_chars=config.preview_size)
 
     def _persisted(path: str, host_suffix: str = "") -> str:
@@ -263,7 +241,7 @@ def maybe_persist_tool_result(content: str, tool_name: str, tool_use_id: str, en
         return _build_persisted_message(preview, has_more, len(content), path)
 
     # Always persist host-side first: cache/spillover is the single canonical home.
-    host_path = _write_to_spillover(content, filename)
+    host_path = _write_to_spillover(data)
     host_side = _is_host_side_env(env)
     if host_side and host_path is not None:
         return _persisted(host_path)

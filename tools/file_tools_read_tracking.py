@@ -3,8 +3,8 @@
 Process-lifetime state behind read_file/search_files/write_file/patch.
 Per task_id ``_read_tracker``
 stores: ``last_key``/``consecutive`` (loop detection; reset by any OTHER tool
-call), ``read_history`` (diagnostics), ``dedup`` (key -> mtime; survives context
-compression), ``dedup_generation_reads`` (keys whose full content was served since
+call), ``read_history`` (diagnostics), ``dedup`` (key -> the read's ``CallFingerprint``,
+see ``read_fingerprint``; survives context compression), ``dedup_generation_reads`` (keys whose full content was served since
 the last compaction boundary; cleared on compression so one recovery read returns
 full content), ``dedup_hits`` (stub-loop breaker), ``read_timestamps``
 (staleness warnings), ``read_coverage`` (per resolved path: the line ranges the
@@ -21,6 +21,7 @@ import os
 import threading
 import time
 
+from agent.tool_guardrails import CallFingerprint
 from tools.file_state import _evict_oldest, _mtime_or_none
 from tools.file_tools_paths import _authoritative_workspace_root, _resolve_path_for_task
 
@@ -155,7 +156,7 @@ def _bump_consecutive(task_data: dict, key: tuple) -> int:
 
 def reset_file_dedup(task_id: str = None):
     """Advance the read-dedup generation after context compression (one task, or all
-    when ``task_id`` is None). The per-key ``dedup`` mtime map is PRESERVED so unchanged
+    when ``task_id`` is None). The per-key ``dedup`` fingerprint map is PRESERVED so unchanged
     files keep returning stubs instead of re-bloating the reclaimed context; the
     generation-read set is cleared so the FIRST unchanged read of each key after
     compaction returns full content the summary may have dropped. Stub-hit counters
@@ -196,6 +197,44 @@ def notify_other_tool_call(task_id: str = "default"):
             for key in ("dedup_hits", "not_found"):
                 if task_data.get(key):
                     task_data[key].clear()
+
+
+def read_fingerprint(resolved: str, offset: int, limit: int, *, host_paths: bool) -> CallFingerprint | None:
+    """Fingerprint of ``read_file(resolved, offset, limit)`` against the file's current state,
+    or None when that state is not observable from here (a sandbox backend's own filesystem,
+    an unstattable path): no fingerprint, no reuse.
+
+    The state deps are one ``stat``: size + ``mtime_ns`` + ``ctime_ns`` + device/inode.
+    ``ctime`` and the inode catch what size + mtime miss: an mtime-preserving copy or
+    extraction (``cp -p``, ``touch -r``, ``tar``) and a same-size atomic rename-replace."""
+    if not host_paths:
+        return None
+    try:
+        st = os.stat(resolved)
+    except OSError:
+        return None
+    return CallFingerprint.for_call(
+        "read_file", {"path": resolved, "offset": offset, "limit": limit},
+        (resolved, st.st_dev, st.st_ino, st.st_size, st.st_mtime_ns, st.st_ctime_ns))
+
+
+def invalidate_read_reuse_for_call(task_id: str, tool_name: str, args) -> None:
+    """Drop every read_file reuse entry of *task_id* before a call that may write somewhere
+    it does not declare. A declared writer (``path_scope="write"``: write_file, patch) evicts
+    exactly its own path once it lands (``_update_read_timestamp``); any other call that is
+    not idempotent for these args (a non-read-only ``terminal`` command, ``execute_code``,
+    ``delegate_task``, an unknown or MCP tool) could touch any file, so the next read of every
+    path executes again. The stat deps alone catch most such writes, but not a same-size
+    rewrite inside one timestamp tick on a coarse-mtime filesystem."""
+    from tools.registry import registry
+
+    effects = registry.resolve_effects(tool_name, args)
+    if effects.idempotent or effects.path_scope == "write":
+        return
+    with _read_tracker_lock:
+        task_data = _read_tracker.get(task_id)
+        if task_data and task_data.get("dedup"):
+            task_data["dedup"].clear()
 
 
 def _invalidate_dedup_for_path(filepath: str, task_id: str) -> None:

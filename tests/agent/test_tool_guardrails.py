@@ -392,3 +392,28 @@ def test_supervised_task_platforms_keep_warning_only_default():
     for platform in ("telegram", "discord", "cron", "kanban"):
         cfg = ToolCallGuardrailConfig.from_mapping({}, platform=platform)
         assert cfg.hard_stop_enabled is True, platform
+
+
+def test_call_fingerprint_exists_only_for_idempotent_non_destructive_calls_with_known_state():
+    """A fingerprint is the reuse license: withheld whenever the resolved effects are not
+    idempotent, are destructive or unknown, or the call's state cannot be observed; when
+    granted, it changes with the state and with nothing but the canonical call."""
+    import tools.file_tools  # noqa: F401  (registers read_file / write_file)
+    import tools.terminal_tool  # noqa: F401  (registers terminal's per-call effects)
+    from agent.tool_guardrails import CallFingerprint
+
+    state = ("/w/a.txt", 1, 2, 6, 10, 10)
+    read = {"path": "/w/a.txt", "offset": 1, "limit": 500}
+    never = [
+        ("read_file", read, None),                                   # state not observable
+        ("terminal", {"command": "rm -rf build"}, state),            # destructive
+        ("write_file", {"path": "/w/a.txt", "content": "x"}, state),  # not idempotent
+        ("no_such_tool", {}, state),                                 # unknown
+    ]
+    for tool, args, deps in never:
+        assert CallFingerprint.for_call(tool, args, deps) is None, tool
+
+    fp = CallFingerprint.for_call("read_file", read, state)
+    assert fp is not None and fp.signature == ToolCallSignature.from_call("read_file", read)
+    assert CallFingerprint.for_call("read_file", dict(reversed(read.items())), list(state)) == fp
+    assert CallFingerprint.for_call("read_file", read, state[:-1] + (11,)) != fp

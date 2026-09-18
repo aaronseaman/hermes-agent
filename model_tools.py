@@ -937,11 +937,13 @@ def handle_function_call(
             result, error_type, error_message = blocked
             return _emit(result, status="blocked", error_type=error_type, error_message=error_message)
 
-        # Any non-read/search tool resets the consecutive-read-loop counter.
+        # Any non-read/search tool resets the consecutive-read-loop counter; one that may
+        # write outside a declared path also ends read_file reuse for the task.
         if function_name not in _READ_SEARCH_TOOLS:
             try:
-                from tools.file_tools_read_tracking import notify_other_tool_call
+                from tools.file_tools_read_tracking import invalidate_read_reuse_for_call, notify_other_tool_call
                 notify_other_tool_call(task_id or "default")
+                invalidate_read_reuse_for_call(task_id or "default", function_name, function_args)
             except Exception:
                 pass  # file_tools may not be loaded yet
 

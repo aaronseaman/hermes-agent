@@ -4,7 +4,9 @@ Hook ``{"context": ...}`` output rides EVERY subsequent API call, so a large blo
 inflates every turn and breaks the prompt-cache prefix. Above
 ``hooks.output_spill.max_chars`` (default 10000) the text is written under
 ``hooks.output_spill.directory`` (default ``<HERMES_HOME>/hook_outputs/<session>``)
-and the payload becomes a ``preview_head``/``preview_tail`` excerpt plus the path.
+and the payload becomes a ``preview_head``/``preview_tail`` excerpt plus the path. The file is
+named by the sha256 of its bytes, so a hook that injects the same blob every turn stores it once
+and yields the same placeholder each time.
 ``enabled: false`` disables. Never raises: an I/O failure still returns a preview.
 """
 
@@ -12,7 +14,6 @@ from __future__ import annotations
 
 import logging
 import os
-import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -90,13 +91,12 @@ def spill_if_oversized(
     saved_path: Optional[str] = None
     try:
         spill_dir = _resolve_spill_dir(cfg.get("directory"), session_id)
-        from tools.spill_safety import ensure_spill_dir, write_text_exclusive
-        # Hook context may embed raw secrets: private perms + exclusive,
-        # symlink-refusing create (the per-session dir is predictable).
-        ensure_spill_dir(spill_dir, private=True)
-        spill_path = spill_dir / f"{uuid.uuid4().hex}.txt"
+        from tools.spill_safety import store_content_addressed
+        # Hook context may embed raw secrets: private perms, symlink-refusing store (the
+        # per-session dir and the content-addressed name are both predictable).
         # Trailing newline so tail readers don't report "missing newline".
-        write_text_exclusive(spill_path, text if text.endswith("\n") else text + "\n", private=True)
+        data = (text if text.endswith("\n") else text + "\n").encode("utf-8")
+        spill_path, _reused = store_content_addressed(spill_dir, data, private=True)
         saved_path = str(spill_path)
     except Exception as exc:
         logger.warning("hook output spill failed: %s", exc)
