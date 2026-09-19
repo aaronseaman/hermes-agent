@@ -1,18 +1,17 @@
-"""Capability resolver scoring: hard constraints, objective ranking, stickiness, explanation.
+"""Capability resolver scoring: hard constraints, the ``order`` objective, explanation.
 
-Pure functions over :class:`agent.capability_resolver.Scored` — no config, network or clock — so
-a stage-4 profile source changes the numbers, never the rules.
+Pure functions over :class:`agent.capability_resolver.Scored` (no config, network or clock). The
+utility objectives (``cost``, ``latency``, ``quality``), the switching penalty and exploration live
+in ``capability_resolver_utility.py``.
 """
 
 from __future__ import annotations
 
-import math
 from typing import Callable, List, Optional, Sequence, Tuple
 
 from agent.capability_resolver import QUALITY_TIERS, Policy, Request, Scored
 
 _Refusal = Callable[[Scored, Policy, Request], Optional[str]]
-_INF = math.inf
 
 
 def _local_only(s: Scored, policy: Policy, _req: Request) -> Optional[str]:
@@ -44,9 +43,12 @@ def _max_cost(s: Scored, policy: Policy, _req: Request) -> Optional[str]:
 
 
 def _max_latency(s: Scored, policy: Policy, _req: Request) -> Optional[str]:
-    if policy.max_latency_ms is None or s.latency_ms is None or s.latency_ms <= policy.max_latency_ms:
+    # A measured implementation is held to its p95, not its median: the budget is a ceiling.
+    latency = s.latency_p95_ms if s.latency_p95_ms is not None else s.latency_ms
+    if policy.max_latency_ms is None or latency is None or latency <= policy.max_latency_ms:
         return None
-    return f"latency {s.latency_ms:.0f}ms > max_latency_ms {policy.max_latency_ms}"
+    which = "p95 latency" if s.observed else "latency"
+    return f"{which} {latency:.0f}ms > max_latency_ms {policy.max_latency_ms}"
 
 
 def _context_fit(s: Scored, _policy: Policy, req: Request) -> Optional[str]:
@@ -69,25 +71,7 @@ def refusal(s: Scored, policy: Policy, request: Request) -> Optional[str]:
     return next((why for why in (check(s, policy, request) for check in CONSTRAINTS) if why), None)
 
 
-def _or_inf(value: Optional[float]) -> float:
-    return _INF if value is None else float(value)
-
-
-def _quality_badness(s: Scored) -> float:
-    quality = s.candidate.contract.quality
-    return float(len(QUALITY_TIERS) - QUALITY_TIERS.index(quality)) if quality in QUALITY_TIERS else _INF
-
-
-# objective -> (primary score, secondary score); lower is better, unknown is +inf.
-_OBJECTIVES = {
-    "order": lambda s: (float(s.candidate.order), 0.0),
-    "cost": lambda s: (_or_inf(s.cost_usd), _or_inf(s.latency_ms)),
-    "latency": lambda s: (_or_inf(s.latency_ms), _or_inf(s.cost_usd)),
-    "quality": lambda s: (_quality_badness(s), _or_inf(s.cost_usd)),
-}
-
-
-def _soft_penalty(s: Scored, request: Request) -> Tuple[bool, bool]:
+def soft_penalty(s: Scored, request: Request) -> Tuple[bool, bool]:
     """Preferences that outrank the objective without excluding: a route auxiliary routing marked
     unhealthy, and a model known to lack structured output when a schema is requested."""
     return (not s.candidate.healthy, request.wants_schema and s.candidate.contract.structured_output is False)
@@ -95,6 +79,8 @@ def _soft_penalty(s: Scored, request: Request) -> Tuple[bool, bool]:
 
 def rank(scored: Sequence[Scored], policy: Policy,
          request: Request) -> Tuple[List[Scored], List[Tuple[Scored, str]]]:
+    """Admit or reject every candidate, with a reason. Admitted rows come back in config order with
+    soft penalties last; the objective orders them from there."""
     admitted, rejected = [], []
     for s in scored:
         why = refusal(s, policy, request)
@@ -102,63 +88,49 @@ def rank(scored: Sequence[Scored], policy: Policy,
             rejected.append((s, why))
         else:
             admitted.append(s)
-    objective = _OBJECTIVES[policy.optimize]
-    # Deterministic: config order, then label, break every remaining tie.
-    admitted.sort(key=lambda s: (*_soft_penalty(s, request), *objective(s), s.candidate.order, s.candidate.label))
+    admitted.sort(key=lambda s: (*soft_penalty(s, request), s.candidate.order, s.candidate.label))
     return admitted, rejected
 
 
-def sticky_choice(ranked: Sequence[Scored], incumbent: Optional[str], policy: Policy,
-                  request: Request) -> Tuple[Scored, Optional[str]]:
-    """``(chosen, note)``: the incumbent keeps the job unless the best challenger clears the margin.
-
-    The margin is the switching penalty: ``policy.stickiness`` as a fraction of the incumbent's
-    objective score. The ``order`` objective is the user's explicit ranking and is not damped.
-    """
+def order_choice(ranked: Sequence[Scored], incumbent: Optional[str],
+                 request: Request) -> Tuple[Scored, Optional[str]]:
+    """The ``order`` objective: the first admitted candidate in config order. That is the user's
+    explicit ranking, so it is never damped by stickiness and never learned over."""
     best = ranked[0]
     if incumbent is None or best.candidate.identity == incumbent:
         return best, None
     current = next((s for s in ranked if s.candidate.identity == incumbent), None)
     if current is None:
         return best, "previous implementation no longer admitted"
-    if _soft_penalty(current, request) > _soft_penalty(best, request):
+    if soft_penalty(current, request) > soft_penalty(best, request):
         return best, f"switched from {current.label}: marked unhealthy or lacks structured output"
-    if policy.optimize == "order":
-        return best, f"switched from {current.label}: config order prefers {best.label}"
-    objective = _OBJECTIVES[policy.optimize]
-    challenger, held = objective(best)[0], objective(current)[0]
-    if math.isinf(held) and not math.isinf(challenger):
-        return best, f"switched from {current.label}: its {policy.optimize} is unknown"
-    gain = (held - challenger) / held if held > 0 and not math.isinf(held) else 0.0
-    if challenger < held * (1 - policy.stickiness):
-        return best, (f"switched from {current.label}: {best.label} better on {policy.optimize} by "
-                      f"{gain:.0%} > stickiness {policy.stickiness:.0%}")
-    return current, (f"kept incumbent {current.label}: {best.label} better on {policy.optimize} by only "
-                     f"{gain:.0%} <= stickiness {policy.stickiness:.0%}")
+    return best, f"switched from {current.label}: config order prefers {best.label}"
 
 
 def _facts(s: Scored) -> str:
-    contract = s.candidate.contract
+    contract, est = s.candidate.contract, s.estimate
     facts = [f"est. ${s.cost_usd:.6f}" if s.cost_usd is not None else "cost unknown",
              f"quality {contract.quality}" if contract.quality else "quality unknown"]
     if s.latency_ms is not None:
         facts.append(f"~{s.latency_ms:.0f}ms")
     if contract.local:
         facts.append("local")
-    if s.observed:
-        facts.append("observed")
+    if est is not None:
+        facts.append(f"P(ok) {est.p_success:.2f} n={est.samples}" + (" (prior)" if est.under_sampled else " observed"))
+    if s.utility is not None:
+        facts.append(f"U {s.utility:.3f} = " + " ".join(f"{name} {value:+.3f}" for name, value in s.terms))
     if not s.candidate.healthy:
         facts.append("marked unhealthy")
     return ", ".join(facts)
 
 
 def explain(capability: str, policy: Policy, ordered: Sequence[Scored],
-            rejected: Sequence[Tuple[Scored, str]], sticky_note: Optional[str]) -> str:
+            rejected: Sequence[Tuple[Scored, str]], note: Optional[str]) -> str:
     chosen = ordered[0]
-    text = (f"{capability}: chose {chosen.label} ({chosen.display}) [{_facts(chosen)}] by {policy.describe()}, "
-            f"ties by config order")
-    if sticky_note:
-        text += f"; {sticky_note}"
+    how = "ties by config order" if policy.optimize == "order" else "by utility, ties by config order"
+    text = f"{capability}: chose {chosen.label} ({chosen.display}) [{_facts(chosen)}] by {policy.describe()}, {how}"
+    if note:
+        text += f"; {note}"
     if len(ordered) > 1:
         text += "; also admitted: " + "; ".join(f"{s.label} ({s.display}) [{_facts(s)}]" for s in ordered[1:])
     if rejected:

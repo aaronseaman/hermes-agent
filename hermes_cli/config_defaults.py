@@ -164,6 +164,21 @@ DEFAULT_CONFIG = {
             "retention_days": 14,
             "max_mb": 64,
         },
+        # semantic_call's resolver learns per-(capability, implementation) profiles from the ledger's
+        # capability records, so learning is on exactly when call_ledger is. prior_strength = how
+        # many calls the declared prior counts as; below min_samples the prior alone is used.
+        # exploration_rate: chance of trying an under-sampled implementation (never under a strict
+        # policy or on one declared reversible: false); seed makes that draw reproducible.
+        # cascade: with a mechanical verifier (enforced output_schema or a verify predicate), a cost
+        # policy tries the cheapest-per-verified-success implementation first and escalates on
+        # verification failure, up to max_attempts and within the policy's cost/latency budget.
+        "learned_routing": {
+            "exploration_rate": 0.05,
+            "prior_strength": 10,
+            "min_samples": 5,
+            "seed": 0,
+            "cascade": {"enabled": True, "max_attempts": 3},
+        },
         # Embedder-supplied text appended to the system prompt's environment-hints block, so a host
         # wrapping Hermes (sandbox runner, managed platform) can describe proxy/credential/ mount
         # layout without editing SOUL.md. Env HERMES_ENVIRONMENT_HINT overrides it.

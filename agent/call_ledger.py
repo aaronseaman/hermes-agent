@@ -267,6 +267,27 @@ def record_aux_call(task: str, *, model: str, provider: Optional[str], usage: An
         logger.debug("call ledger: record_aux_call failed", exc_info=True)
 
 
+def record_capability_attempt(record: Mapping[str, Any]) -> None:
+    """One ``semantic_call`` attempt at one implementation (``agent/semantic_call_cascade.py``).
+
+    The model call inside it is already a ``model`` record (via ``aux_accounting``); this record is
+    what the resolver learns from: capability, implementation identity, outcome after verification,
+    latency, cache-adjusted cost. It does not touch the turn totals, so nothing is counted twice.
+    Folded into the profile's in-process estimator at once, so the next selection sees it.
+    """
+    turn = _active_turn.get()
+    if turn is None:
+        return
+    try:
+        from agent.capability_profile_ledger import profile_for
+
+        full = {"kind": "capability", **record}
+        profile_for(turn.path_dir).ingest(full)
+        _emit(turn, full)
+    except Exception:
+        logger.debug("call ledger: record_capability_attempt failed", exc_info=True)
+
+
 def tool_signature(name: str, args: Any) -> str:
     """Non-reversible identity of (tool, canonical args), from the guardrail's own signature."""
     from agent.tool_guardrails import ToolCallSignature
