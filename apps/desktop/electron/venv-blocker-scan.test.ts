@@ -70,9 +70,9 @@ describe('formatBlockerMessage', () => {
 })
 
 describe('formatProbeFailedMessage', () => {
-  it('suggests retry and hermes update', () => {
+  it('suggests retry and oria update', () => {
     const msg = formatProbeFailedMessage()
-    assert.ok(msg.includes('hermes update'))
+    assert.ok(msg.includes('oria update'))
     assert.ok(msg.includes('retry'))
   })
 

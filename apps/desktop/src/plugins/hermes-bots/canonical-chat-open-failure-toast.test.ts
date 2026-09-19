@@ -73,7 +73,7 @@ describe('notifyBotOpenFailure', () => {
 
     const toast = lastToast()
     expect(toast.kind).toBe('error')
-    expect(toast.title).toBe('This bot lives on an older Hermes')
+    expect(toast.title).toBe('This bot lives on an older Oria')
     expect(toast.message).toBe('Update Studio Mac, then try again.')
     expect(toast.message).not.toContain(raw)
     expect(toast.detail).toBe(raw)
@@ -93,7 +93,7 @@ describe('notifyBotOpenFailure', () => {
 
     const toast = lastToast()
     expect(toast.kind).toBe('error')
-    expect(toast.title).toBe('Hermes couldn’t reach the computer this bot runs on')
+    expect(toast.title).toBe('Oria couldn’t reach the computer this bot runs on')
     expect(toast.message).toBe('Check it is online and try again.')
     expect(toast.message).not.toContain(raw)
     expect(toast.detail).toBe(raw)

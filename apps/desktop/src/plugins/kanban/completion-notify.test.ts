@@ -450,7 +450,7 @@ describe('terminal kinds beyond completed', () => {
     const gaveUp = lastNotify()
     expect(gaveUp.kind).toBe('error')
     expect(gaveUp.title).toBe('Task stopped')
-    expect(gaveUp.message).toBe('Hermes couldn’t finish this task. Open Kanban to see why and reassign it.')
+    expect(gaveUp.message).toBe('Oria couldn’t finish this task. Open Kanban to see why and reassign it.')
     expect(gaveUp.message).not.toContain('spawn failed')
     expect(gaveUp.detail).toContain('spawn failed: ECONNREFUSED 127.0.0.1:9999')
     expect(gaveUp.detail).toContain('t101')
@@ -469,12 +469,12 @@ describe('terminal kinds beyond completed', () => {
     await m.onKanbanEventsFrame('smoke', [ev(101, 'gave_up', null)])
     expect(lastNotify()).toMatchObject({
       kind: 'error',
-      message: 'Hermes couldn’t finish this task. Open Kanban to see why and reassign it.',
+      message: 'Oria couldn’t finish this task. Open Kanban to see why and reassign it.',
       detail: 't101'
     })
   })
 
-  it('retrying kinds (crashed/timed_out) say Hermes will retry and never expose worker/gateway vocabulary', async () => {
+  it('retrying kinds (crashed/timed_out) say Oria will retry and never expose worker/gateway vocabulary', async () => {
     const m = await loadModule()
     m.bindCompletionNotify(makeRest(() => 100) as never)
 
@@ -482,7 +482,7 @@ describe('terminal kinds beyond completed', () => {
 
     for (const call of hostMock.notify.mock.calls) {
       const toast = call[0] as NotifyInput
-      expect(toast.title).toMatch(/Hermes will retry it automatically/)
+      expect(toast.title).toMatch(/Oria will retry it automatically/)
       expect(`${toast.title} ${toast.message}`).not.toMatch(/worker|gateway|backend/i)
     }
   })
@@ -586,6 +586,6 @@ describe('i18n routing', () => {
 
     await m.onKanbanEventsFrame('smoke', [ev(101, 'timed_out')])
 
-    expect(lastNotify().title).toBe('Task took too long — Hermes will retry it automatically')
+    expect(lastNotify().title).toBe('Task took too long — Oria will retry it automatically')
   })
 })

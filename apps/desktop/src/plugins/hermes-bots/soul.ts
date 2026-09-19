@@ -29,7 +29,7 @@ function messagingProtocolSection(name: string, roster: RosterRow[] | null | und
     'into it, like a DM. To message a teammate, run:',
     '',
     '```',
-    'oria -p <agent-name> chat --in ~ -c "Bot Chat" --create-if-missing -Q -q "Message from \uD83E\uDD16 ' +
+    'hermes -p <agent-name> chat --in ~ -c "Bot Chat" --create-if-missing -Q -q "Message from \uD83E\uDD16 ' +
       handle +
       ' (@' +
       handle +
@@ -57,7 +57,7 @@ function messagingProtocolSection(name: string, roster: RosterRow[] | null | und
     '"tell <name> ...", that is a handoff: message that agent, wait for the',
     'reply, and report back.',
     '',
-    'The roster grows over time — run `oria profile list` for the LIVE',
+    'The roster grows over time — run `hermes profile list` for the LIVE',
     'teammate list before a handoff. Teammates when you were created:',
     ...(teammates.length
       ? teammates.map(b => `- \`${b.name}\`${b.description ? ` — ${b.description}` : ''}`)

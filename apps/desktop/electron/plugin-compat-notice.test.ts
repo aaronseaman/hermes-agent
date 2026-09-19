@@ -35,7 +35,7 @@ const REPORT = {
   },
   lines: [
     '2 plugins use import paths that stop working on 2026-09-14 (10 days): alpha (1), beta (2)',
-    'Details: hermes plugins compat'
+    'Details: oria plugins compat'
   ]
 }
 
@@ -57,7 +57,7 @@ test('report → one notice naming the plugins and the date, with no config keys
   assert.match(n.detail, /• beta — 2 imports/)
 
   for (const text of [n.title, n.message, n.detail]) {
-    assert.doesNotMatch(text, /config\.yaml|hermes plugins compat|allow_deprecated_imports|module path/)
+    assert.doesNotMatch(text, /config\.yaml|oria plugins compat|allow_deprecated_imports|module path/)
   }
 })
 
@@ -88,8 +88,8 @@ test('dismissal is remembered for the same report and forgotten for a different 
   const third = pendingNotice(home, userData)
   assert.ok(third)
   assert.equal(third.title, 'Some plugins were turned off')
-  assert.match(third.message, /were turned off: alpha, beta\. Hermes works normally without them\./)
-  assert.doesNotMatch(third.detail, /config\.yaml|hermes plugins compat|allow_deprecated_imports/)
+  assert.match(third.message, /were turned off: alpha, beta\. Oria works normally without them\./)
+  assert.doesNotMatch(third.detail, /config\.yaml|oria plugins compat|allow_deprecated_imports/)
   assert.notEqual(reportKey(disabled as any), reportKey(REPORT as any))
 })
 
