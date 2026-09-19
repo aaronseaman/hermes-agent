@@ -11,7 +11,7 @@ import { AGENT_MESSAGE_RE, agentAvatarCache, resolveAgentAvatar } from '@/compon
 // quiet run returns the recipient's reply, "Message from X" — the same
 // compact event notices the receiving chat shows.
 const DELIVERY_COMMAND_RE =
-  /(?:^|[;&|]\s*|\bhermes\s+)-p\s+("?)([a-z0-9][a-z0-9_-]{0,63})\1\s+chat\b[\s\S]*?-q\s+["']Message from/iu
+  /(?:^|[;&|]\s*|\b(?:hermes|oria)\s+)-p\s+("?)([a-z0-9][a-z0-9_-]{0,63})\1\s+chat\b[\s\S]*?-q\s+["']Message from/iu
 
 export function deliveryTargetFromCommand(command: string): null | string {
   const match = DELIVERY_COMMAND_RE.exec(command)
