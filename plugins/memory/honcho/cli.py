@@ -1552,7 +1552,7 @@ Honcho peers
   User peer:   {_pref(hermes, cfg, 'peerName') or '(not set)'}
     Your identity in Honcho. Messages you send build this peer's card.
   AI peer:     {_pref(hermes, cfg, 'aiPeer') or _host_key()}
-    Oria' identity in Honcho. Seed with 'oria honcho identity <file>'.
+    Oria's identity in Honcho. Seed with 'oria honcho identity <file>'.
     Dialectic calls ask this peer questions to warm session context.
 
   Dialectic reasoning:  {_pref(hermes, cfg, 'dialecticReasoningLevel') or 'low'}  ({', '.join(REASONING_LEVELS)})

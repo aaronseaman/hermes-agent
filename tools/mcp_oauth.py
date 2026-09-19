@@ -801,7 +801,7 @@ def _callback_outcome(result: dict, cimd_url: str | None):
     if result["auth_code"] is None:
         hint = (
             " If the browser showed an invalid-client error instead of an approval prompt, the authorization "
-            f"server rejected Oria' Client ID Metadata Document ({cimd_url}); set ``cimd: false`` under that "
+            f"server rejected Oria's Client ID Metadata Document ({cimd_url}); set ``cimd: false`` under that "
             "server's ``oauth:`` block in config.yaml to authorize via dynamic client registration instead."
         ) if cimd_url else ""
         raise OAuthNonInteractiveError(
@@ -1171,7 +1171,7 @@ def build_oauth_auth(server_name: str, server_url: str, oauth_config: dict | Non
         from tools.mcp_oauth_provider import HermesProviderMixin
 
         HermesOAuthClientProvider = type("HermesOAuthClientProvider", (HermesProviderMixin, _sdk_class("OAuthClientProvider")), {
-            "__doc__": "SDK provider plus Oria' token-endpoint fixes (see ``HermesProviderMixin``).",
+            "__doc__": "SDK provider plus Oria's token-endpoint fixes (see ``HermesProviderMixin``).",
             "__module__": __name__, "_hermes_logger": logger})
     return HermesOAuthClientProvider(server_url=server_url, **kwargs)
 

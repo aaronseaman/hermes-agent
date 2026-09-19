@@ -2692,7 +2692,7 @@ OPTIONAL_ENV_VARS = {
     "MISTRAL_API_KEY": _tool("Mistral API key for Voxtral TTS and transcription (STT)",
         "Mistral API key", "https://console.mistral.ai/"),
     "PORCUPINE_ACCESS_KEY": _tool(
-        "Picovoice access key for the Porcupine 'Hey Oria' wake word engine (optional; "
+        "Picovoice access key for the Porcupine 'Hey Hermes' wake word engine (optional; "
         "openWakeWord is the free default)", "Picovoice access key",
         "https://console.picovoice.ai/"),
     "GITHUB_TOKEN": _tool("GitHub token for Skills Hub (higher API rate limits, skill publish)",

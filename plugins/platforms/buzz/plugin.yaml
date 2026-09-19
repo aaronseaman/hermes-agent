@@ -7,7 +7,7 @@ description: >
   Connects to a Buzz community relay (Block's open-source human+agent
   collaboration platform built on Nostr) and relays messages between
   channels/DMs and the Oria agent. Relay operations shell out to the
-  buzz CLI binary (JSON in/out); verified inbound media uses Oria' bundled
+  buzz CLI binary (JSON in/out); verified inbound media uses Oria's bundled
   HTTP client.
 author: Nous Research
 # ``requires_env`` entries are surfaced in ``oria config`` UI via the

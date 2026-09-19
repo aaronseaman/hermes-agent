@@ -108,7 +108,7 @@ def _check_frontmatter(frontmatter: Dict[str, Any], skill_dir: Optional[Path]) -
     author = str(frontmatter.get("author", ""))
     if author and author.strip().lower() in ("hermes", "agent", "hermes agent") and (
         author != "Hermes Agent"):
-        yield _warn("author-caps", f"author '{author}' should be 'Oria' (proper caps) "
+        yield _warn("author-caps", f"author '{author}' should be 'Hermes Agent' (proper caps) "
                     f"or a real contributor name.")
     platforms = frontmatter.get("platforms")
     if platforms:

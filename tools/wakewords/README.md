@@ -1,6 +1,6 @@
 # Bundled wake-word models
 
-`hey_hermes.onnx` / `hey_hermes.tflite` — the on-device "Hey Oria" hotword
+`hey_hermes.onnx` / `hey_hermes.tflite` — the on-device "Hey Hermes" hotword
 model. This is the default detector for the wake word feature (see
 `website/docs/user-guide/features/wake-word.md`); no training or setup is
 required to say "hey hermes".

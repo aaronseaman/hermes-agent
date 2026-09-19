@@ -45,7 +45,7 @@ def build_auth_methods() -> list[Any]:
         ))
     methods.append(TerminalAuthMethod(
         id=TERMINAL_SETUP_AUTH_METHOD_ID, name="Configure Oria provider", type="terminal", args=["--setup"],
-        description=("Open Oria' interactive model/provider setup in a terminal. "
+        description=("Open Oria's interactive model/provider setup in a terminal. "
                      "Use this when Oria has not been configured on this machine yet."),
     ))
     return methods

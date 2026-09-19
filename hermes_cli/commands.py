@@ -201,7 +201,7 @@ COMMAND_REGISTRY: list[CommandDef] = [
     CommandDef("voice", "Toggle voice mode", "Configuration",
                args_hint="[on|off|tts|status]", subcommands=("on", "off", "tts", "status"),
                desktop="composer-voice"),
-    CommandDef("wake", "Toggle the 'Hey Oria' wake word listener", "Configuration",
+    CommandDef("wake", "Toggle the 'Hey Hermes' wake word listener", "Configuration",
                cli_only=True, args_hint="[on|off|status]", subcommands=("on", "off", "status")),
     CommandDef("busy", "Control how messages behave while Oria is working", "Configuration",
                args_hint="[queue|steer|interrupt|status]",
