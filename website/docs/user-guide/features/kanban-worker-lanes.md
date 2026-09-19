@@ -60,7 +60,7 @@ dispatcher-pinned `HERMES_KANBAN_DB`): a descendant that works against a differe
 home — a test or reproduction under a scratch `HERMES_HOME` — gets a normal read-write board.
 
 The dispatcher explicitly grants a newly assigned worker its own scope. The managed
-Hermes-tools MCP endpoint can likewise act for its supervising worker, while the
+Oria-tools MCP endpoint can likewise act for its supervising worker, while the
 executor's ordinary shell children remain fenced. Workers may only perform lifecycle
 handoffs and attach files to their assigned task; `unblock` remains orchestrator-only.
 Cross-task comments and follow-up task creation retain their existing behavior.

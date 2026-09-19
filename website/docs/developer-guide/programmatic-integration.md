@@ -146,7 +146,7 @@ The OpenAI-compatible API intentionally keeps `GET /v1/models` minimal: it is
 the compatibility endpoint frontends expect, not the full Oria provider/model
 picker catalog.
 
-If an external control plane needs Oria' curated provider rows, per-model
+If an external control plane needs Oria's curated provider rows, per-model
 pricing, or capability hints, use one of the authenticated picker surfaces:
 
 - API server REST: `GET /api/model/options` with the API-server bearer key
@@ -162,7 +162,7 @@ probe policy:
   cache and probe all saved custom providers so live catalogs repopulate fully.
 
 Use `/v1/models` for OpenAI-client compatibility. Use `/api/model/options` or
-`model.options` when you are building a Hermes-aware model picker.
+`model.options` when you are building an Oria-aware model picker.
 
 `POST /v1/runs/{id}/steer` is the HTTP equivalent of Oria `/steer`: it does not create a new user turn or immediately rewrite the assistant output already in flight. Instead, the text is appended to the live run and becomes visible to the agent after the next tool boundary, so it can course-correct without discarding the current tool-calling loop.
 

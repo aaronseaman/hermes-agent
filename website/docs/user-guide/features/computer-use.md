@@ -233,7 +233,7 @@ halo).
 ## Going deeper — the cua-driver skill pack
 
 Oria keeps its wrapper skill (`skills/autonomous-ai-agents/computer-use/SKILL.md`)
-focused on the Hermes-side `computer_use` workflow and action vocabulary. For
+focused on the Oria-side `computer_use` workflow and action vocabulary. For
 platform details, recording semantics, browser page interaction, and other
 deep Cua behavior, install the skill pack that the cua-driver team ships and
 maintains directly:
@@ -295,7 +295,7 @@ app never comes to front.
 
 Screenshots taken during computer control are normally internal — they exist
 so the model can see the screen, and the agent replies in text. But every
-image capture also saves a bounded, shareable copy under Oria' image cache
+image capture also saves a bounded, shareable copy under Oria's image cache
 and reports its path, so on attachment-capable surfaces (Telegram, Discord,
 Desktop, and other gateway platforms) you can simply ask:
 
@@ -615,7 +615,7 @@ autostart pattern — see
 
 ## See also
 
-- **Hermes-side skill** — `skills/autonomous-ai-agents/computer-use/SKILL.md` — teaches the
+- **Oria-side skill** — `skills/autonomous-ai-agents/computer-use/SKILL.md` — teaches the
   Oria `computer_use` action vocabulary; this is what the agent loads.
 - **cua-driver skill pack** — for platform-specific deep dives
   (macOS no-foreground contract, Windows UIA + Session 0, Linux AT-SPI

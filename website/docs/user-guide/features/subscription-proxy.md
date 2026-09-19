@@ -8,7 +8,7 @@ description: "Use your Nous Portal subscription (or other OAuth provider) as an 
 
 The subscription proxy is a local HTTP server that lets external apps —
 OpenViking, Karakeep, Open WebUI, anything that speaks OpenAI-compatible
-chat completions — use your Hermes-managed provider subscription as their
+chat completions — use your Oria-managed provider subscription as their
 LLM endpoint. The proxy attaches the right credentials (refreshing them
 automatically) so the app never needs a static API key.
 

@@ -26,7 +26,7 @@ self-hosted skill that the user's own agent runs. It is **multi-tenant** (manage
 clients, each isolated), **consent-gated**, and built for **maximum automation with a human
 fallback**. Scope is **US-first**, with EU/UK (GDPR) and global coverage on the roadmap.
 
-The design is **Hermes-native**: a small deterministic Python CLI (`scripts/pdd.py`) owns the state
+The design is **Oria-native**: a small deterministic Python CLI (`scripts/pdd.py`) owns the state
 (config, dossiers, broker DB, tier planning, ledger, drafts, reports), while the agent does the
 scanning and submitting with native tools (`web_extract`, `browser_*`, email, `cronjob`,
 `delegate_task`). [`SKILL.md`](SKILL.md) is the authoritative reference.

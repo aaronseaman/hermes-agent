@@ -176,7 +176,7 @@ export HERMES_TUI_THEME=light
 
 ## Busy indicator styles
 
-The status-bar busy indicator is pluggable — the default rotates Oria' kawaii face palette every 2.5 seconds during agent work. Pick a different style via config or the `/indicator` slash command:
+The status-bar busy indicator is pluggable — the default rotates Oria's kawaii face palette every 2.5 seconds during agent work. Pick a different style via config or the `/indicator` slash command:
 
 ```yaml
 display:

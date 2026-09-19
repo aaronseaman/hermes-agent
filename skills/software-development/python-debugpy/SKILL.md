@@ -271,7 +271,7 @@ nc 127.0.0.1 4444
 
 `remote-pdb` is the cleanest agent-friendly choice when `debugpy`'s DAP protocol is overkill. Use `debugpy` only when you actually need IDE integration.
 
-## Debugging Hermes-specific Processes
+## Debugging Oria-specific Processes
 
 ### Tests
 See Recipe 3. The wrapper captures subprocess output, so run pytest directly for interactive pdb.

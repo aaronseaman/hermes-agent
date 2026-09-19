@@ -5,7 +5,7 @@ import { defineLocale } from './define-locale'
 export const ja = defineLocale({
   sessionImport: {
     title: '別のアプリから続ける',
-    subtitle: '会話をHermesに取り込み、続きを始めましょう。',
+    subtitle: '会話をOriaに取り込み、続きを始めましょう。',
     action: 'セッションを取り込む',
     readingFrom: '読み込み元',
     connectedComputer: '接続先のコンピューター',
@@ -32,8 +32,8 @@ export const ja = defineLocale({
     snapshot: 'この会話は取り込み済みです。既存のコピーを開いて続けられます。',
     copyNotice: '会話のテキストをコピーします。元のファイルは変更されません。ツール出力と推論は含まれません。',
     importing: '取り込み中…',
-    open: 'Hermesで開く',
-    continue: 'Hermesで続ける',
+    open: 'Oriaで開く',
+    continue: 'Oriaで続ける',
     importError: '会話を取り込めませんでした。'
   },
   common: {
@@ -546,7 +546,7 @@ export const ja = defineLocale({
       introSplashDesc: '空のチャットに表示されるワードマークとプロンプト。',
       reactionsTitle: 'メッセージリアクション',
       reactionsDesc:
-        'iMessage風の絵文字タップバック — メッセージにリアクションでき、Hermesもあなたのメッセージにリアクションします。',
+        'iMessage風の絵文字タップバック — メッセージにリアクションでき、Oriaもあなたのメッセージにリアクションします。',
       tipsTitle: 'アプリ内ヒント',
       tipsDesc:
         'アプリや Oria からのヒントをときどき表示します。各ヒントは一度だけ表示されます。利用開始から30日後に自動でオフになりますが、再びオンにできます。',

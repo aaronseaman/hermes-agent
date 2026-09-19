@@ -98,7 +98,7 @@ reference material — into a reusable skill, without hand-writing the
 `SKILL.md`. It is open-ended: point it at *anything you can describe* and the
 agent gathers the material with the tools it already has, then authors a skill
 that follows the [house authoring standards](#skillmd-format) (≤60-char
-description, the standard section order, Hermes-tool framing, no invented
+description, the standard section order, Oria-tool framing, no invented
 commands).
 
 ```bash
@@ -436,7 +436,7 @@ Paths support `~` expansion and `${VAR}` substitution; relative paths resolve ag
 Repos can carry their own skills, active only for sessions started inside that project — the same pattern other agent harnesses use for repo-local configuration. When you launch Oria inside a git checkout, it looks for skills in:
 
 ```text
-<project-root>/.hermes/skills/    # Hermes-native location
+<project-root>/.hermes/skills/    # Oria-native location
 <project-root>/.agents/skills/    # cross-tool convention (shared with other agent CLIs)
 ```
 
@@ -763,7 +763,7 @@ oria skills tap add myorg/skills-repo
 time and become the category labels shown in the
 [Skills Hub](https://hermes-agent.nousresearch.com/docs) page — instead of a
 tag-derived guess. This is generic: any tap that ships the file gets real
-categorization, no Hermes-side changes required.
+categorization, no Oria-side changes required.
 
 ```json
 {
@@ -793,7 +793,7 @@ Oria can search and convert agent entries from LobeHub's public catalog into ins
 
 #### 7. browse.sh (`browse-sh`)
 
-Oria integrates with [browse.sh](https://browse.sh), Browserbase's catalog of 200+ site-specific browser-automation SKILL.md files (Airbnb, Amazon, arXiv, 12306.cn, Etsy, Xero, and many more). Each skill describes how to drive one website end-to-end and is suitable for use with Oria' browser tools and any browser-automation skills you already have installed.
+Oria integrates with [browse.sh](https://browse.sh), Browserbase's catalog of 200+ site-specific browser-automation SKILL.md files (Airbnb, Amazon, arXiv, 12306.cn, Etsy, Xero, and many more). Each skill describes how to drive one website end-to-end and is suitable for use with Oria's browser tools and any browser-automation skills you already have installed.
 
 - Site: [browse.sh](https://browse.sh/)
 - Catalog API: `https://browse.sh/api/skills`

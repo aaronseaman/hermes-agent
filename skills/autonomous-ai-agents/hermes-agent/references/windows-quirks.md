@@ -32,7 +32,7 @@ echo `os.environ` inside an `execute_code` block to confirm `SYSTEMROOT` is set.
 ### Testing on Windows
 
 `scripts/run_tests.sh` is POSIX-only (expects `.venv/bin/activate`); the
-Hermes-installed `venv/Scripts/` has no pip/pytest (stripped for size).
+Oria-installed `venv/Scripts/` has no pip/pytest (stripped for size).
 Install pytest into a system Python and run directly (the repo no longer
 uses pytest-xdist; the canonical runner does per-file subprocess isolation,
 which the POSIX-only wrapper handles):

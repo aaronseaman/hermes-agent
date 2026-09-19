@@ -306,7 +306,7 @@ window is strictly opt-in.
 
 To use the large window, pick the explicit `-900k` variant in `/model` (e.g.
 `gpt-5.6-sol-900k`, `gpt-5.6-terra-900k`, `gpt-5.6-luna-900k`,
-`gpt-5.4-900k`). These are Hermes-side aliases: the suffix is stripped before
+`gpt-5.4-900k`). These are Oria-side aliases: the suffix is stripped before
 the model id is sent to the backend, and pricing/usage accounting treats them
 as the base model. Slugs that genuinely enforce 272K (gpt-5.5, gpt-5.4-mini)
 have no `-900k` variant.
@@ -320,7 +320,7 @@ wasting a small window, which a 900K window doesn't need.
 
 Codex app-server sessions (`api_mode: codex_app_server` — the codex CLI/agent
 runtime) are different from every other route: the codex agent owns the backing
-thread context, so Oria' auxiliary summarizer cannot shrink it — rewriting the
+thread context, so Oria's auxiliary summarizer cannot shrink it — rewriting the
 local transcript mirror leaves the real thread growing unbounded until a hard
 context reset. For this runtime, compaction goes through the app-server's own
 mechanism instead:
@@ -330,13 +330,13 @@ mechanism instead:
 - Automatic compaction is controlled by `compression.codex_app_server_auto`:
   the default `native` lets the app-server decide when to compact and Oria
   records the resulting compaction events (compression counters, session
-  events). Set `oria` to let Oria' compression threshold initiate
-  app-server compaction, or `off` to disable Hermes-initiated automatic
+  events). Set `oria` to let Oria's compression threshold initiate
+  app-server compaction, or `off` to disable Oria-initiated automatic
   compaction entirely (codex may still compact natively).
 
-Oria' local transcript is never rewritten on this runtime — state.db records
+Oria's local transcript is never rewritten on this runtime — state.db records
 the compaction boundary while the visible transcript stays intact. All other
-routes (including Codex OAuth chat sessions) keep Oria' summary compressor.
+routes (including Codex OAuth chat sessions) keep Oria's summary compressor.
 
 ### Native Responses compaction (gpt-5.6 on direct OpenAI / Codex subscription)
 

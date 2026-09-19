@@ -1403,7 +1403,7 @@ oria moa configure [name]
 oria moa delete <name>
 ```
 
-`oria moa configure` reuses Oria' provider → model picker for each reference model and the aggregator. A preset is an execution-mode configuration, not a primary model or provider.
+`oria moa configure` reuses Oria's provider → model picker for each reference model and the aggregator. A preset is an execution-mode configuration, not a primary model or provider.
 
 ## `oria fallback`
 

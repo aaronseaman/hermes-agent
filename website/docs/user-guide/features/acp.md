@@ -90,7 +90,7 @@ This is the standalone command. The terminal-auth flow (`oria acp --setup`) also
 What it does:
 
 - Installs Node.js 26 into `~/.hermes/node/` if missing
-- `npm install -g agent-browser @askjo/camofox-browser` into that prefix (no sudo needed — `npm`'s `--prefix` points at the user-writable Hermes-managed Node)
+- `npm install -g agent-browser @askjo/camofox-browser` into that prefix (no sudo needed — `npm`'s `--prefix` points at the user-writable Oria-managed Node)
 - Installs Playwright Chromium, or uses a detected system Chrome/Chromium when available
 
 The bootstrap is idempotent — re-running it is fast and skips work that's already done.
@@ -243,7 +243,7 @@ older installs. As a manual fallback, configure Buzz's agent command as
 
 #### Model picker
 
-Buzz Desktop (v0.5.1+) renders Oria' full model menu in the agent's runtime
+Buzz Desktop (v0.5.1+) renders Oria's full model menu in the agent's runtime
 settings. The list comes from Oria itself over ACP: it shows every model
 from providers you have authenticated in Oria (the same inventory behind
 `oria model` and the `/model` command), so a model missing from the menu
@@ -252,7 +252,7 @@ means its provider has no credentials configured on the Oria side.
 Entry IDs take the form `provider:model` (e.g. `openrouter:z-ai/glm-5.1`), or
 `custom:<name>:<model>` for custom OpenAI-compatible endpoints defined in
 `config.yaml`. Picking a model applies to that agent's session; it does not
-change your Hermes-wide default — use `oria model` for that.
+change your Oria-wide default — use `oria model` for that.
 
 #### Keep Buzz agents owner-only
 
@@ -260,7 +260,7 @@ Buzz creates every agent with **Who can talk to this agent** set to `Owner only`
 Leave it there when the runtime is Oria.
 
 Two behaviors combine on this path. The `hermes-acp` toolset includes `terminal`
-and `execute_code`, and Buzz's ACP bridge answers Oria' permission requests
+and `execute_code`, and Buzz's ACP bridge answers Oria's permission requests
 itself with `allow_once` rather than surfacing them. An Oria agent in Buzz
 therefore runs shell commands on the host without prompting. I asked one to run
 `rm -rf` against a scratch directory and it deleted it, no prompt anywhere.
@@ -287,7 +287,7 @@ ACP mode uses the same Oria configuration as the CLI:
 - `~/.hermes/skills/`
 - `~/.hermes/state.db`
 
-Provider resolution uses Oria' normal runtime resolver, so ACP inherits the currently configured provider and credentials. Oria also advertises a terminal auth method (`--setup`) for first-run ACP clients; this opens Oria' interactive model/provider setup.
+Provider resolution uses Oria's normal runtime resolver, so ACP inherits the currently configured provider and credentials. Oria also advertises a terminal auth method (`--setup`) for first-run ACP clients; this opens Oria's interactive model/provider setup.
 
 ## Host integration
 
@@ -323,7 +323,7 @@ Each session stores:
 - current conversation history
 - cancel event
 
-Conversations are persisted to Oria' session database and can be listed, loaded,
+Conversations are persisted to Oria's session database and can be listed, loaded,
 resumed, or forked after the ACP server restarts. Opening a new session without a
 prompt keeps it in memory only: model-discovery probes do not create empty history
 rows. A nonempty fork is persisted immediately, and existing session metadata can
@@ -366,7 +366,7 @@ ACP exposes a third tier between *allow once* and *allow always*: **Allow for se
 
 `allow_session` is the right default for an editor workflow where you trust an agent for the duration of a task but don't want to grant a long-lived allowlist entry. The safety trade-off is straightforward: the broader the scope, the less the editor will interrupt you, and the more damage a misbehaving agent (or prompt injection) can do before you notice. Start with `allow_once` for unfamiliar commands; promote to `allow_session` once you've seen the agent run the same pattern correctly a few times; reserve `allow_always` for truly idempotent commands you trust forever (e.g. `git status`).
 
-The ACP bridge maps these options onto Oria' internal approval semantics — `allow_always` writes a permanent allowlist entry the same way the CLI does, while `allow_session` only affects the in-process approval cache for the current ACP session.
+The ACP bridge maps these options onto Oria's internal approval semantics — `allow_always` writes a permanent allowlist entry the same way the CLI does, while `allow_session` only affects the in-process approval cache for the current ACP session.
 
 ## Troubleshooting
 
@@ -391,7 +391,7 @@ oria status
 
 ### Missing credentials
 
-ACP mode uses Oria' existing provider setup. Configure credentials with:
+ACP mode uses Oria's existing provider setup. Configure credentials with:
 
 ```bash
 oria model

@@ -325,7 +325,7 @@ in your conversation context.
 
 ## Going deeper — read the cua-driver skill pack
 
-Oria intentionally keeps THIS skill focused on the Hermes-side
+Oria intentionally keeps THIS skill focused on the Oria-side
 `computer_use` action vocabulary. The platform-specific deep dives
 (macOS no-foreground contract, Windows UIA + Session 0, Linux AT-SPI +
 X11/Wayland nuances, recording trajectory + video, browser-page

@@ -374,7 +374,7 @@ Future messages in this room will use that transcript until `/reset` or another 
     topics_user_disallowed:  "A Telegram topicok engedélyezve vannak, de a felhasználók nem hozhatnak létre topicokat.\n\nNyisd meg a @BotFather → válaszd ki a botod → Bot Settings → Threads Settings menüt, majd kapcsold ki a 'Disallow users to create new threads' opciót.\n\nEzután küldd újra a /topic parancsot."
     enable_failed:           "Nem sikerült engedélyezni a Telegram topic módot: {error}"
     bound_status:            "Ez a topic ehhez van kapcsolva:\nMunkamenet: {label}\nID: {session_id}\n\nHasználd a /new parancsot, hogy lecseréld ezt a topicot új munkamenetre.\nPárhuzamos munkához nyisd meg az All Messagest, és küldj oda egy üzenetet egy másik topic létrehozásához."
-    thread_ready:            "A többmunkamenetes Telegram topicok engedélyezve vannak.\n\nEz a topic független Hermes-munkamenetként szolgál. Használd a /new parancsot, hogy lecseréld a topic jelenlegi munkamenetét. Párhuzamos munkához nyisd meg az All Messagest, és küldj oda egy üzenetet egy másik topic létrehozásához."
+    thread_ready:            "A többmunkamenetes Telegram topicok engedélyezve vannak.\n\nEz a topic független Oria-munkamenetként szolgál. Használd a /new parancsot, hogy lecseréld a topic jelenlegi munkamenetét. Párhuzamos munkához nyisd meg az All Messagest, és küldj oda egy üzenetet egy másik topic létrehozásához."
     untitled_session:        "Cím nélküli munkamenet"
 
   undo:

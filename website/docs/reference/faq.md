@@ -179,7 +179,7 @@ terminal:
 
 Missing files are skipped silently. Sourcing happens in bash, so files that rely on zsh-only syntax may error — if that's a concern, source just the PATH-setting portion (e.g. nvm's `nvm.sh` directly) rather than the whole rc file.
 
-Independently of the init files, every terminal command's `PATH` is completed with the standard system directories (`/usr/local/bin`, `/opt/homebrew/bin`, …), the Hermes-managed runtime dirs, and `~/.local/bin` when it exists (the `pip --user` / `pipx` / `uv tool` install target) — appended after your own entries, so precedence is unchanged. This covers backends started with a thin non-interactive PATH (systemd, GUI launchers, the Desktop SSH remote backend) without any configuration.
+Independently of the init files, every terminal command's `PATH` is completed with the standard system directories (`/usr/local/bin`, `/opt/homebrew/bin`, …), the Oria-managed runtime dirs, and `~/.local/bin` when it exists (the `pip --user` / `pipx` / `uv tool` install target) — appended after your own entries, so precedence is unchanged. This covers backends started with a thin non-interactive PATH (systemd, GUI launchers, the Desktop SSH remote backend) without any configuration.
 
 To disable the auto-source behaviour (strict login-shell semantics only):
 
@@ -228,7 +228,7 @@ To isolate the source:
 3. Retry in a fresh session with another configured model or provider. A refusal that changes with the model is model/provider behavior, not an Oria execution control.
 4. If an explicit tool error appears, use its exact text when reporting the problem.
 
-See [Security](/user-guide/security) for Oria' documented execution controls and [Providers](/integrations/providers) for provider configuration.
+See [Security](/user-guide/security) for Oria's documented execution controls and [Providers](/integrations/providers) for provider configuration.
 
 #### `/model` only shows one provider / can't switch providers
 
@@ -822,7 +822,7 @@ rsync -av --exclude='hermes-agent' ~/.hermes/ newmachine:~/.hermes/
 
 **Scenario:** After running the Oria installer, `source ~/.zshrc` gives a permission denied error.
 
-**Cause:** This usually happens when `~/.zshrc` (or `~/.bashrc`) has incorrect file permissions, or when the installer couldn't write to it cleanly. It's not a Hermes-specific issue — it's a shell config permissions problem.
+**Cause:** This usually happens when `~/.zshrc` (or `~/.bashrc`) has incorrect file permissions, or when the installer couldn't write to it cleanly. It's not an Oria-specific issue — it's a shell config permissions problem.
 
 **Solution:**
 ```bash

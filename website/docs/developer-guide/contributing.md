@@ -76,7 +76,7 @@ scripts/dev-sandbox.sh --persistent python -m hermes_cli.main desktop  # state s
 
 ### Manual clone fallback
 
-Use this only if you intentionally do not want Oria' managed install layout
+Use this only if you intentionally do not want Oria's managed install layout
 (for example, a throwaway clone inside a container or CI job). If you install
 this way, make sure you run the `oria` entrypoint from this venv; running the
 system `python3 -m hermes_cli.main` can pick up unrelated system Python

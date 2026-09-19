@@ -332,7 +332,7 @@ Your only cost is electricity — roughly $0.01–0.05 per session depending on 
 ## What's Better with Cloud Models
 
 - **Very complex multi-step reasoning** — 70B+ or cloud models like Claude Opus are noticeably better
-- **Long context windows** — cloud models offer 100K–1M tokens; local runtimes often default below Oria' 64K minimum unless you configure them
+- **Long context windows** — cloud models offer 100K–1M tokens; local runtimes often default below Oria's 64K minimum unless you configure them
 - **Speed on large responses** — cloud inference is faster than CPU-only local for long generations
 
 The sweet spot: use local for everyday tasks, set up a cloud fallback for the hard stuff.

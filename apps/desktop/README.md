@@ -170,7 +170,7 @@ Electron `userData/connection.json` remote block:
 Per-profile remote entries under `profiles[name].headers` use the same shape.
 Desktop applies these headers only to matching remote gateway requests, treats
 `https` and `wss` as the same gateway origin for WebSocket upgrades, and drops
-transport- or Hermes-managed header names such as `Authorization`, `Cookie`,
+transport- or Oria-managed header names such as `Authorization`, `Cookie`,
 `Host`, `Origin`, `Referer`, and `X-Hermes-Session-Token`.
 
 Projects are the workspace abstraction. A project may own multiple folders,

@@ -178,7 +178,7 @@ Up to 5 numbers in dev mode.  Going to App Review removes this limit.
 
 ---
 
-## Allowlist (Hermes-side)
+## Allowlist (Oria-side)
 
 In addition to Meta's recipient whitelist, Oria has its own per-platform allowlist that controls **which incoming messages the agent processes**.  Add to `~/.hermes/.env`:
 

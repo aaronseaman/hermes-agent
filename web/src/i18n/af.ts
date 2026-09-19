@@ -326,7 +326,7 @@ export const af: Translations = {
     enableRuntime: "Aktiveer",
     forceReinstall: "Forseer herinstallasie (skrap eers bestaande gids)",
     headline:
-      "Ontdek, installeer, aktiveer en werk Hermes-inproppe op (`oria plugins` ekwivalent).",
+      "Ontdek, installeer, aktiveer en werk Oria-inproppe op (`oria plugins` ekwivalent).",
     identifierLabel: "Git-URL of owner/repo",
     inactive: "onaktief",
     installBtn: "Installeer",
@@ -507,9 +507,9 @@ export const af: Translations = {
       kicker: "Agentic Gamerscore",
       title: "Hermes Achievements",
       subtitle:
-        "Versamelbare Hermes-kentekens wat verdien word uit werklike sessiegeskiedenis. Bekende, onvoltooide prestasies word as Ontdek vertoon; Geheime prestasies bly verborge totdat die eerste ooreenstemmende gedrag verskyn.",
+        "Versamelbare Oria-kentekens wat verdien word uit werklike sessiegeskiedenis. Bekende, onvoltooide prestasies word as Ontdek vertoon; Geheime prestasies bly verborge totdat die eerste ooreenstemmende gedrag verskyn.",
       scan_subtitle:
-        "Hermes-sessiegeskiedenis word geskandeer. Die eerste skandering kan 5–10 sekondes neem op groot geskiedenisse.",
+        "Oria-sessiegeskiedenis word geskandeer. Die eerste skandering kan 5–10 sekondes neem op groot geskiedenisse.",
     },
     actions: {
       rescan: "Herskandeer",

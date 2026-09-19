@@ -501,7 +501,7 @@ Tweet the install command. People who try it send you issues and PRs. If someone
 
 ### Product: ship an opinionated agent
 
-You built Hermes-on-top — maybe a compliance-monitoring harness, a customer-support stack, a domain-specific research platform. You want to distribute it as a product.
+You built Oria-on-top — maybe a compliance-monitoring harness, a customer-support stack, a domain-specific research platform. You want to distribute it as a product.
 
 ```yaml
 # distribution.yaml

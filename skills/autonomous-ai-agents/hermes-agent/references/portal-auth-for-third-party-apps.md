@@ -43,7 +43,7 @@ extends to other apps on the same machine.
 
 What Oria has that *feels* like OAuth — `hermes login --provider nous`
 opening a browser, user signs in, token lands in `~/.hermes/auth.json` — is a
-**Hermes-specific browser flow**. Under the hood it produces a credential
+**Oria-specific browser flow**. Under the hood it produces a credential
 Oria uses as a bearer. It is not a public OAuth provider that Karakeep et al.
 can implement a client for, because it isn't an OAuth provider at all from the
 outside.

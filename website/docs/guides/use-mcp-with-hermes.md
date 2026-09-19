@@ -216,7 +216,7 @@ There are two categories of MCP-exposed functionality in Oria:
   - `tools.include`
   - `tools.exclude`
 
-2. Hermes-added utility wrappers
+2. Oria-added utility wrappers
 - filtered with:
   - `tools.resources`
   - `tools.prompts`

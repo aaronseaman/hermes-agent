@@ -312,7 +312,7 @@ The installer provisions Node 26 at `%LOCALAPPDATA%\hermes\node` but your PATH m
 The UTF-8 stdio shim didn't activate. Check that `HERMES_DISABLE_WINDOWS_UTF8` is NOT set (`Get-ChildItem env:HERMES_DISABLE_WINDOWS_UTF8`). If it's empty and you still see `?`, the console host (very old `cmd.exe`) may not support UTF-8 at all — switch to Windows Terminal.
 
 **Gateway can't send Telegram photos — "`BadRequest: payload contains invalid characters`".**
-This is unrelated to Windows but sometimes surfaces first there. Usually it means your file path contains unescaped backslashes in a JSON body. Telegram should be receiving paths Oria normalizes, not raw Windows paths — if you're seeing this inside a custom plugin, make sure you're passing the Hermes-provided path, not `str(Path(...))` from user input.
+This is unrelated to Windows but sometimes surfaces first there. Usually it means your file path contains unescaped backslashes in a JSON body. Telegram should be receiving paths Oria normalizes, not raw Windows paths — if you're seeing this inside a custom plugin, make sure you're passing the Oria-provided path, not `str(Path(...))` from user input.
 
 **"Works on my other machine" encoding weirdness after `git pull`.**
 If you edited Oria config or a skill on Windows using a non-UTF-8 editor (Notepad on older Windows versions, some Chinese IMEs), the file may have been saved with a BOM. Oria tolerates `utf-8-sig` on most config reads, but a BOM inside a folded YAML scalar (`description: >`) silently breaks YAML parsing. Re-save the file as plain UTF-8 without BOM.

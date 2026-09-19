@@ -205,7 +205,7 @@ Go binaries come from `go install` with `GOBIN` pointed at the
 staging dir.
 
 Nothing is ever installed to `/usr/local/`, `~/.local/`, or any other
-shared location — the staging dir is fully Hermes-owned and is
+shared location — the staging dir is fully Oria-owned and is
 removed when you reset the profile.
 
 ## Performance characteristics

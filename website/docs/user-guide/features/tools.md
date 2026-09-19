@@ -178,9 +178,9 @@ From a linked Vercel project directory:
 VERCEL_OIDC_TOKEN="$(vc project token)" oria chat
 ```
 
-With `container_persistent: true`, Oria uses Vercel snapshots to preserve filesystem state across sandbox recreation for the same task. This can include Hermes-synced credentials, skills, and cache files inside the sandbox. Snapshots do not preserve live processes, PID space, or the same live sandbox identity.
+With `container_persistent: true`, Oria uses Vercel snapshots to preserve filesystem state across sandbox recreation for the same task. This can include Oria-synced credentials, skills, and cache files inside the sandbox. Snapshots do not preserve live processes, PID space, or the same live sandbox identity.
 
-Background terminal commands use Oria' generic non-local process flow: spawn, poll, wait, log, and kill work through the normal process tool while the sandbox is alive, but Oria does not provide native Vercel detached-process recovery after cleanup or restart.
+Background terminal commands use Oria's generic non-local process flow: spawn, poll, wait, log, and kill work through the normal process tool while the sandbox is alive, but Oria does not provide native Vercel detached-process recovery after cleanup or restart.
 
 Leave `container_disk` unset or at the shared default `51200`; custom disk sizing is unsupported for Vercel Sandbox and will fail diagnostics/backend creation.
 

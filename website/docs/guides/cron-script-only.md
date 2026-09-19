@@ -85,7 +85,7 @@ From that point on every tick is free: the scheduler runs the script, pipes its 
 
 ### What the agent decides for you
 
-When you phrase a request like "alert me when X" or "every N minutes check Y and tell me if Z", Oria' `cronjob` tool description tells it to reach for `no_agent=True` whenever the message content is fully determined by the script. It falls back to the normal LLM-driven path when the request needs reasoning (*"summarize the new issues"*, *"pick the most interesting headlines"*, *"draft a friendly reminder"*).
+When you phrase a request like "alert me when X" or "every N minutes check Y and tell me if Z", Oria's `cronjob` tool description tells it to reach for `no_agent=True` whenever the message content is fully determined by the script. It falls back to the normal LLM-driven path when the request needs reasoning (*"summarize the new issues"*, *"pick the most interesting headlines"*, *"draft a friendly reminder"*).
 
 You don't have to specify `--no-agent` yourself. Just describe the behavior.
 
@@ -233,7 +233,7 @@ Silent when both filesystems are under 90%; fires exactly one line per over-thre
 
 | Approach | What runs | When to use |
 |----------|-----------|-------------|
-| `cronjob --no-agent` (this page) | Your script on Oria' schedule | Recurring watchdogs / alerts / metrics that don't need reasoning |
+| `cronjob --no-agent` (this page) | Your script on Oria's schedule | Recurring watchdogs / alerts / metrics that don't need reasoning |
 | `cronjob` (default, LLM) | Agent with optional pre-check script | When the message content requires reasoning over data |
 | OS cron + `curl` to a [webhook subscription](/user-guide/messaging/webhooks) | Your script on the OS schedule | When Oria might be unhealthy (the thing you're monitoring) |
 

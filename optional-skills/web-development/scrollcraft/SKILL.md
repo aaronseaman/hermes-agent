@@ -132,7 +132,7 @@ viewport-heights.
 
 Full pipeline, prompt scaffolds and model notes: [references/assets.md](references/assets.md).
 
-**Hermes-native paths first:**
+**Oria-native paths first:**
 
 - **User-supplied footage and photos** — no key, no spend, a first-class route.
   Grade and encode them.
@@ -227,7 +227,7 @@ build's row to `<workspace>/FINGERPRINTS.md`.
 ## Pitfalls
 
 - `scripts/shoot.mjs` needs Playwright (`npm install playwright` or
-  `playwright-core` plus a Chrome install). Oria' `browser_exec` tool is the
+  `playwright-core` plus a Chrome install). Oria's `browser_exec` tool is the
   lighter alternative for scroll-screenshot verification: serve the build,
   scroll in steps, capture screenshots, and inspect them yourself.
 - `scripts/kie.mjs` needs `KIE_AI_API_KEY` and paid credit; prefer

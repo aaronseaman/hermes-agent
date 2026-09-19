@@ -84,7 +84,7 @@ happens automatically; no MCP server or provider configuration change is needed.
 :::note Gemini 3 thought signatures
 For Gemini 3 tool use, Oria preserves the `thoughtSignature` values attached to function-call parts and replays them on the next tool turn. That covers the validation-critical path for multi-step agent workflows.
 
-Gemini 3 may also attach thought signatures to other response parts. Oria' native adapter is optimized for agent tool loops today, so it does not yet replay every non-tool-call signature with full part-level fidelity.
+Gemini 3 may also attach thought signatures to other response parts. Oria's native adapter is optimized for agent tool loops today, so it does not yet replay every non-tool-call signature with full part-level fidelity.
 :::
 
 ### Prefer the Native Endpoint
@@ -114,7 +114,7 @@ OpenAI-compatible endpoint, so configure it with its `/openai`-style URL.
 
 ## Available Models
 
-The `oria model` picker shows Gemini models maintained in Oria' provider registry. Common choices include:
+The `oria model` picker shows Gemini models maintained in Oria's provider registry. Common choices include:
 
 | Model | ID | Notes |
 |-------|----|-------|

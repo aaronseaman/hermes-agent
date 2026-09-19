@@ -118,9 +118,9 @@ The `--cache-type-k q4_0 --cache-type-v q4_0` flags are the most important optim
 | q8_0 | ~8 GB |
 | **q4_0** | **~4 GB** |
 
-On an 8 GB Mac, use `q4_0` KV cache and choose a smaller model that can still fit Oria' 64K minimum context. On 16 GB, you can comfortably do 128K context. On 32 GB+, you can run larger models or multiple parallel slots.
+On an 8 GB Mac, use `q4_0` KV cache and choose a smaller model that can still fit Oria's 64K minimum context. On 16 GB, you can comfortably do 128K context. On 32 GB+, you can run larger models or multiple parallel slots.
 
-If you're still running out of memory, reduce context only while staying at or above Oria' 64K minimum; otherwise switch to a smaller model or smaller quantization (Q3_K_M instead of Q4_K_M).
+If you're still running out of memory, reduce context only while staying at or above Oria's 64K minimum; otherwise switch to a smaller model or smaller quantization (Q3_K_M instead of Q4_K_M).
 
 ### Test it
 

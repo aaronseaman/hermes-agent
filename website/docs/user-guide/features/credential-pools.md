@@ -231,7 +231,7 @@ credential_pool_strategies:
   nvidia: round_robin
 ```
 
-Borrowed runtime secrets (for example env vars, Bitwarden/Vault/keyring/systemd references, and custom config values) are reference-only at the `auth.json` boundary. Oria can use the resolved value in memory for the current run, but it persists only metadata such as the source ref, label, status, request counters, and a non-reversible fingerprint. Manual entries and Hermes-owned OAuth/device-code state keep the durable tokens they need to refresh.
+Borrowed runtime secrets (for example env vars, Bitwarden/Vault/keyring/systemd references, and custom config values) are reference-only at the `auth.json` boundary. Oria can use the resolved value in memory for the current run, but it persists only metadata such as the source ref, label, status, request counters, and a non-reversible fingerprint. Manual entries and Oria-owned OAuth/device-code state keep the durable tokens they need to refresh.
 
 ## Delegation & Subagent Sharing
 
@@ -295,7 +295,7 @@ Pool state is stored in `~/.hermes/auth.json` under the `credential_pool` key:
 }
 ```
 
-The OpenRouter entry above was borrowed from an external source, so the raw key is not stored in `auth.json`. The manual Anthropic entry was intentionally added to Oria' credential store, so its token remains persistable.
+The OpenRouter entry above was borrowed from an external source, so the raw key is not stored in `auth.json`. The manual Anthropic entry was intentionally added to Oria's credential store, so its token remains persistable.
 
 An `env:` row is re-hydrated from the environment on every load, and the variable name does not have to be one Oria declares for the provider: numbered siblings (`OPENROUTER_API_KEY_2`, see [Auto-Discovery](#auto-discovery)) appear here automatically, and a hand-written row pointing at any other variable is filled the same way, without the secret ever being written to `auth.json`.
 

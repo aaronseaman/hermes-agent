@@ -114,7 +114,7 @@ gateway:
     header:                "**Ontfoutverslag opgelaai:**"
     auto_delete:           "⏱ Plakke sal outomaties oor 6 uur uitgevee word."
     full_logs_hint:        "Vir volledige loglae, gebruik `oria debug share` vanaf die CLI."
-    share_hint:            "Deel hierdie skakels met die Hermes-span vir ondersteuning."
+    share_hint:            "Deel hierdie skakels met die Oria-span vir ondersteuning."
 
   deny:
     stale:                 "❌ Opdrag geweier (goedkeuring was verouderd)."
@@ -158,7 +158,7 @@ gateway:
     set:                   "⊙ Doelwit gestel ({budget}-beurt-begroting): {goal}\nEk sal aanhou werk totdat die doelwit klaar is, jy dit pouseer/verwyder, of die begroting opgebruik is.\nBeheer: /goal status · /goal pause · /goal resume · /goal clear"
 
   help:
-    header:                "📖 **Hermes-opdragte**\n"
+    header:                "📖 **Oria-opdragte**\n"
     skill_header:          "\n⚡ **Vaardigheidsopdragte** ({count} aktief):"
     more_use_commands:     "\n... en nog {count}. Gebruik `/commands` vir die volledige bladsy-lys."
 
@@ -374,7 +374,7 @@ Future messages in this room will use that transcript until `/reset` or another 
     topics_user_disallowed:  "Telegram-onderwerpe is geaktiveer, maar gebruikers mag nie onderwerpe skep nie.\n\nOpen @BotFather → kies jou bot → Bot Settings → Threads Settings, en skakel dan 'Disallow users to create new threads' af.\n\nStuur dan weer /topic."
     enable_failed:           "Kon nie Telegram-onderwerpmodus aktiveer nie: {error}"
     bound_status:            "Hierdie onderwerp is gekoppel aan:\nSessie: {label}\nID: {session_id}\n\nGebruik /new om hierdie onderwerp met 'n vars sessie te vervang.\nVir parallelle werk, open All Messages en stuur 'n boodskap daar om 'n ander onderwerp te skep."
-    thread_ready:            "Telegram multi-sessie-onderwerpe is geaktiveer.\n\nHierdie onderwerp sal as 'n onafhanklike Hermes-sessie gebruik word. Gebruik /new om hierdie onderwerp se huidige sessie te vervang. Vir parallelle werk, open All Messages en stuur 'n boodskap daar om 'n ander onderwerp te skep."
+    thread_ready:            "Telegram multi-sessie-onderwerpe is geaktiveer.\n\nHierdie onderwerp sal as 'n onafhanklike Oria-sessie gebruik word. Gebruik /new om hierdie onderwerp se huidige sessie te vervang. Vir parallelle werk, open All Messages en stuur 'n boodskap daar om 'n ander onderwerp te skep."
     untitled_session:        "Sessie sonder titel"
 
   undo:
@@ -387,7 +387,7 @@ Future messages in this room will use that transcript until `/reset` or another 
     not_git_repo:            "✗ Nie 'n git-bewaarplek nie — kan nie opdateer nie."
     hermes_cmd_not_found:    "✗ Kon nie die `hermes`-opdrag vind nie. Oria loop, maar die opdateeropdrag kon nie die uitvoerbare lêer op PATH of via die huidige Python-vertolker vind nie. Probeer `oria update` met die hand in jou terminale uitvoer."
     start_failed:            "✗ Kon nie opdatering begin nie: {error}"
-    starting:                "☤ Begin Hermes-opdatering… Ek sal vordering hier stroom."
+    starting:                "☤ Begin Oria-opdatering… Ek sal vordering hier stroom."
 
   usage:
     rate_limits:              "⏱️ **Tariefperke:** {state}"

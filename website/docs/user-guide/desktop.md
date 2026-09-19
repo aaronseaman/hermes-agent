@@ -326,7 +326,7 @@ Running `oria uninstall --gui` from a **source checkout** (a `oria desktop` dev 
 
 To launch via the CLI, simply run `oria desktop`. By default it installs workspace Node dependencies, builds the current OS's unpacked Electron app, then launches that packaged artifact.
 
-On Linux, launches refresh `$XDG_DATA_HOME/applications/hermes.desktop` (by default `~/.local/share/applications/hermes.desktop`) so Hermes appears in the application menu. To preserve a hand-edited entry, disable refreshes:
+On Linux, launches refresh `$XDG_DATA_HOME/applications/hermes.desktop` (by default `~/.local/share/applications/hermes.desktop`) so Oria appears in the application menu. To preserve a hand-edited entry, disable refreshes:
 
 ```bash
 oria config set desktop.manage_launcher_entry false
@@ -334,7 +334,7 @@ oria config set desktop.manage_launcher_entry false
 
 A missing entry is still created; the flag only stops `oria desktop` from rewriting an entry that already exists.
 
-When you start Hermes from the application grid or menu (the launcher sets `DESKTOP_STARTUP_ID`), the entry is written only after the window is on screen. If the app exits before a window appears, nothing is written that time; the next terminal launch, updater relaunch, or grid launch that shows a window installs it. Some GNOME Shell versions lose track of an app whose `.desktop` file changes while it is still starting (they keep it in that state until the startup notification completes or times out, not until the process exits), and that can crash the whole session later; waiting for the window avoids it. Terminal launches and the updater's relaunch still write the entry immediately.
+When you start Oria from the application grid or menu (the launcher sets `DESKTOP_STARTUP_ID`), the entry is written only after the window is on screen. If the app exits before a window appears, nothing is written that time; the next terminal launch, updater relaunch, or grid launch that shows a window installs it. Some GNOME Shell versions lose track of an app whose `.desktop` file changes while it is still starting (they keep it in that state until the startup notification completes or times out, not until the process exits), and that can crash the whole session later; waiting for the window avoids it. Terminal launches and the updater's relaunch still write the entry immediately.
 
 | Flag                 | Description                                                                               |
 | -------------------- | ----------------------------------------------------------------------------------------- |
@@ -623,7 +623,7 @@ macOS/Windows signing and notarization run automatically when the relevant crede
 **Silence every folder prompt with one switch.** macOS prompts per-category
 (Desktop, then Downloads, then Documents, ...) as Oria touches each folder.
 A single **Full Disk Access** grant covers all of them, permanently — and
-with Oria' stable signing identities it survives every update:
+with Oria's stable signing identities it survives every update:
 
 1. System Settings → **Privacy & Security → Full Disk Access** (or run
    `open "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"`)

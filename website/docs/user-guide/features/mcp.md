@@ -11,7 +11,7 @@ MCP lets Oria connect to external tool servers so the agent can use tools that l
 If you have ever wanted Oria to use a tool that already exists somewhere else, MCP is usually the cleanest way to do it.
 
 :::tip Coming from Claude Code?
-The `mcpServers` block in your `~/.claude.json` maps to `mcp_servers` in Oria' `config.yaml` — and `oria import-agent claude-code` migrates it (along with skills and instructions) automatically. See [Import from Other Agents](../import-from-other-agents.md).
+The `mcpServers` block in your `~/.claude.json` maps to `mcp_servers` in Oria's `config.yaml` — and `oria import-agent claude-code` migrates it (along with skills and instructions) automatically. See [Import from Other Agents](../import-from-other-agents.md).
 :::
 
 ## What MCP gives you
@@ -588,7 +588,7 @@ tools:
 
 ### Filter utility tools too
 
-You can also separately disable Hermes-added utility wrappers:
+You can also separately disable Oria-added utility wrappers:
 
 ```yaml
 mcp_servers:
@@ -898,7 +898,7 @@ Or if you installed Oria in a specific location:
 
 ### Available tools
 
-The MCP server exposes 10 tools, matching OpenClaw's channel bridge surface plus a Hermes-specific channel browser:
+The MCP server exposes 10 tools, matching OpenClaw's channel bridge surface plus an Oria-specific channel browser:
 
 | Tool | Description |
 |------|-------------|

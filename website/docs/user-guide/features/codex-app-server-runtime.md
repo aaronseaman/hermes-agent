@@ -18,8 +18,8 @@ Not using OpenAI Codex? `oria setup --portal` configures a non-Codex backend wit
 - Run OpenAI agent turns against your **ChatGPT subscription** (no API key required) using the same auth flow Codex CLI uses.
 - Use **Codex's own toolset and sandbox** — `shell` for terminal/read/write/search, `apply_patch` for structured edits, `update_plan` for planning, all running inside seatbelt/landlock sandboxing.
 - **Native Codex plugins** — Linear, GitHub, Gmail, Calendar, Canva, etc. — installed via `codex plugin` are auto-migrated and active in your Oria session.
-- **Oria' richer tools come along** — web_search, web_extract, browser automation, vision, image generation, skills, and TTS work via an MCP callback. Codex calls back into Oria for tools it doesn't have built in.
-- **Memory and skill nudges keep working** — Codex's events are projected into Oria' message shape so the self-improvement loop sees a normal-looking transcript.
+- **Oria's richer tools come along** — web_search, web_extract, browser automation, vision, image generation, skills, and TTS work via an MCP callback. Codex calls back into Oria for tools it doesn't have built in.
+- **Memory and skill nudges keep working** — Codex's events are projected into Oria's message shape so the self-improvement loop sees a normal-looking transcript.
 
 ## What tools the model actually has
 
@@ -31,7 +31,7 @@ These ship with `codex app-server` itself — no Oria involvement, no MCP, no pl
 
 - **`shell`** — runs arbitrary shell commands inside the sandbox. This is how the model reads files (`cat`, `head`, `tail`), writes them (`echo > foo`, heredocs), searches them (`find`, `rg`, `grep`), navigates directories (`ls`, `cd`), runs builds, manages processes, and anything else you'd do in bash.
 - **`apply_patch`** — applies a structured multi-file diff in Codex's patch format. The model uses this for non-trivial code edits (adding a function, refactoring across files); shell heredocs are still available for one-off writes.
-- **`update_plan`** — codex's internal todo / plan tracker. Equivalent of Oria' `todo` tool, but managed entirely inside codex's runtime.
+- **`update_plan`** — codex's internal todo / plan tracker. Equivalent of Oria's `todo` tool, but managed entirely inside codex's runtime.
 - **`view_image`** — load a local image file into the conversation so the model can see it.
 - **`web_search`** — codex has its own built-in web search when configured. Oria also exposes `web_search` (Firecrawl-backed) via the callback below; the model picks whichever it prefers.
 
@@ -62,20 +62,20 @@ Oria registers itself as an MCP server so codex can call back for tools codex do
 - **`web_search`** / **`web_extract`** — Firecrawl-backed; tends to be cleaner than scraping for structured content.
 - **`browser_navigate` / `browser_click` / `browser_type` / `browser_press` / `browser_snapshot` / `browser_scroll` / `browser_back` / `browser_get_images` / `browser_console` / `browser_vision`** — full browser automation via Camofox or Browserbase.
 - **`vision_analyze`** — call a separate vision model to inspect an image (different from codex's `view_image` which loads it into the conversation).
-- **`image_generate`** — image generation through Oria' image_gen plugin chain.
-- **`skill_view` / `skills_list`** — read from Oria' skill library.
-- **`text_to_speech`** — TTS through Oria' configured provider.
+- **`image_generate`** — image generation through Oria's image_gen plugin chain.
+- **`skill_view` / `skills_list`** — read from Oria's skill library.
+- **`text_to_speech`** — TTS through Oria's configured provider.
 
-When the model wants one of these, codex spawns the `hermes_tools_mcp_server` subprocess via stdio MCP, the call is dispatched through `model_tools.handle_function_call()` (same code path as Oria' default runtime), and the result is returned to codex like any other MCP response.
+When the model wants one of these, codex spawns the `hermes_tools_mcp_server` subprocess via stdio MCP, the call is dispatched through `model_tools.handle_function_call()` (same code path as Oria's default runtime), and the result is returned to codex like any other MCP response.
 
 ### What's NOT available on this runtime
 
 These four Oria tools require the running AIAgent context (mid-loop state) to dispatch, and a stateless MCP callback can't drive them. Switch back to the default runtime (`/codex-runtime auto`) when you need any of them:
 
 - **`delegate_task`** — spawn subagents
-- **`memory`** — Oria' persistent memory store
+- **`memory`** — Oria's persistent memory store
 - **`session_search`** — cross-session search
-- **`todo`** — Oria' todo store (codex's `update_plan` is the in-runtime equivalent)
+- **`todo`** — Oria's todo store (codex's `update_plan` is the in-runtime equivalent)
 
 ## Workflow features (`/goal`, kanban, cron)
 
@@ -158,7 +158,7 @@ uses:
    ```bash
    codex login                  # writes tokens to ~/.codex/auth.json
    ```
-   Oria' own `oria auth add openai-codex` writes to `~/.hermes/auth.json` — that's a separate session. **Run `codex login` separately** if you haven't.
+   Oria's own `oria auth add openai-codex` writes to `~/.hermes/auth.json` — that's a separate session. **Run `codex login` separately** if you haven't.
 
 3. **(Optional) Install the Codex plugins you want.** When you enable the runtime, Oria auto-migrates whichever curated plugins you've already installed via Codex CLI:
    ```bash
@@ -180,7 +180,7 @@ That command:
 - Persists `model.openai_runtime: codex_app_server` to your config.yaml.
 - Migrates user MCP servers from `~/.hermes/config.yaml` to `~/.codex/config.toml`.
 - **Discovers and migrates installed native Codex plugins** (Linear, GitHub, Gmail, Calendar, Canva, etc.) by querying Codex's `plugin/list` RPC.
-- **Registers Oria' own tools as an MCP server** so the codex subprocess can call back for tools codex doesn't ship with.
+- **Registers Oria's own tools as an MCP server** so the codex subprocess can call back for tools codex doesn't ship with.
 - **Writes `default_permissions = ":workspace"`** so the sandbox allows writes within the workspace without prompting for every operation.
 - Tells you what was migrated. Takes effect on the **next** session — the current cached agent keeps the prior runtime so prompt caches stay valid.
 
@@ -199,7 +199,7 @@ model:
 
 ## Self-improvement loop (memory + skill nudges)
 
-Oria' background self-improvement fires on counter thresholds:
+Oria's background self-improvement fires on counter thresholds:
 
 - Every 10 user prompts → a forked review agent looks at the conversation and decides whether anything should be saved to memory.
 - Every 10 tool iterations within a single turn → same idea but for skills (`skill_manage` writes).
@@ -216,13 +216,13 @@ How the wiring stays equivalent:
 | Skill trigger (`_iters_since_skill >= _skill_nudge_interval`) | computed after the loop | computed after the codex turn |
 | `_spawn_background_review(messages_snapshot=..., review_memory=..., review_skills=...)` | called when either trigger fires | called identically when either trigger fires |
 
-One detail: the review fork itself needs to call Oria' agent-loop tools (`memory`, `skill_manage`), which require Oria' own dispatch. So when the parent agent is on `codex_app_server`, the review fork is **downgraded to `codex_responses`** — same OAuth credentials, same `openai-codex` provider, but talks to OpenAI's Responses API directly so Oria owns the loop and the agent-loop tools work. This is invisible to the user.
+One detail: the review fork itself needs to call Oria's agent-loop tools (`memory`, `skill_manage`), which require Oria's own dispatch. So when the parent agent is on `codex_app_server`, the review fork is **downgraded to `codex_responses`** — same OAuth credentials, same `openai-codex` provider, but talks to OpenAI's Responses API directly so Oria owns the loop and the agent-loop tools work. This is invisible to the user.
 
 Net effect: enable the codex runtime and your memory + skill nudges keep firing exactly as they would otherwise.
 
 ## How approvals work
 
-Codex requests approval before executing commands or applying patches. These get translated into Oria' standard "Dangerous Command" prompt:
+Codex requests approval before executing commands or applying patches. These get translated into Oria's standard "Dangerous Command" prompt:
 
 ```
 ╭───────────────────────────────────────╮
@@ -248,10 +248,10 @@ For `apply_patch` (file edit) approvals, Oria shows a summary of what changed (`
 
 Codex has three built-in permission profiles:
 - `:read-only` — no writes; every shell command requires approval
-- `:workspace` — writes within the current workspace allowed without prompts (Oria' default when you enable the runtime)
+- `:workspace` — writes within the current workspace allowed without prompts (Oria's default when you enable the runtime)
 - `:danger-no-sandbox` — no sandbox at all (don't use this unless you understand it)
 
-You can override the default in `~/.codex/config.toml` outside Oria' managed block:
+You can override the default in `~/.codex/config.toml` outside Oria's managed block:
 
 ```toml
 default_permissions = ":read-only"
@@ -261,7 +261,7 @@ default_permissions = ":read-only"
 
 ## Auxiliary tasks and ChatGPT subscription token cost
 
-When this runtime is on with the `openai-codex` provider, **auxiliary tasks (title generation, context compression, vision auto-detect, the background self-improvement review fork) also flow through your ChatGPT subscription by default**, because Oria' auxiliary client uses the main provider/model when no per-task override is set.
+When this runtime is on with the `openai-codex` provider, **auxiliary tasks (title generation, context compression, vision auto-detect, the background self-improvement review fork) also flow through your ChatGPT subscription by default**, because Oria's auxiliary client uses the main provider/model when no per-task override is set.
 
 This isn't specific to `codex_app_server` — it's true for the existing `codex_responses` path too — but it's more visible here because you're explicitly opting in for the subscription billing.
 
@@ -283,7 +283,7 @@ auxiliary:
     model: google/gemini-3-flash-preview
 ```
 
-The self-improvement review fork inherits the main runtime via `_current_main_runtime()` and Oria downgrades it from `codex_app_server` to `codex_responses` automatically (so the fork can actually call `memory` and `skill_manage` — Oria' own agent-loop tools). That fork still uses your subscription auth unless you've routed aux tasks elsewhere.
+The self-improvement review fork inherits the main runtime via `_current_main_runtime()` and Oria downgrades it from `codex_app_server` to `codex_responses` automatically (so the fork can actually call `memory` and `skill_manage` — Oria's own agent-loop tools). That fork still uses your subscription auth unless you've routed aux tasks elsewhere.
 
 ## Editing `~/.codex/config.toml` safely
 
@@ -334,7 +334,7 @@ This matches the boundary OpenClaw arrived at after some early experimentation: 
 
 ## MCP server migration
 
-Oria' `mcp_servers` config is auto-translated to the TOML format Codex expects. The migration runs every time you enable the runtime and is idempotent — re-runs replace the managed section but preserve any user-edited Codex config.
+Oria's `mcp_servers` config is auto-translated to the TOML format Codex expects. The migration runs every time you enable the runtime and is idempotent — re-runs replace the managed section but preserve any user-edited Codex config.
 
 What translates:
 
@@ -347,13 +347,13 @@ What translates:
 | `enabled: false` | `enabled = false` |
 
 What's not migrated:
-- Hermes-specific keys like `sampling` (Codex's MCP client has no equivalent — these are dropped with a per-server warning).
+- Oria-specific keys like `sampling` (Codex's MCP client has no equivalent — these are dropped with a per-server warning).
 
 ## Native Codex plugin migration
 
 Plugins installed via `codex plugin` (Linear, GitHub, Gmail, Calendar, Canva, etc.) are discovered through Codex's `plugin/list` RPC. For each plugin where `installed: true`, Oria writes a `[plugins."<name>@openai-curated"]` block enabling it in your Oria session.
 
-This means: when your friend says "I have Calendar and GitHub set up in my Codex CLI" and they enable Oria' codex runtime, Oria activates those automatically. No re-configuration needed.
+This means: when your friend says "I have Calendar and GitHub set up in my Codex CLI" and they enable Oria's codex runtime, Oria activates those automatically. No re-configuration needed.
 
 What's NOT migrated:
 - Plugins you haven't installed yet — install them in Codex first.
@@ -405,7 +405,7 @@ This runtime is **opt-in beta**. Working as of Oria 2026.5 + Codex CLI 0.130.0:
 
 Known limitations:
 
-- **Oria auth and codex auth are separate sessions.** You need both `codex login` AND `oria auth add openai-codex` for the cleanest UX (the runtime uses codex's session for the LLM call). This is a deliberate design choice in Oria' `_import_codex_cli_tokens` — Oria won't share OAuth state with codex CLI to avoid clobbering each other on token refresh.
+- **Oria auth and codex auth are separate sessions.** You need both `codex login` AND `oria auth add openai-codex` for the cleanest UX (the runtime uses codex's session for the LLM call). This is a deliberate design choice in Oria's `_import_codex_cli_tokens` — Oria won't share OAuth state with codex CLI to avoid clobbering each other on token refresh.
 - **`delegate_task`, `memory`, `session_search`, `todo` are unavailable on this runtime.** They need the running AIAgent context which a stateless MCP callback can't provide. Use `/codex-runtime auto` when you need these.
 - **No inline patch preview in approval prompts when codex doesn't track the changeset.** Codex's `fileChange` approval params don't always carry the changeset. Oria caches the data from the corresponding `item/started` notification when possible, but if approval arrives before the item has streamed, the prompt falls back to whatever `reason` codex provides.
 - **Sub-second cancellation isn't guaranteed.** Mid-stream interrupts (Ctrl+C while codex is responding) are sent via `turn/interrupt`, but if codex has already flushed the final message, you get the response anyway.
@@ -444,7 +444,7 @@ If you find a bug, [open an issue](https://github.com/NousResearch/hermes-agent/
         │   │  │    canva, ...)       │     │
         │   │  └─ hermes-tools ───────┼─────────────────┐
         │   │       (callback to     │     │           │
-        │   │        Oria' richer    │     │           │
+        │   │        Oria's richer    │     │           │
         │   │        tools)          │     │           │
         │   └─────────────────────────┘     │           │
         └──────────────────────────────────┘           │

@@ -56,7 +56,7 @@ It uses `scripts/openclaw_to_hermes.py` to:
 - import `SOUL.md` into the Oria home directory as `SOUL.md`
 - transform OpenClaw `MEMORY.md` and `USER.md` into Oria memory entries
 - merge OpenClaw command approval patterns into Oria `command_allowlist`
-- migrate Hermes-compatible messaging settings such as `TELEGRAM_ALLOWED_USERS`, and map OpenClaw workspace settings to Oria working-directory configuration
+- migrate Oria-compatible messaging settings such as `TELEGRAM_ALLOWED_USERS`, and map OpenClaw workspace settings to Oria working-directory configuration
 - copy OpenClaw skills into `~/.hermes/skills/openclaw-imports/`
 - optionally copy the OpenClaw workspace instructions file into a chosen Oria workspace
 - mirror compatible workspace assets such as `workspace/tts/` into `~/.hermes/tts/`
@@ -82,7 +82,7 @@ Before running the helper:
 3. Only use `find` as a fallback if the installed location is missing or the skill was moved manually.
 4. When calling the terminal tool, do not pass `workdir: "~"`. Use an absolute directory such as the user's home directory, or omit `workdir` entirely.
 
-With `--migrate-secrets`, it will also import a small allowlisted set of Hermes-compatible secrets, currently:
+With `--migrate-secrets`, it will also import a small allowlisted set of Oria-compatible secrets, currently:
 
 - `TELEGRAM_BOT_TOKEN`
 

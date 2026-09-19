@@ -106,7 +106,7 @@ Standard OpenAI Chat Completions format. Stateless — the full conversation is 
 
 Uploaded files (`file` / `input_file` / `file_id`) and non-image `data:` URLs return `400 unsupported_content_type`.
 
-**Streaming** (`"stream": true`): Returns Server-Sent Events (SSE) with token-by-token response chunks. For **Chat Completions**, the stream uses standard `chat.completion.chunk` events plus Oria' custom `hermes.tool.progress` event for tool-start UX. For **Responses**, the stream uses OpenAI Responses event types such as `response.created`, `response.output_text.delta`, `response.output_item.added`, `response.output_item.done`, and `response.completed`.
+**Streaming** (`"stream": true`): Returns Server-Sent Events (SSE) with token-by-token response chunks. For **Chat Completions**, the stream uses standard `chat.completion.chunk` events plus Oria's custom `hermes.tool.progress` event for tool-start UX. For **Responses**, the stream uses OpenAI Responses event types such as `response.created`, `response.output_text.delta`, `response.output_item.added`, `response.output_item.done`, and `response.completed`.
 
 All SSE streams (Chat Completions, Responses, `/api/sessions/{id}/chat/stream`, `/v1/runs/{id}/events`) emit a `: keepalive` comment line whenever no event has been sent for 10 seconds, so long tool calls do not trip client idle timeouts. Standard SSE clients ignore comment lines; custom parsers must skip lines that start with `:`.
 
@@ -208,7 +208,7 @@ and it does not do pricing or capability enrichment.
 
 ### GET /api/model/options
 
-Hermes-aware clients can request the same curated provider/model inventory used
+Oria-aware clients can request the same curated provider/model inventory used
 by the dashboard and TUI. This route uses the API server's normal bearer
 authentication and returns provider rows, model capability hints, and pricing
 metadata that do not belong in the OpenAI-compatible `/v1/models` response:
@@ -236,7 +236,7 @@ curl \
 
 Use `/v1/models` when an OpenAI-compatible client only needs a model name to
 send back in chat/responses requests. Use `/api/model/options` when an
-authenticated UI needs the richer Hermes-specific picker metadata.
+authenticated UI needs the richer Oria-specific picker metadata.
 
 ### GET /v1/capabilities
 
@@ -352,7 +352,7 @@ retried through a different browser backend.
 
 ## Per-request model selection
 
-Authenticated clients can override Oria' default model selection per request
+Authenticated clients can override Oria's default model selection per request
 by sending:
 
 - `model` — the target model id for this turn
@@ -393,7 +393,7 @@ gateway:
       direct_model_requests: true
 ```
 
-Requests that include an explicit `provider` — and the Hermes-native
+Requests that include an explicit `provider` — and the Oria-native
 `/v1/runs` and session-chat endpoints — always honor the requested model
 regardless of this flag.
 

@@ -101,7 +101,7 @@ platforms:
           - songsee          # skill commands work here too
 ```
 
-`priority_mode` controls how your list combines with Oria' built-in priority list:
+`priority_mode` controls how your list combines with Oria's built-in priority list:
 
 - `prepend`: put your commands first, then Oria defaults
 - `append`: keep Oria defaults first, then your commands

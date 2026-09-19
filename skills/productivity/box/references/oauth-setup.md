@@ -1,6 +1,6 @@
 # OAuth setup
 
-Use OAuth for every Hermes-to-Box connection. OAuth follows the signed-in Box user's permissions and the app's scopes; it does not grant enterprise-wide access.
+Use OAuth for every Oria-to-Box connection. OAuth follows the signed-in Box user's permissions and the app's scopes; it does not grant enterprise-wide access.
 
 ## Choose the OAuth account
 

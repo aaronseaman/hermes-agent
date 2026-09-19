@@ -10,7 +10,7 @@ Mixture of Agents is a virtual model provider. Each named MoA preset appears as 
 
 When you select a MoA preset, the preset's aggregator is the acting model. It is the model that writes the assistant response and emits tool calls. Reference models run first and provide analysis for the aggregator to use.
 
-Use MoA when a hard task benefits from multiple model perspectives but still needs Oria' normal agent loop: tool calls, follow-up iterations, interrupts, transcript persistence, and the same session context as any other message.
+Use MoA when a hard task benefits from multiple model perspectives but still needs Oria's normal agent loop: tool calls, follow-up iterations, interrupts, transcript persistence, and the same session context as any other message.
 
 ## Select a MoA preset as your model
 
@@ -170,7 +170,7 @@ moa:
   aggregator prompt (and the one-shot `/moa` synthesis input).
 
 Credential shapes (API-key prefixes, JWTs, private keys, DB connection
-strings) are masked by Oria' central secret redactor; the MoA filter adds
+strings) are masked by Oria's central secret redactor; the MoA filter adds
 email and clearly formatted phone-number redaction on top. Patterns are
 deliberately conservative for code-review-style advice: bare digit runs, line
 numbers, timestamps, git SHAs, and IP addresses are never touched — only
@@ -181,7 +181,7 @@ delimited phone formats like `(555) 123-4567` or `555-123-4567` match.
 Reference and aggregator slots may also set `reasoning_effort`. Use this when
 you want the same model to contribute at different depths, or when the
 aggregator should think harder than the advisory references. Valid values match
-Oria' normal reasoning controls: `none`, `minimal`, `low`, `medium`, `high`,
+Oria's normal reasoning controls: `none`, `minimal`, `low`, `medium`, `high`,
 `xhigh`, `max`, and `ultra`.
 
 ```yaml

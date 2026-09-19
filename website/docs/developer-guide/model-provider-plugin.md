@@ -224,7 +224,7 @@ Set `profile.api_mode` to match the default your provider ships — it acts as a
 | `aws_sdk` | AWS SDK credential chain (IAM role, profile, env) | `bedrock` plugin only |
 | `external_process` | Auth handled by a subprocess the agent spawns (see [External-process providers](#external-process-acp-providers)) | `copilot-acp` plugin, out-of-tree ACP plugins |
 
-`auth_type` gates which codepaths treat your provider as a "simple api-key provider" — if it's not `api_key`, the PluginManager still records the manifest but Oria' CLI-level automation (doctor checks, `--provider` flag, setup wizard delegation) may skip over it.
+`auth_type` gates which codepaths treat your provider as a "simple api-key provider" — if it's not `api_key`, the PluginManager still records the manifest but Oria's CLI-level automation (doctor checks, `--provider` flag, setup wizard delegation) may skip over it.
 
 ## Discovery timing
 

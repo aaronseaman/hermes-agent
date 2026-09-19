@@ -210,7 +210,7 @@ Common issues:
   spectrum-ts' `poll()` builder via the sidecar's `/send-poll` endpoint.
 - **Read receipts are supported.** The sidecar marks an inbound iMessage
   read after forwarding it to Oria, so the sender sees `Read` without
-  waiting for a model/tool turn. Inbound receipts for Hermes-sent messages
+  waiting for a model/tool turn. Inbound receipts for Oria-sent messages
   are consumed as presence telemetry and never create an agent turn. Set
   `PHOTON_READ_RECEIPTS=false` to keep messages at `Delivered`.
 - **Message effects are supported.** Oria sends text with native iMessage

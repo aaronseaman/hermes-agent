@@ -78,7 +78,7 @@ mutilated.
 
 ## Kanban: artifacts ride completion notifications
 
-If you use Oria' kanban multi-agent workflow, workers can attach
+If you use Oria's kanban multi-agent workflow, workers can attach
 deliverable files to their `kanban_complete` call:
 
 ```python

@@ -6,7 +6,7 @@ description: "How the ACP adapter works: lifecycle, sessions, event bridge, appr
 
 # ACP Internals
 
-The ACP adapter wraps Oria' synchronous `AIAgent` in an async JSON-RPC stdio server.
+The ACP adapter wraps Oria's synchronous `AIAgent` in an async JSON-RPC stdio server.
 
 Key implementation files:
 
@@ -141,12 +141,12 @@ prompt(..., session_id)
 
 ACP does not implement its own auth store.
 
-Instead it reuses Oria' runtime resolver:
+Instead it reuses Oria's runtime resolver:
 
 - `acp_adapter/auth.py`
 - `hermes_cli/runtime_provider.py`
 
-So ACP advertises and uses the currently configured Oria provider/credentials. It also always advertises a terminal setup auth method (`hermes-setup`, args `--setup`) so first-run ACP clients can open Oria' interactive model/provider configuration before starting a normal ACP session.
+So ACP advertises and uses the currently configured Oria provider/credentials. It also always advertises a terminal setup auth method (`hermes-setup`, args `--setup`) so first-run ACP clients can open Oria's interactive model/provider configuration before starting a normal ACP session.
 
 ## Working directory binding
 

@@ -326,7 +326,7 @@ export const hu: Translations = {
     enableRuntime: "Engedélyezés",
     forceReinstall: "Kényszerített újratelepítés (a meglévő mappa előbb törlődik)",
     headline:
-      "Hermes-bővítmények felfedezése, telepítése, engedélyezése és frissítése (a `oria plugins` paritás).",
+      "Oria-bővítmények felfedezése, telepítése, engedélyezése és frissítése (a `oria plugins` paritás).",
     identifierLabel: "Git URL vagy owner/repo",
     inactive: "inaktív",
     installBtn: "Telepítés",
@@ -507,7 +507,7 @@ export const hu: Translations = {
       kicker: "Agentic Gamerscore",
       title: "Hermes Achievements",
       subtitle:
-        "Gyűjthető Hermes-jelvények, valós munkamenet-előzmények alapján szerezve. Az ismert, de még nem szerzett teljesítmények Felfedezettként jelennek meg; a Titkos teljesítmények rejtve maradnak az első egyező viselkedésig.",
+        "Gyűjthető Oria-jelvények, valós munkamenet-előzmények alapján szerezve. Az ismert, de még nem szerzett teljesítmények Felfedezettként jelennek meg; a Titkos teljesítmények rejtve maradnak az első egyező viselkedésig.",
       scan_subtitle:
         "Oria munkamenet-előzmények vizsgálata. Az első vizsgálat 5–10 másodpercig is eltarthat nagy előzmények esetén.",
     },

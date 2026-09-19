@@ -807,7 +807,7 @@ def register(ctx):
 
 Fires **once per turn when the agent edited code**, just before it finishes (after the built-in verify-on-stop guard). This is a user/plugin policy gate: a callback can keep the agent going — run a check, defer it, tidy the diff — instead of letting it stop.
 
-Oria' shipped verification guidance is not a default `pre_verify` hook. It is appended to the evidence-based verify-on-stop nudge when edited code lacks fresh verification evidence, so it does not create a second default continuation path. Set `agent.verify_guidance: false` to keep that built-in evidence nudge terse.
+Oria's shipped verification guidance is not a default `pre_verify` hook. It is appended to the evidence-based verify-on-stop nudge when edited code lacks fresh verification evidence, so it does not create a second default continuation path. Set `agent.verify_guidance: false` to keep that built-in evidence nudge terse.
 
 **Callback signature:**
 
@@ -1721,10 +1721,10 @@ profile's `HERMES_HOME`. `tool_name` and `tool_input` are `null` for non-tool ev
 ```jsonc
 // Block a pre_tool_call (both shapes accepted; normalised internally):
 {"decision": "block", "reason":  "Forbidden: rm -rf"}   // Claude-Code style
-{"action":   "block", "message": "Forbidden: rm -rf"}   // Hermes-canonical
+{"action":   "block", "message": "Forbidden: rm -rf"}   // Oria-canonical
 
 // Modify a pre_tool_call — rewrite tool args before dispatch:
-{"action": "modify", "args": {"new_string": "fixed content"}}         // Hermes-canonical
+{"action": "modify", "args": {"new_string": "fixed content"}}         // Oria-canonical
 {"decision": "modify", "tool_input": {"new_string": "fixed content"}} // Claude-Code style
 
 // Inject context for pre_llm_call:

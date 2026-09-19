@@ -45,4 +45,4 @@ curl -sL https://raw.githubusercontent.com/JimLiu/baoyu-skills/main/skills/baoyu
 diff <(curl -sL https://raw.githubusercontent.com/JimLiu/baoyu-skills/main/skills/baoyu-article-illustrator/references/styles/blueprint.md) references/styles/blueprint.md
 ```
 
-`references/styles/*` and `references/palettes/*` can be overwritten directly. `SKILL.md`, `references/workflow.md`, `references/usage.md`, `references/style-presets.md`, `references/styles.md`, `references/prompt-construction.md`, and `prompts/system.md` must be manually merged since they contain Hermes-specific adaptations (tool wiring, backend neutrality, removed EXTEND.md references).
+`references/styles/*` and `references/palettes/*` can be overwritten directly. `SKILL.md`, `references/workflow.md`, `references/usage.md`, `references/style-presets.md`, `references/styles.md`, `references/prompt-construction.md`, and `prompts/system.md` must be manually merged since they contain Oria-specific adaptations (tool wiring, backend neutrality, removed EXTEND.md references).

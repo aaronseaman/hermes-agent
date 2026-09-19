@@ -10,13 +10,13 @@ session, their JSON schemas can consume a substantial fraction of the
 context window on every turn — even when only a few of them are relevant
 to what the user actually asked for.
 
-**Tool Search** is Oria' opt-in progressive-disclosure layer for that
+**Tool Search** is Oria's opt-in progressive-disclosure layer for that
 problem. When activated, MCP and plugin tools are replaced in the
 model-visible tools array by three bridge tools, and the model loads each
 specific tool's schema on demand.
 
 :::info Built-in Oria tools never defer
-The tools that make up Oria' core capability set (`terminal`,
+The tools that make up Oria's core capability set (`terminal`,
 `read_file`, `write_file`, `patch`, `search_files`, `todo`, `memory`,
 `browser_*`, `web_search`, `web_extract`, `clarify`, `execute_code`,
 `delegate_task`, `session_search`, and the rest of

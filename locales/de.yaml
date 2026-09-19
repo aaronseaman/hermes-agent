@@ -1,4 +1,4 @@
-# Hermes-Katalog für statische Meldungen -- Deutsch
+# Oria-Katalog für statische Meldungen -- Deutsch
 # See locales/en.yaml for the source of truth; keep keys in sync.
 
 approval:
@@ -114,7 +114,7 @@ gateway:
     header:                "**Debug-Bericht hochgeladen:**"
     auto_delete:           "⏱ Pastes werden in 6 Stunden automatisch gelöscht."
     full_logs_hint:        "Für vollständige Log-Uploads verwenden Sie `oria debug share` aus der CLI."
-    share_hint:            "Teilen Sie diese Links mit dem Hermes-Team, um Unterstützung zu erhalten."
+    share_hint:            "Teilen Sie diese Links mit dem Oria-Team, um Unterstützung zu erhalten."
 
   deny:
     stale:                 "❌ Befehl abgelehnt (Genehmigung war veraltet)."
@@ -158,7 +158,7 @@ gateway:
     set:                   "⊙ Ziel gesetzt ({budget}-Zug-Budget): {goal}\nIch arbeite weiter, bis das Ziel erreicht ist, Sie es pausieren/löschen oder das Budget aufgebraucht ist.\nSteuerung: /goal status · /goal pause · /goal resume · /goal clear"
 
   help:
-    header:                "📖 **Hermes-Befehle**\n"
+    header:                "📖 **Oria-Befehle**\n"
     skill_header:          "\n⚡ **Skill-Befehle** ({count} aktiv):"
     more_use_commands:     "\n... und {count} weitere. Verwenden Sie `/commands` für die vollständige paginierte Liste."
 
@@ -328,7 +328,7 @@ Future messages in this room will use that transcript until `/reset` or another 
     no_data:               "No context data available yet. Send a message to start a session."
 
   status:
-    header:                "📊 **Hermes-Gateway-Status**"
+    header:                "📊 **Oria-Gateway-Status**"
     matrix_scope_header:   "**Matrix scope:**"
     matrix_scope_room:     "  room: {room}"
     matrix_scope_room_id:  "  room_id: {room_id}"
@@ -374,7 +374,7 @@ Future messages in this room will use that transcript until `/reset` or another 
     topics_user_disallowed:  "Telegram-Topics sind aktiviert, aber Benutzer dürfen keine Topics erstellen.\n\nÖffnen Sie @BotFather → wählen Sie Ihren Bot → Bot Settings → Threads Settings, und deaktivieren Sie dann 'Disallow users to create new threads'.\n\nDann senden Sie /topic erneut."
     enable_failed:           "Telegram-Topic-Modus konnte nicht aktiviert werden: {error}"
     bound_status:            "Dieses Topic ist verknüpft mit:\nSitzung: {label}\nID: {session_id}\n\nVerwenden Sie /new, um dieses Topic durch eine neue Sitzung zu ersetzen.\nFür parallele Arbeit öffnen Sie All Messages und senden Sie dort eine Nachricht, um ein weiteres Topic zu erstellen."
-    thread_ready:            "Telegram-Multi-Session-Topics sind aktiviert.\n\nDieses Topic wird als unabhängige Hermes-Sitzung verwendet. Verwenden Sie /new, um die aktuelle Sitzung dieses Topics zu ersetzen. Für parallele Arbeit öffnen Sie All Messages und senden Sie dort eine Nachricht, um ein weiteres Topic zu erstellen."
+    thread_ready:            "Telegram-Multi-Session-Topics sind aktiviert.\n\nDieses Topic wird als unabhängige Oria-Sitzung verwendet. Verwenden Sie /new, um die aktuelle Sitzung dieses Topics zu ersetzen. Für parallele Arbeit öffnen Sie All Messages und senden Sie dort eine Nachricht, um ein weiteres Topic zu erstellen."
     untitled_session:        "Unbenannte Sitzung"
 
   undo:
@@ -387,7 +387,7 @@ Future messages in this room will use that transcript until `/reset` or another 
     not_git_repo:            "✗ Kein Git-Repository — Update nicht möglich."
     hermes_cmd_not_found:    "✗ Der Befehl `hermes` konnte nicht gefunden werden. Oria läuft, aber der Update-Befehl konnte das ausführbare Programm weder im PATH noch über den aktuellen Python-Interpreter finden. Versuchen Sie, `oria update` manuell im Terminal auszuführen."
     start_failed:            "✗ Update konnte nicht gestartet werden: {error}"
-    starting:                "☤ Hermes-Update wird gestartet… Ich streame den Fortschritt hier."
+    starting:                "☤ Oria-Update wird gestartet… Ich streame den Fortschritt hier."
 
   usage:
     rate_limits:              "⏱️ **Ratenlimits:** {state}"

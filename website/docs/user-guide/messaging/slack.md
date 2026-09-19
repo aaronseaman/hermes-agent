@@ -34,7 +34,7 @@ declares every built-in slash command (`/btw`, `/stop`, `/model`, …),
 every required OAuth scope, every event subscription, and enables Socket
 Mode — all at once.
 
-### Option A: From a Hermes-generated manifest (recommended)
+### Option A: From an Oria-generated manifest (recommended)
 
 1. Generate the manifest. New Slack apps must use Agent view:
    ```bash

@@ -41,7 +41,7 @@ The wizard will:
 3. **Probe Anthropic Messages shape** — fallback for endpoints that do not expose `/models` but do accept the Anthropic Messages format.
 4. **Fall back to manual entry** — private/gated endpoints that reject every probe still work; you pick the API mode and type a deployment name by hand.
 
-Context length for the chosen model is resolved via Oria' standard metadata chain (`models.dev`, provider metadata, and hardcoded family fallbacks) and stored in `config.yaml` so the model can size its own context window correctly.
+Context length for the chosen model is resolved via Oria's standard metadata chain (`models.dev`, provider metadata, and hardcoded family fallbacks) and stored in `config.yaml` so the model can size its own context window correctly.
 
 ## Microsoft Entra ID (keyless, RBAC) — recommended
 
@@ -98,7 +98,7 @@ oria model
 
 The wizard runs a bounded preflight probe (10 s timeout). On failure it offers to "save anyway, validate later" — useful when configuring on a machine that doesn't yet have credentials but will at runtime (e.g. preparing config for a managed-identity deployment).
 
-`azure-identity` is installed automatically on first use via Oria' lazy-install path. To pre-install:
+`azure-identity` is installed automatically on first use via Oria's lazy-install path. To pre-install:
 
 ```bash
 pip install azure-identity

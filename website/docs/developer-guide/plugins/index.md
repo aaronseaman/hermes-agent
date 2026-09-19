@@ -86,7 +86,7 @@ Values declared in portable MCP `env` are visible package data, not a secret
 storage mechanism. Do not place credentials in `mcp.json`.
 
 The current portable subset supports stdio and Streamable HTTP MCP entries.
-Portable `streamable-http` entries are routed through Oria' existing native
+Portable `streamable-http` entries are routed through Oria's existing native
 remote MCP client (the same runtime that powers URL-based `mcp_servers`
 config), with the v1 boundary rules enforced: the URL must be absolute
 http(s) with no user information or fragment, plain HTTP is accepted only
@@ -326,7 +326,7 @@ config_schema:
 
 :::note pip-dependency isolation is deferred
 `python_dependencies` is intentionally declare-and-surface only. Installing
-arbitrary packages into Oria' shared venv is a conflict and supply-chain
+arbitrary packages into Oria's shared venv is a conflict and supply-chain
 surface, so the install seam's isolation design (constraints-file installs
 against the host lock vs. per-plugin vendored dirs vs. conflict detection
 with refusal) is an explicitly deferred follow-up — see the round-2 review on
