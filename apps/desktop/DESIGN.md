@@ -108,8 +108,7 @@ renderer and Electron's first window paint.
 | `--chrome-action-hover` | hover fill for quiet controls |
 | `--theme-primary`, `--ui-accent` | brand/accent |
 
-Never hardcode `border-gray-*`, `bg-white`, `text-black`, etc. The white tile in
-`BrandMark` is the one sanctioned literal (the mark needs a fixed backdrop).
+Never hardcode `border-gray-*`, `bg-white`, `text-black`, etc.
 
 ## Buttons — one component
 
@@ -311,7 +310,7 @@ so glass and message-bubble transparency do not reveal scrolling text.
   action. Do not introduce a third icon set or mix styles within one control
   group.
 - **`BrandMark`** (`src/components/brand-mark.tsx`) is the brand glyph — the
-  `nous-girl` mark on a white tile, softly rounded, identical in light/dark.
+  Oria ring (`public/oria-mark.svg`) on a transparent ground, identical in light/dark.
   It replaced scattered Sparkles glyphs in updates / onboarding / about. Use it
   for hero/brand moments; don't reintroduce decorative star/sparkle icons.
 
