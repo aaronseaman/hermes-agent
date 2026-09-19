@@ -5925,11 +5925,9 @@ def _get_task_extra_body(task: str) -> Dict[str, Any]:
 # During provider incidents each call also retries / fans out across the fallback chain, multiplying request
 # volume on already-degraded endpoints. A per-task semaphore caps in-flight calls so retry amplification
 # stays bounded. See #23324.
-# Keyed by profile home as well: the limit is the profile's ``auxiliary.<task>.max_concurrency``, and two
-# multiplexed profiles with different limits would otherwise rebuild (and reset) one shared semaphore.
-_aux_sync_semaphores: Dict[Tuple[str, str], Tuple[int, threading.BoundedSemaphore]] = {}
-_aux_async_semaphores: Dict[Tuple[str, str, int], Tuple[int, Any]] = {}
-_aux_sem_lock = threading.Lock()
+# The semaphores are the admission controller's gates for resource ``aux_task:<task>`` (agent/admission.py):
+# one registry of per-resource ceilings, keyed by profile home (two multiplexed profiles with different
+# limits never share or reset one semaphore) and rebuilt when the limit changes. Unbounded wait, no backoff.
 
 
 def _get_task_max_concurrency(task: Optional[str]) -> Optional[int]:
@@ -5944,43 +5942,28 @@ def _get_task_max_concurrency(task: Optional[str]) -> Optional[int]:
     return value if value > 0 else None
 
 
-def _cached_semaphore(store: dict, key: Any, limit: int, factory: Callable[[int], Any]) -> Any:
-    """Return the cached semaphore for ``key``, rebuilding it when the limit changed."""
-    with _aux_sem_lock:
-        entry = store.get(key)
-        if entry is None or entry[0] != limit:
-            store[key] = entry = (limit, factory(limit))
-        return entry[1]
-
-
 def _acquire_sync_aux_semaphore(task: Optional[str]) -> Optional[threading.BoundedSemaphore]:
     """Get a per-task sync semaphore, rebuilding it after a config change."""
     limit = _get_task_max_concurrency(task)
     if limit is None:
         return None
-    from hermes_constants import hermes_home_key
-    return _cached_semaphore(_aux_sync_semaphores, (hermes_home_key(), task), limit, threading.BoundedSemaphore)
+    from agent.admission import ADMISSION
+    return ADMISSION.gate(f"aux_task:{task}", limit)
 
 
 def _acquire_async_aux_semaphore(task: Optional[str]):
-    """Get a per-task, per-event-loop async semaphore after config lookup."""
+    """Get a per-task, per-event-loop async semaphore after config lookup (None outside a loop)."""
     limit = _get_task_max_concurrency(task)
     if limit is None:
         return None
-    import asyncio
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        return None
-    from hermes_constants import hermes_home_key
-    return _cached_semaphore(_aux_async_semaphores, (hermes_home_key(), task, id(loop)), limit, asyncio.Semaphore)
+    from agent.admission import ADMISSION
+    return ADMISSION.async_gate(f"aux_task:{task}", limit)
 
 
 def _reset_aux_semaphores() -> None:
     """Drop cached semaphores (test helper)."""
-    with _aux_sem_lock:
-        _aux_sync_semaphores.clear()
-        _aux_async_semaphores.clear()
+    from agent.admission import ADMISSION
+    ADMISSION.reset()
 
 
 # Anthropic-compatible endpoints reached via the OpenAI SDK wrapper; their image content blocks

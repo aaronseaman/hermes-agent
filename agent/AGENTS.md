@@ -116,8 +116,11 @@ its own failure at DEBUG: a broken ledger must never change a turn. `hermes insi
     implementation) profiles from ledger `capability` records, shrunk toward the declared prior;
     `capability_resolver_utility.py` ranks by utility with a switching penalty and seeded
     exploration. `order` stays the user's explicit ranking.
-  - **Attempts** (`semantic_call_cascade.py`): failover, verified cascades (only with an enforced
-    schema or a `verify` predicate, only under `optimize: cost`), one ledger record each.
+  - **Attempts** (`semantic_call_cascade.py`): admission, failover, verified cascades (only with an
+    enforced schema or a `verify` predicate, only under `optimize: cost`), one ledger record each.
+  - **Admission** (`agent/admission.py`): the one registry of per-resource concurrency gates
+    (`agent.admission.ceilings`, and `auxiliary.<task>.max_concurrency` as `aux_task:<task>`), plus
+    backoff on exhaustion signals and bounded queueing. Add a ceiling there, not a new semaphore.
 - Fallback models and credential pools are resolution-chain code: E2E them with real imports
   against a temp `HERMES_HOME`, not mocks (root rubric).
 

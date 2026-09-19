@@ -14,13 +14,14 @@ messages and prompt cache are untouched, and ``instructions`` are sent verbatim 
 capability's prompt stays cache-stable. :class:`agent.capability_resolver.Resolver` chooses
 among the capability's implementations (``_KINDS``: models today), learning from the profile's
 call ledger when it is on (``agent/capability_profile*.py``). ``agent/semantic_call_cascade.py``
-runs them: if one fails, the next ADMITTED candidate runs, never one the policy rejected. With a
-mechanical verifier (an enforced ``output_schema`` or a ``verify`` predicate) a ``cost`` policy
-runs as a verified cascade.
+runs them under the admission controller (``agent/admission.py``): if one fails, the next
+ADMITTED candidate runs, never one the policy rejected. With a mechanical verifier (an enforced
+``output_schema`` or a ``verify`` predicate) a ``cost`` policy runs as a verified cascade.
 
 Raises, before anything is sent: ``UnsatisfiablePolicyError`` when no implementation satisfies
 the policy, :class:`ResolverConfigError` for malformed config/policy, ``ValueError``
-for malformed inputs/schema. After sending: :class:`SemanticOutputError` when the reply
+for malformed inputs/schema, ``AdmissionTimeout`` when no implementation could be admitted
+within ``agent.admission.max_wait_s``. After sending: :class:`SemanticOutputError` when the reply
 does not verify (and no cascade rung is left within budget), or the last implementation's own
 error when every admitted implementation failed.
 """
@@ -137,7 +138,7 @@ def semantic_call(
     if not isinstance(capability, str) or not capability.strip():
         raise ValueError("capability must be a non-empty string")
     from agent.auxiliary_client import _get_auxiliary_task_config
-    from agent.capability_routing_config import load_learned_routing
+    from agent.capability_routing_config import load_admission, load_learned_routing
     from agent.model_metadata import estimate_messages_tokens_rough
     from agent.semantic_call_cascade import run
     started = time.monotonic()
@@ -168,7 +169,7 @@ def semantic_call(
 
     served = run(capability, resolution, invoke=invoke, verify=verifier, scope=scope,
                  output_error=lambda text, errors, why: SemanticOutputError(capability, text, errors, why),
-                 max_attempts=settings.cascade_max_attempts)
+                 max_attempts=settings.cascade_max_attempts, admission_settings=load_admission())
     resolver.served(capability, served.candidate, scope=scope)
     return SemanticResult(
         text=served.text, output=served.output, served_by=served.candidate,

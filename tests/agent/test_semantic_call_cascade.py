@@ -1,7 +1,8 @@
-"""Verified cascades and learning through the real semantic_call chain: temp HERMES_HOME
-config.yaml → resolver → auxiliary client → a local OpenAI-compatible stub (no keys)."""
+"""Verified cascades, admission and learning through the real semantic_call chain: temp HERMES_HOME
+config.yaml → resolver → admission → auxiliary client → a local OpenAI-compatible stub (no keys)."""
 
 import json
+import time
 
 import pytest
 import yaml
@@ -13,13 +14,14 @@ SCHEMA = {"type": "object", "properties": {"summary": {"type": "string"}}, "requ
 
 @pytest.fixture(autouse=True)
 def _fresh_state(monkeypatch):
+    from agent.admission import ADMISSION
     from agent.auxiliary_client import _reset_aux_unhealthy_cache, shutdown_cached_clients
     from agent.capability_profile_ledger import reset_profiles
     monkeypatch.setenv("NO_PROXY", "127.0.0.1,localhost")
-    for reset in (shutdown_cached_clients, _reset_aux_unhealthy_cache, reset_profiles):
+    for reset in (shutdown_cached_clients, _reset_aux_unhealthy_cache, reset_profiles, ADMISSION.reset):
         reset()
     yield
-    for reset in (shutdown_cached_clients, _reset_aux_unhealthy_cache, reset_profiles):
+    for reset in (shutdown_cached_clients, _reset_aux_unhealthy_cache, reset_profiles, ADMISSION.reset):
         reset()
 
 
@@ -188,9 +190,9 @@ def _patched_kind(monkeypatch, fail):
     monkeypatch.setitem(semantic_call._KINDS, "model", real._replace(invoke=invoke))
 
 
-def test_a_killed_attempt_changes_nothing_and_a_retry_runs_cleanly(tmp_path, monkeypatch):
-    """Restartability: an interrupt mid-attempt makes nothing the incumbent and is recorded as
-    cancelled, which never counts against the implementation."""
+def test_a_killed_attempt_releases_its_slot_and_a_retry_runs_cleanly(tmp_path, monkeypatch):
+    """Restartability: an interrupt mid-attempt leaks no admission slot, makes nothing the incumbent
+    and is recorded as cancelled, which never counts against the implementation."""
     from agent import call_ledger
     from agent.capability_profile_ledger import profile_for
     from agent.capability_resolver import _INCUMBENTS, _incumbent_key
@@ -202,7 +204,9 @@ def test_a_killed_attempt_changes_nothing_and_a_retry_runs_cleanly(tmp_path, mon
             raise KeyboardInterrupt
 
     with fake_chat_server(_reply(bad=())) as (url, requests):
-        _config(tmp_path, monkeypatch, [_route(url, "cheap", 1.0)], agent={"call_ledger": {"enabled": True}})
+        _config(tmp_path, monkeypatch, [_route(url, "cheap", 1.0)],
+                agent={"call_ledger": {"enabled": True},
+                       "admission": {"max_wait_s": 0.5, "ceilings": {"endpoint:127.0.0.1": 1}}})
         _patched_kind(monkeypatch, kill_once)
         token = call_ledger.begin_turn(_Agent(), "task-kill")
         try:
@@ -210,8 +214,32 @@ def test_a_killed_attempt_changes_nothing_and_a_retry_runs_cleanly(tmp_path, mon
                 _call()
             assert _INCUMBENTS.get(_incumbent_key("extract", "")) is None
             assert profile_for().observe("extract", killed[0].identity) is None
-            assert _call().output == {"summary": "by cheap"}
+            assert _call().output == {"summary": "by cheap"}   # the slot came back: admitted at once
         finally:
             call_ledger.end_turn(token, outcome="success")
     assert _models(requests) == ["cheap"]
     assert [a["outcome"] for a in _ledger_records(tmp_path, "capability")] == ["cancelled", "ok"]
+
+
+def test_a_rate_limited_provider_is_backed_off_before_the_next_attempt(tmp_path, monkeypatch):
+    import httpx
+    import openai
+
+    def rate_limit_busy(candidate):
+        if candidate.target.get("model") == "busy":
+            response = httpx.Response(429, headers={"retry-after": "0.4"},
+                                      request=httpx.Request("POST", "http://127.0.0.1/v1/chat/completions"))
+            raise openai.RateLimitError("Rate limit reached", response=response, body=None)
+
+    with fake_chat_server(_reply(bad=())) as (url, requests):
+        _config(tmp_path, monkeypatch, [_route(url, "busy", 1.0), _route(url, "cheap", 2.0)],
+                agent={"admission": {"backoff_base_s": 0.2}})
+        _patched_kind(monkeypatch, rate_limit_busy)
+        started = time.monotonic()
+        result = _call(output_schema=None)
+        elapsed = time.monotonic() - started
+    # Both candidates sit on provider:custom @ 127.0.0.1, so the fallback waits out the backoff
+    # (Retry-After 0.4s beats the 0.2s base) instead of hammering the same provider.
+    assert result.model == "cheap" and _models(requests) == ["cheap"]
+    assert elapsed >= 0.4
+    assert "busy" not in _models(requests)

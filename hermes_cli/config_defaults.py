@@ -179,6 +179,17 @@ DEFAULT_CONFIG = {
             "seed": 0,
             "cascade": {"enabled": True, "max_attempts": 3},
         },
+        # Admission for semantic_call: per-resource concurrency ceilings (resource names:
+        # provider:<name>, endpoint:<host>, or any a candidate declares under resources:), backoff
+        # after a provider's rate-limit/overload signal (base_s * 2^k, capped, or Retry-After), and a
+        # bounded queue wait before failing with a clear error. Never estimates remaining quota.
+        # auxiliary.<task>.max_concurrency is the same mechanism for resource aux_task:<task>.
+        "admission": {
+            "max_wait_s": 60,
+            "backoff_base_s": 2,
+            "backoff_max_s": 300,
+            "ceilings": {},
+        },
         # Embedder-supplied text appended to the system prompt's environment-hints block, so a host
         # wrapping Hermes (sandbox runner, managed platform) can describe proxy/credential/ mount
         # layout without editing SOUL.md. Env HERMES_ENVIRONMENT_HINT overrides it.

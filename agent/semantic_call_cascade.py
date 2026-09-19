@@ -1,24 +1,28 @@
-"""The attempt loop behind ``semantic_call``: verified cascades, failover, and the ledger record the
-resolver learns from.
+"""The attempt loop behind ``semantic_call``: admission, verified cascades, failover, and the ledger
+record the resolver learns from.
 
 Each implementation in ``resolution.ranked`` is tried in order:
 
-1. **Invoke.** A provider error moves on to the next ADMITTED implementation, as in stage 3.
-2. **Verify**, only mechanically: host-side ``output_schema`` validation and/or the caller's
+1. **Admission** (``agent/admission.py``): wait, bounded, for the implementation's resources (its
+   ceilings and any backoff). A refusal is not an attempt: nothing was sent, so the loop moves on.
+2. **Invoke.** A provider error moves on to the next ADMITTED implementation, as in stage 3. An
+   exhaustion error (429, overloaded) also backs its resources off for everyone.
+3. **Verify**, only mechanically: host-side ``output_schema`` validation and/or the caller's
    ``verify`` predicate. What the model says about its own confidence is never consulted. A
    verification failure escalates only when the resolution is a **cascade** (a verifier exists,
    cascades are on and the objective is cost); otherwise it raises ``SemanticOutputError``.
-3. **Record** one ledger ``capability`` record per attempt (outcome, latency, cache-adjusted cost).
+4. **Record** one ledger ``capability`` record per attempt (outcome, latency, cache-adjusted cost).
 
 A cascade is bounded: at most ``cascade.max_attempts`` attempts, and an escalation is not started
 when the spend so far plus the next implementation's expected cost would exceed the policy's
 ``max_cost_usd``, or the elapsed time plus its expected latency would pass ``max_latency_ms``.
 
 **Restartability.** An attempt has no side effects outside the ledger (the model kind is a pure
-request), so re-running a killed call from the start is always safe. What a kill loses: the
-in-flight attempt's spend, and ledger records still in the writer's queue (``atexit`` flushes
-them, SIGKILL does not). A cancellation mid-attempt (``/stop``, a settled cell,
-KeyboardInterrupt) records ``cancelled`` (never counted against the implementation) and does not
+request), and admission state lives only in this process, so re-running a killed call from the
+start is always safe: no slot or backoff outlives the process. What a kill loses: the in-flight
+attempt's spend, and ledger records still in the writer's queue (``atexit`` flushes them, SIGKILL
+does not). A cancellation mid-attempt (``/stop``, a settled cell, KeyboardInterrupt) releases its
+admission slot, records ``cancelled`` (never counted against the implementation) and does not
 make the implementation the incumbent.
 """
 
@@ -123,8 +127,9 @@ def _served_elsewhere(candidate: Candidate, route_info: Dict[str, str]) -> bool:
 
 def run(capability: str, resolution: Resolution, *, invoke: Callable[[Candidate], Tuple[Any, Dict[str, str]]],
         verify: Optional[Verifier], output_error: Callable[..., Exception], scope: str,
-        max_attempts: int) -> Served:
+        max_attempts: int, admission_settings: Any) -> Served:
     """Try ``resolution.ranked`` in order; return the first verified answer (see the module docstring)."""
+    from agent.admission import ADMISSION, AdmissionTimeout, exhaustion_signal
     from agent.auxiliary_client import AuxiliaryExplicitCancellation
     record = _Recorder(capability, resolution, scope)
     explanation, spent, started_all = resolution.explanation, 0.0, time.monotonic()
@@ -137,14 +142,26 @@ def run(capability: str, resolution: Resolution, *, invoke: Callable[[Candidate]
             if stop:
                 explanation += f"; cascade stopped before {candidate.label}: {stop}"
                 break
+        resources = candidate.contract.resources
         started = time.monotonic()
         try:
-            response, route_info = invoke(candidate)
+            with ADMISSION.hold(resources, settings=admission_settings,
+                                deadline=time.monotonic() + admission_settings.max_wait_s):
+                started = time.monotonic()
+                response, route_info = invoke(candidate)
+        except AdmissionTimeout as exc:
+            last_error = exc
+            explanation += f"; {candidate.label} not admitted ({exc.resource} {exc.reason})"
+            continue
         except AuxiliaryExplicitCancellation as exc:
             record(candidate, "cancelled", started, error=exc)
             raise
         except Exception as exc:
             record(candidate, "error", started, error=exc)
+            signal = exhaustion_signal(exc, provider=candidate.target.get("provider", ""),
+                                       model=candidate.target.get("model", ""))
+            if signal is not None:
+                ADMISSION.signal_exhausted(resources, retry_after_s=signal[1], settings=admission_settings)
             last_error = exc
             nxt = ranked[position + 1].label if position + 1 < len(ranked) else None
             logger.info("semantic_call %s: %s failed (%s)%s", capability, candidate.label, type(exc).__name__,
@@ -154,6 +171,7 @@ def run(capability: str, resolution: Resolution, *, invoke: Callable[[Candidate]
         except BaseException as exc:  # KeyboardInterrupt / SystemExit mid-attempt: not the implementation's fault
             record(candidate, "cancelled", started, error=exc)
             raise
+        ADMISSION.signal_ok(resources)
         from agent.semantic_call_io import response_text
         text = response_text(response)
         output, errors, failed = verify(text) if verify is not None else (None, [], "")
