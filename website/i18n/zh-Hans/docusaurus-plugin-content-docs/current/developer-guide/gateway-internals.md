@@ -6,7 +6,7 @@ description: "消息 gateway 如何启动、授权用户、路由会话以及投
 
 # Gateway 内部机制
 
-消息 gateway 是一个长期运行的进程，通过统一架构将 Hermes 连接到 20 余个外部消息平台。
+消息 gateway 是一个长期运行的进程，通过统一架构将 Oria 连接到 20 余个外部消息平台。
 
 ## 关键文件
 
@@ -193,7 +193,7 @@ gateway/platforms/                  # 核心 base 与旧的直接适配器
 
 - **直接回复** — 将响应发回原始聊天
 - **主频道投递** — 将 cron 任务输出和后台结果路由至已配置的主频道
-- **显式目标投递** — `send_message` 工具指定 `telegram:-1001234567890`，或通过 [`hermes send` CLI](/guides/pipe-script-output) 封装同一工具供 shell 脚本使用
+- **显式目标投递** — `send_message` 工具指定 `telegram:-1001234567890`，或通过 [`oria send` CLI](/guides/pipe-script-output) 封装同一工具供 shell 脚本使用
 - **跨平台投递** — 投递至与原始消息不同的平台
 
 Cron 任务投递**不会**镜像到 gateway 会话历史中 — 它们仅存在于各自的 cron 会话中。这是有意为之的设计选择，以避免消息交替违规。
@@ -252,11 +252,11 @@ Gateway 在处理消息的同时运行周期性维护任务：
 
 Gateway 作为长期运行进程运行，管理方式如下：
 
-- `hermes gateway start` / `hermes gateway stop` — 手动控制
+- `oria gateway start` / `oria gateway stop` — 手动控制
 - `systemctl`（Linux）或 `launchctl`（macOS）— 服务管理
 - PID 文件位于 `~/.hermes/gateway.pid` — 面向 profile 的进程追踪
 
-**Profile 范围 vs 全局**：`start_gateway()` 使用 profile 范围的 PID 文件。`hermes gateway stop` 仅停止当前 profile 的 gateway。`hermes gateway stop --all` 使用全局 `ps aux` 扫描来终止所有 gateway 进程（用于更新时）。
+**Profile 范围 vs 全局**：`start_gateway()` 使用 profile 范围的 PID 文件。`oria gateway stop` 仅停止当前 profile 的 gateway。`oria gateway stop --all` 使用全局 `ps aux` 扫描来终止所有 gateway 进程（用于更新时）。
 
 ## 相关文档
 

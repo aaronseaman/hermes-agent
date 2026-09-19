@@ -7,12 +7,12 @@ description: "Filesystem safety nets for destructive operations using shadow git
 
 # Checkpoints and `/rollback`
 
-Hermes Agent can automatically snapshot your project before **destructive operations** and restore it with a single command. Checkpoints are **opt-in** as of v2 — most users never use `/rollback`, and the shadow-store storage is non-trivial over time, so the default is off.
+Oria can automatically snapshot your project before **destructive operations** and restore it with a single command. Checkpoints are **opt-in** as of v2 — most users never use `/rollback`, and the shadow-store storage is non-trivial over time, so the default is off.
 
 Enable checkpoints per-session with `--checkpoints`:
 
 ```bash
-hermes chat --checkpoints
+oria chat --checkpoints
 ```
 
 Or enable globally in `~/.hermes/config.yaml`:
@@ -49,18 +49,18 @@ CLI for inspecting and managing the store outside a session:
 
 | Command | Description |
 |---------|-------------|
-| `hermes checkpoints` | Show total size, project count, per-project breakdown |
-| `hermes checkpoints status` | Same as bare `checkpoints` |
-| `hermes checkpoints list` | Alias for `status` |
-| `hermes checkpoints prune` | Force a sweep: delete orphans/stale, GC, enforce size cap |
-| `hermes checkpoints clear` | Nuke the entire checkpoint base (asks first) |
-| `hermes checkpoints clear-legacy` | Delete only the `legacy-*` archives from v1 migration |
+| `oria checkpoints` | Show total size, project count, per-project breakdown |
+| `oria checkpoints status` | Same as bare `checkpoints` |
+| `oria checkpoints list` | Alias for `status` |
+| `oria checkpoints prune` | Force a sweep: delete orphans/stale, GC, enforce size cap |
+| `oria checkpoints clear` | Nuke the entire checkpoint base (asks first) |
+| `oria checkpoints clear-legacy` | Delete only the `legacy-*` archives from v1 migration |
 
 ## How Checkpoints Work
 
 At a high level:
 
-- Hermes detects when tools are about to **modify files** in your working tree.
+- Oria detects when tools are about to **modify files** in your working tree.
 - Once per conversation turn (per directory), it:
   - Resolves a reasonable project root for the file.
   - Initialises or reuses the **single shared shadow store** at `~/.hermes/checkpoints/store/`.
@@ -103,7 +103,7 @@ checkpoints:
   # large store. This sweep never deletes "orphan" entries (working directory
   # not found) — a missing workdir is ambiguous (deleted project vs. an
   # unmounted external volume / network share / VPN not yet up), so orphan
-  # cleanup is only ever done via the explicit `hermes checkpoints prune`
+  # cleanup is only ever done via the explicit `oria checkpoints prune`
   # command below, with a confirmation prompt.
   auto_prune: true
   retention_days: 7
@@ -118,7 +118,7 @@ checkpoints:
   auto_prune: false
 ```
 
-When `enabled: false`, the Checkpoint Manager is a no-op and never attempts git operations. When `auto_prune: false`, the store grows until you run `hermes checkpoints prune` manually.
+When `enabled: false`, the Checkpoint Manager is a no-op and never attempts git operations. When `auto_prune: false`, the store grows until you run `oria checkpoints prune` manually.
 
 ## Listing Checkpoints
 
@@ -128,7 +128,7 @@ From a CLI session:
 /rollback
 ```
 
-Hermes responds with a formatted list showing change statistics:
+Oria responds with a formatted list showing change statistics:
 
 ```text
 📸 Checkpoints for /path/to/project:
@@ -146,7 +146,7 @@ Hermes responds with a formatted list showing change statistics:
 ## Inspecting the Store from the Shell
 
 ```bash
-hermes checkpoints
+oria checkpoints
 ```
 
 Sample output:
@@ -167,13 +167,13 @@ Projects:        12
 Legacy archives (1):
   legacy-20260506-050616                           4.2 MB
 
-Clear with: hermes checkpoints clear-legacy
+Clear with: oria checkpoints clear-legacy
 ```
 
 Force a full sweep (ignores the 24h idempotency marker):
 
 ```bash
-hermes checkpoints prune --retention-days 3 --max-size-mb 200
+oria checkpoints prune --retention-days 3 --max-size-mb 200
 ```
 
 ## Previewing Changes with `/rollback diff`
@@ -192,7 +192,7 @@ This shows a git diff stat summary followed by the actual diff.
 /rollback 1
 ```
 
-Behind the scenes, Hermes:
+Behind the scenes, Oria:
 
 1. Verifies the target commit exists in the shadow store.
 2. Takes a **pre-rollback snapshot** of the current state so you can "undo the undo" later.
@@ -201,10 +201,10 @@ Behind the scenes, Hermes:
 
 ### User hand-edits are preserved by default
 
-`/rollback <N>` restores only the files Hermes itself changed. Every successful
+`/rollback <N>` restores only the files Oria itself changed. Every successful
 `write_file` / `patch` records the file's content hash in an **agent-write
 ledger**; at restore time, any file whose current contents no longer match what
-Hermes last wrote (you edited it afterwards, or Hermes never touched it) is
+Oria last wrote (you edited it afterwards, or Oria never touched it) is
 **skipped** instead of overwritten, and listed in the output:
 
 ```
@@ -220,7 +220,7 @@ edits — add `--all`:
 /rollback 1 --all
 ```
 
-If the ledger is empty (a store created before this feature, or Hermes hasn't
+If the ledger is empty (a store created before this feature, or Oria hasn't
 written any files in the project yet), `/rollback` falls back to the full
 restore automatically.
 
@@ -235,7 +235,7 @@ Restore just one file from a checkpoint without affecting the rest of the direct
 ## Safety and Performance Guards
 
 - **Git availability** — if `git` is not found on `PATH`, checkpoints are transparently disabled.
-- **Directory scope** — Hermes skips overly broad directories (root `/`, home `$HOME`).
+- **Directory scope** — Oria skips overly broad directories (root `/`, home `$HOME`).
 - **Repository size** — directories with more than 50,000 files are skipped.
 - **Per-file size cap** — files larger than `max_file_size_mb` (default 10 MB) are excluded from the snapshot. Prevents accidentally swallowing datasets, model weights, or generated media.
 - **Total store size cap** — when the store exceeds `max_total_size_mb` (default 500 MB), each checkpoint drops the oldest commit of every project that still has more than one snapshot (one round per checkpoint), and the periodic prune repeats drop → gc → re-measure until the store fits. A project is never reduced below one snapshot, so a store of many large projects can legitimately sit above the cap.
@@ -258,7 +258,7 @@ Restore just one file from a checkpoint without affecting the rest of the direct
   └── legacy-<ts>/           # archived pre-v2 per-project shadow repos
 ```
 
-Each `<hash>` is derived from the absolute path of the working directory. You normally never need to touch these manually — use `hermes checkpoints status` / `prune` / `clear` instead.
+Each `<hash>` is derived from the absolute path of the working directory. You normally never need to touch these manually — use `oria checkpoints status` / `prune` / `clear` instead.
 
 ### Migration from v1
 
@@ -267,17 +267,17 @@ Before the v2 rewrite, each working directory got its own complete shadow git re
 On first v2 run, any pre-v2 shadow repos are moved into `~/.hermes/checkpoints/legacy-<timestamp>/` so the new single-store layout starts clean. Old `/rollback` history is still reachable by manually inspecting the legacy archive with `git`; once you're confident you don't need it, run:
 
 ```bash
-hermes checkpoints clear-legacy
+oria checkpoints clear-legacy
 ```
 
 to reclaim the space. Legacy archives are also swept by `auto_prune` after `retention_days`.
 
 ## Best Practices
 
-- **Enable checkpoints only when you need them** — `hermes chat --checkpoints` or per-profile `enabled: true`.
+- **Enable checkpoints only when you need them** — `oria chat --checkpoints` or per-profile `enabled: true`.
 - **Use `/rollback diff` before restoring** — preview what will change to pick the right checkpoint.
 - **Use `/rollback` instead of `git reset`** when you want to undo agent-driven changes only.
-- **Check `hermes checkpoints status` occasionally** if you use checkpoints regularly — shows which projects are active and what the store costs you.
-- **Combine with Git worktrees** for maximum safety — keep each Hermes session in its own worktree/branch, with checkpoints as an extra layer.
+- **Check `oria checkpoints status` occasionally** if you use checkpoints regularly — shows which projects are active and what the store costs you.
+- **Combine with Git worktrees** for maximum safety — keep each Oria session in its own worktree/branch, with checkpoints as an extra layer.
 
 For running multiple agents in parallel on the same repo, see the guide on [Git worktrees](./git-worktrees.md).

@@ -14,10 +14,10 @@ GitHub supply-chain forensics: recovery, IOCs, reporting.
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/security/oss-forensics` |
+| Source | Optional — install with `oria skills install official/security/oss-forensics` |
 | Path | `optional-skills/security\oss-forensics` |
 | Version | `1.0.0` |
-| Author | Teknium (teknium1), Hermes Agent |
+| Author | Teknium (teknium1), Oria |
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `Security`, `Forensics`, `GitHub`, `Supply-Chain` |
@@ -25,7 +25,7 @@ GitHub supply-chain forensics: recovery, IOCs, reporting.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # OSS Security Forensics Skill

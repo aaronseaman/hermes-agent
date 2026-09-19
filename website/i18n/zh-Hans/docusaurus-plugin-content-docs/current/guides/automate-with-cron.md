@@ -1,7 +1,7 @@
 ---
 sidebar_position: 11
 title: "用 Cron 自动化一切"
-description: "使用 Hermes cron 的真实自动化模式——监控、报告、数据管道与多技能工作流"
+description: "使用 Oria cron 的真实自动化模式——监控、报告、数据管道与多技能工作流"
 ---
 
 # 用 Cron 自动化一切
@@ -15,8 +15,8 @@ Cron 任务在全新的 agent 会话中运行，不保留当前对话的任何�
 :::
 
 :::tip 不需要 LLM？你有两种零 token 方案。
-- **循环看门狗**：脚本本身已能生成精确消息（内存告警、磁盘告警、心跳）时，使用 [纯脚本 cron 任务](/guides/cron-script-only)。相同的调度器，无需 LLM。你可以在对话中让 Hermes 帮你设置——`cronjob` 工具知道何时选择 `no_agent=True` 并为你编写脚本。
-- **已在运行的脚本发起的一次性通知**（CI 步骤、post-commit hook、部署脚本、外部调度的监控）：使用 [`hermes send`](/guides/pipe-script-output) 将 stdout 或文件直接推送到 Telegram / Discord / Slack 等，无需设置 cron 条目。
+- **循环看门狗**：脚本本身已能生成精确消息（内存告警、磁盘告警、心跳）时，使用 [纯脚本 cron 任务](/guides/cron-script-only)。相同的调度器，无需 LLM。你可以在对话中让 Oria 帮你设置——`cronjob` 工具知道何时选择 `no_agent=True` 并为你编写脚本。
+- **已在运行的脚本发起的一次性通知**（CI 步骤、post-commit hook、部署脚本、外部调度的监控）：使用 [`oria send`](/guides/pipe-script-output) 将 stdout 或文件直接推送到 Telegram / Discord / Slack 等，无需设置 cron 条目。
 :::
 
 ---
@@ -94,7 +94,7 @@ Keep it under 500 words — highlight only what matters." --name "Weekly AI dige
 通过 CLI：
 
 ```bash
-hermes cron create "0 9 * * 1" \
+oria cron create "0 9 * * 1" \
   "Generate a weekly report covering the top AI news, trending ML GitHub repos, and most-discussed HN posts. Format with sections, include links, keep under 500 words." \
   --name "Weekly AI digest" \
   --deliver telegram

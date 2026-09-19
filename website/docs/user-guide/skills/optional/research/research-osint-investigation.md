@@ -14,10 +14,10 @@ Follow the money via public records and sanctions data.
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/research/osint-investigation` |
+| Source | Optional — install with `oria skills install official/research/osint-investigation` |
 | Path | `optional-skills/research\osint-investigation` |
 | Version | `0.1.0` |
-| Author | Hermes Agent (adapted from ShinMegamiBoson/OpenPlanter, MIT) |
+| Author | Oria (adapted from ShinMegamiBoson/OpenPlanter, MIT) |
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `osint`, `investigation`, `public-records`, `sec`, `sanctions`, `corporate-registry`, `property`, `courts`, `due-diligence`, `journalism` |
@@ -26,7 +26,7 @@ Follow the money via public records and sanctions data.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # OSINT Investigation — Public Records Cross-Reference

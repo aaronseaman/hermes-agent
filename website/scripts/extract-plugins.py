@@ -145,7 +145,7 @@ def load_catalog_entries(catalog_dir: Path, stars: dict[str, int] | None = None)
             "platforms": _str_list(raw.get("platforms")),
             "capabilities": _normalize_capabilities(raw.get("capabilities")),
             "docsUrl": str(raw.get("docs_url") or "").strip(),
-            "installCommand": f"hermes plugins install {name}",
+            "installCommand": f"oria plugins install {name}",
             "stars": _repo_stars(repo, stars),
         })
 

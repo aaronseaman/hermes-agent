@@ -6,7 +6,7 @@ description: "逐步指南：为整个团队搭建一个 Telegram 机器人，�
 
 # 搭建团队 Telegram 助手
 
-本教程将引导你搭建一个由 Hermes Agent 驱动的 Telegram 机器人，供多名团队成员使用。完成后，你的团队将拥有一个共享 AI 助手，可以向它发消息寻求代码、研究、系统管理等方面的帮助——并通过按用户授权保障安全。
+本教程将引导你搭建一个由 Oria 驱动的 Telegram 机器人，供多名团队成员使用。完成后，你的团队将拥有一个共享 AI 助手，可以向它发消息寻求代码、研究、系统管理等方面的帮助——并通过按用户授权保障安全。
 
 ## 我们要构建什么
 
@@ -24,12 +24,12 @@ description: "逐步指南：为整个团队搭建一个 Telegram 机器人，�
 
 开始前，请确保你已具备：
 
-- **已在服务器或 VPS 上安装 Hermes Agent**（不是你的笔记本——机器人需要持续运行）。如尚未安装，请参阅[安装指南](/getting-started/installation)。
+- **已在服务器或 VPS 上安装 Oria**（不是你的笔记本——机器人需要持续运行）。如尚未安装，请参阅[安装指南](/getting-started/installation)。
 - **一个 Telegram 账号**（机器人所有者）
 - **已配置 LLM 提供商**——至少在 `~/.hermes/.env` 中配置了 OpenAI、Anthropic 或其他受支持提供商的 API 密钥
 
 :::tip
-一台 $5/月的 VPS 足以运行 gateway（网关）。Hermes 本身很轻量——花钱的是 LLM API 调用，而那些调用发生在远端。
+一台 $5/月的 VPS 足以运行 gateway（网关）。Oria 本身很轻量——花钱的是 LLM API 调用，而那些调用发生在远端。
 :::
 
 ---
@@ -41,7 +41,7 @@ description: "逐步指南：为整个团队搭建一个 Telegram 机器人，�
 1. **打开 Telegram**，搜索 `@BotFather`，或访问 [t.me/BotFather](https://t.me/BotFather)
 
 2. **发送 `/newbot`**——BotFather 会询问两件事：
-   - **显示名称**——用户看到的名字（例如 `Team Hermes Assistant`）
+   - **显示名称**——用户看到的名字（例如 `Team Oria Assistant`）
    - **用户名**——必须以 `bot` 结尾（例如 `myteam_hermes_bot`）
 
 3. **复制机器人 token**——BotFather 会回复类似内容：
@@ -57,7 +57,7 @@ description: "逐步指南：为整个团队搭建一个 Telegram 机器人，�
    ```
    选择你的机器人，然后输入类似内容：
    ```
-   Team AI assistant powered by Hermes Agent. DM me for help with code, research, debugging, and more.
+   Team AI assistant powered by Oria. DM me for help with code, research, debugging, and more.
    ```
 
 5. **设置机器人命令**（可选——为用户提供命令菜单）：
@@ -86,7 +86,7 @@ description: "逐步指南：为整个团队搭建一个 Telegram 机器人，�
 ### 方式 A：交互式设置（推荐）
 
 ```bash
-hermes gateway setup
+oria gateway setup
 ```
 
 通过方向键选择完成所有配置。选择 **Telegram**，粘贴你的机器人 token，并在提示时输入你的用户 ID。
@@ -124,13 +124,13 @@ Telegram 用户 ID 是永久性数字，例如 `123456789`。它与可以更改�
 先在前台运行 gateway，确认一切正常：
 
 ```bash
-hermes gateway
+oria gateway
 ```
 
 你应该看到类似输出：
 
 ```
-[Gateway] Starting Hermes Gateway...
+[Gateway] Starting Oria Gateway...
 [Gateway] Telegram adapter connected
 [Gateway] Cron scheduler started (tick every 60s)
 ```
@@ -142,17 +142,17 @@ hermes gateway
 若要持久部署并在重启后自动恢复：
 
 ```bash
-hermes gateway install
-sudo hermes gateway install --system   # 仅 Linux：开机启动的系统服务
+oria gateway install
+sudo oria gateway install --system     # 仅 Linux：开机启动的系统服务
 ```
 
 这会创建一个后台服务：Linux 上默认为用户级 **systemd** 服务，macOS 上为 **launchd** 服务，传入 `--system` 则创建开机启动的 Linux 系统服务。
 
 ```bash
 # Linux——管理默认用户服务
-hermes gateway start
-hermes gateway stop
-hermes gateway status
+oria gateway start
+oria gateway stop
+oria gateway status
 
 # 查看实时日志
 journalctl --user -u hermes-gateway -f
@@ -161,26 +161,26 @@ journalctl --user -u hermes-gateway -f
 sudo loginctl enable-linger $USER
 
 # Linux 服务器——显式系统服务命令
-sudo hermes gateway start --system
-sudo hermes gateway status --system
+sudo oria gateway start --system
+sudo oria gateway status --system
 journalctl -u hermes-gateway -f
 ```
 
 ```bash
 # macOS——管理服务
-hermes gateway start
-hermes gateway stop
+oria gateway start
+oria gateway stop
 tail -f ~/.hermes/logs/gateway.log
 ```
 
 :::tip macOS PATH
-launchd plist 在安装时捕获你的 Shell PATH，以便 gateway 子进程能找到 Node.js 和 ffmpeg 等工具。如果之后安装了新工具，请重新运行 `hermes gateway install` 以更新 plist。
+launchd plist 在安装时捕获你的 Shell PATH，以便 gateway 子进程能找到 Node.js 和 ffmpeg 等工具。如果之后安装了新工具，请重新运行 `oria gateway install` 以更新 plist。
 :::
 
 ### 验证运行状态
 
 ```bash
-hermes gateway status
+oria gateway status
 ```
 
 然后在 Telegram 上向你的机器人发送测试消息。几秒内应收到回复。
@@ -203,7 +203,7 @@ TELEGRAM_ALLOWED_USERS=123456789,987654321,555555555
 修改后重启 gateway：
 
 ```bash
-hermes gateway stop && hermes gateway start
+oria gateway stop && oria gateway start
 ```
 
 ### 方式 B：私信配对（推荐用于团队）
@@ -220,7 +220,7 @@ hermes gateway stop && hermes gateway start
 
 3. **你在服务器上审批**：
    ```bash
-   hermes pairing approve telegram XKGH5N7P
+   oria pairing approve telegram XKGH5N7P
    ```
 
 4. **他们即可使用**——机器人立即开始响应他们的消息
@@ -229,13 +229,13 @@ hermes gateway stop && hermes gateway start
 
 ```bash
 # 查看所有待审批和已审批用户
-hermes pairing list
+oria pairing list
 
 # 撤销某人的访问权限
-hermes pairing revoke telegram 987654321
+oria pairing revoke telegram 987654321
 
 # 清除已过期的待审批码
-hermes pairing clear-pending
+oria pairing clear-pending
 ```
 
 :::tip
@@ -291,7 +291,7 @@ display:
 
 通过编辑 `~/.hermes/SOUL.md` 自定义机器人的沟通方式：
 
-完整指南请参阅[在 Hermes 中使用 SOUL.md](/guides/use-soul-with-hermes)。
+完整指南请参阅[在 Oria 中使用 SOUL.md](/guides/use-soul-with-hermes)。
 
 ```markdown
 # Soul
@@ -352,8 +352,8 @@ partitions above 80%, containers that have restarted, or high memory usage.
 
 ```bash
 # 通过 CLI
-hermes cron list          # 查看所有定时任务
-hermes cron status        # 检查调度器是否运行
+oria cron list            # 查看所有定时任务
+oria cron status          # 检查调度器是否运行
 
 # 通过 Telegram 聊天
 /cron list                # 查看任务
@@ -394,7 +394,7 @@ terminal:
 
 ```bash
 # 检查 gateway 是否运行
-hermes gateway status
+oria gateway status
 
 # 查看实时日志（Linux）
 journalctl --user -u hermes-gateway -f
@@ -403,13 +403,13 @@ journalctl --user -u hermes-gateway -f
 tail -f ~/.hermes/logs/gateway.log
 ```
 
-### 保持 Hermes 更新
+### 保持 Oria 更新
 
 在 Telegram 中向机器人发送 `/update`——它会拉取最新版本并重启。或在服务器上执行：
 
 ```bash
-hermes update
-hermes gateway stop && hermes gateway start
+oria update
+oria gateway stop && oria gateway start
 ```
 
 ### 日志位置

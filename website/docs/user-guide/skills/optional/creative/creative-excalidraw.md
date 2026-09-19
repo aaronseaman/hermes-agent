@@ -14,10 +14,10 @@ Hand-drawn Excalidraw JSON diagrams (arch, flow, seq).
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/creative/excalidraw` |
+| Source | Optional — install with `oria skills install official/creative/excalidraw` |
 | Path | `optional-skills/creative\excalidraw` |
 | Version | `1.0.1` |
-| Author | Hermes Agent |
+| Author | Oria |
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `Excalidraw`, `Diagrams`, `Flowcharts`, `Architecture`, `Visualization`, `JSON` |
@@ -25,7 +25,7 @@ Hand-drawn Excalidraw JSON diagrams (arch, flow, seq).
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Excalidraw Diagram Skill

@@ -17,7 +17,7 @@ GitHub PR 生命周期：分支、提交、开启、CI、合并。
 | 来源 | 内置（默认安装） |
 | 路径 | `skills/github/github-pr-workflow` |
 | 版本 | `1.1.0` |
-| 作者 | Hermes Agent |
+| 作者 | Oria |
 | 许可证 | MIT |
 | 平台 | linux, macos, windows |
 | 标签 | `GitHub`, `Pull-Requests`, `CI/CD`, `Git`, `Automation`, `Merge` |
@@ -26,7 +26,7 @@ GitHub PR 生命周期：分支、提交、开启、CI、合并。
 ## 参考：完整 SKILL.md
 
 :::info
-以下是 Hermes 在触发此 skill 时加载的完整 skill 定义。这是 agent 在 skill 激活时所看到的指令内容。
+以下是 Oria 在触发此 skill 时加载的完整 skill 定义。这是 agent 在 skill 激活时所看到的指令内容。
 :::
 
 # GitHub Pull Request 工作流

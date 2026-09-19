@@ -17,7 +17,7 @@ description: "通过 gh 或 REST 创建、分类、标记、分配 GitHub Issues
 | 来源 | 内置（默认安装） |
 | 路径 | `skills/github/github-issues` |
 | 版本 | `1.1.0` |
-| 作者 | Hermes Agent |
+| 作者 | Oria |
 | 许可证 | MIT |
 | 平台 | linux, macos, windows |
 | 标签 | `GitHub`, `Issues`, `Project-Management`, `Bug-Tracking`, `Triage` |
@@ -26,7 +26,7 @@ description: "通过 gh 或 REST 创建、分类、标记、分配 GitHub Issues
 ## 参考：完整 SKILL.md
 
 :::info
-以下是 Hermes 在触发此 skill 时加载的完整 skill 定义。这是 skill 激活时 agent 所看到的指令内容。
+以下是 Oria 在触发此 skill 时加载的完整 skill 定义。这是 skill 激活时 agent 所看到的指令内容。
 :::
 
 # GitHub Issues 管理

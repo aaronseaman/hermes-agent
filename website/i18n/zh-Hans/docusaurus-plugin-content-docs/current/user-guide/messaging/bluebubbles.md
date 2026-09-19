@@ -1,13 +1,13 @@
 # BlueBubbles（iMessage）
 
-通过 [BlueBubbles](https://bluebubbles.app/) 将 Hermes 连接至 Apple iMessage——这是一款免费、开源的 macOS 服务端，可将 iMessage 桥接至任意设备。
+通过 [BlueBubbles](https://bluebubbles.app/) 将 Oria 连接至 Apple iMessage——这是一款免费、开源的 macOS 服务端，可将 iMessage 桥接至任意设备。
 
 ## 前提条件
 
 - 一台**始终开机的 Mac**，运行 [BlueBubbles Server](https://bluebubbles.app/)
 - 该 Mac 上的 Messages.app 已登录 Apple ID
 - BlueBubbles Server v1.0.0+（webhook 需要此版本）
-- Hermes 与 BlueBubbles 服务端之间的网络连通性
+- Oria 与 BlueBubbles 服务端之间的网络连通性
 
 ## 配置步骤
 
@@ -21,12 +21,12 @@
 - **Server URL**（例如 `http://192.168.1.10:1234`）
 - **Server Password**
 
-### 3. 配置 Hermes
+### 3. 配置 Oria
 
 运行设置向导：
 
 ```bash
-hermes gateway setup
+oria gateway setup
 ```
 
 选择 **BlueBubbles (iMessage)** 并输入服务端 URL 和密码。
@@ -43,11 +43,11 @@ BLUEBUBBLES_PASSWORD=your-server-password
 选择以下任一方式：
 
 **DM 配对（推荐）：**
-当有人向你的 iMessage 发送消息时，Hermes 会自动向其发送配对码。使用以下命令批准：
+当有人向你的 iMessage 发送消息时，Oria 会自动向其发送配对码。使用以下命令批准：
 ```bash
-hermes pairing approve bluebubbles <CODE>
+oria pairing approve bluebubbles <CODE>
 ```
-使用 `hermes pairing list` 查看待处理的配对码和已授权用户。
+使用 `oria pairing list` 查看待处理的配对码和已授权用户。
 
 **预授权特定用户**（在 `~/.hermes/.env` 中）：
 ```bash
@@ -62,20 +62,20 @@ BLUEBUBBLES_ALLOW_ALL_USERS=true
 ### 5. 启动 Gateway
 
 ```bash
-hermes gateway run
+oria gateway run
 ```
 
-Hermes 将连接至你的 BlueBubbles 服务端，注册 webhook，并开始监听 iMessage 消息。
+Oria 将连接至你的 BlueBubbles 服务端，注册 webhook，并开始监听 iMessage 消息。
 
 ## 工作原理
 
 ```
-iMessage → Messages.app → BlueBubbles Server → Webhook → Hermes
-Hermes → BlueBubbles REST API → Messages.app → iMessage
+iMessage → Messages.app → BlueBubbles Server → Webhook → Oria
+Oria → BlueBubbles REST API → Messages.app → iMessage
 ```
 
 - **入站：** 新消息到达时，BlueBubbles 向本地监听器发送 webhook 事件。无需轮询——即时送达。
-- **出站：** Hermes 通过 BlueBubbles REST API 发送消息。
+- **出站：** Oria 通过 BlueBubbles REST API 发送消息。
 - **媒体：** 双向支持图片、语音消息、视频和文档。入站附件会被下载并在本地缓存，供 Agent 处理。
 
 ## 环境变量
@@ -114,7 +114,7 @@ Agent 处理消息期间，iMessage 对话中会显示"正在输入……"。需
 处理消息后自动标记为已读。需要 Private API。
 
 ### 聊天寻址
-你可以通过邮箱或手机号寻址聊天——Hermes 会自动将其解析为 BlueBubbles 聊天 GUID，无需使用原始 GUID 格式。
+你可以通过邮箱或手机号寻址聊天——Oria 会自动将其解析为 BlueBubbles 聊天 GUID，无需使用原始 GUID 格式。
 
 ## Private API
 
@@ -136,7 +136,7 @@ Agent 处理消息期间，iMessage 对话中会显示"正在输入……"。需
 ### 消息未送达
 - 检查 webhook 是否已在 BlueBubbles Server → Settings → API → Webhooks 中注册
 - 确认 webhook URL 可从 Mac 访问
-- 查看 `hermes logs gateway` 中的 webhook 错误（或使用 `hermes logs -f` 实时跟踪）
+- 查看 `oria logs gateway` 中的 webhook 错误（或使用 `oria logs -f` 实时跟踪）
 
 ### "Private API helper not connected"
 - 安装 Private API helper：[docs.bluebubbles.app](https://docs.bluebubbles.app/helper-bundle/installation)

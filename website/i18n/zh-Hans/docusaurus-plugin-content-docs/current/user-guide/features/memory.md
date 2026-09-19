@@ -1,12 +1,12 @@
 ---
 sidebar_position: 3
 title: "持久化记忆"
-description: "Hermes Agent 如何跨会话记忆——MEMORY.md、USER.md 与会话搜索"
+description: "Oria 如何跨会话记忆——MEMORY.md、USER.md 与会话搜索"
 ---
 
 # 持久化记忆
 
-Hermes Agent 拥有有界、经过整理的记忆，可跨会话持久保存。这使它能够记住你的偏好、项目、环境以及已学到的内容。
+Oria 拥有有界、经过整理的记忆，可跨会话持久保存。这使它能够记住你的偏好、项目、环境以及已学到的内容。
 
 ## 工作原理
 
@@ -182,7 +182,7 @@ located at ~/code/api. I discovered it uses Go version 1.22 and...
 - Agent 还可以在找到的任意会话中向前或向后滚动
 
 ```bash
-hermes sessions list    # 浏览过去的会话
+oria sessions list      # 浏览过去的会话
 ```
 
 有关三种调用形式（发现 / 滚动 / 浏览）和响应格式，请参阅[会话搜索工具](/user-guide/sessions#session-search-tool)。
@@ -221,13 +221,13 @@ memory:
 
 ## 外部记忆提供商
 
-对于超出 MEMORY.md 和 USER.md 范围的更深层持久化记忆，Hermes 内置了 8 个外部记忆提供商插件——包括 Honcho、OpenViking、Mem0、Hindsight、Holographic、RetainDB、ByteRover 和 Supermemory。
+对于超出 MEMORY.md 和 USER.md 范围的更深层持久化记忆，Oria 内置了 8 个外部记忆提供商插件——包括 Honcho、OpenViking、Mem0、Hindsight、Holographic、RetainDB、ByteRover 和 Supermemory。
 
 外部提供商与内置记忆**并行**运行（而非替代），并增加了知识图谱、语义搜索、自动事实提取和跨会话用户建模等能力。
 
 ```bash
-hermes memory setup      # 选择并配置提供商
-hermes memory status     # 查看当前激活状态
+oria memory setup        # 选择并配置提供商
+oria memory status       # 查看当前激活状态
 ```
 
 有关每个提供商的完整详情、设置说明和对比，请参阅[记忆提供商](./memory-providers.md)指南。

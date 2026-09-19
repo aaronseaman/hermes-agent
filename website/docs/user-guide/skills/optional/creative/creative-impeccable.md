@@ -14,7 +14,7 @@ Frontend design guidance, upstream-maintained (impeccable).
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/creative/impeccable` |
+| Source | Optional — install with `oria skills install official/creative/impeccable` |
 | Path | `optional-skills/creative\impeccable` |
 | Version | `4.1.2` |
 | Author | Paul Bakaus (pbakaus) |
@@ -26,7 +26,7 @@ Frontend design guidance, upstream-maintained (impeccable).
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Impeccable (upstream-maintained)

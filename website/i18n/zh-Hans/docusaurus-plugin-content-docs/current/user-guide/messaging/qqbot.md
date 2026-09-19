@@ -1,6 +1,6 @@
 # QQ Bot
 
-通过**官方 QQ Bot API（v2）**将 Hermes 接入 QQ——支持私聊（C2C）、群组 @-提及、频道及直接消息，并具备语音转写功能。
+通过**官方 QQ Bot API（v2）**将 Oria 接入 QQ——支持私聊（C2C）、群组 @-提及、频道及直接消息，并具备语音转写功能。
 
 ## 概述
 
@@ -28,7 +28,7 @@ QQ Bot 适配器使用[官方 QQ Bot API](https://bot.q.qq.com/wiki/develop/api-
 ### 交互式设置
 
 ```bash
-hermes gateway setup
+oria gateway setup
 ```
 
 从平台列表中选择 **QQ Bot** 并按提示操作。

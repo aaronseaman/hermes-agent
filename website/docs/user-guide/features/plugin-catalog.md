@@ -2,16 +2,16 @@
 sidebar_position: 13
 sidebar_label: "Plugin Catalog"
 title: "Plugin Catalog"
-description: "Browse and install reviewed, SHA-pinned Hermes plugins from the curated catalog"
+description: "Browse and install reviewed, SHA-pinned Oria plugins from the curated catalog"
 ---
 
 # Plugin Catalog
 
-The plugin catalog is a curated, human-reviewed directory of Hermes plugins you
+The plugin catalog is a curated, human-reviewed directory of Oria plugins you
 can install by name with a single command:
 
 ```bash
-hermes plugins install <name>
+oria plugins install <name>
 ```
 
 Browse it visually at **[/docs/plugins](/plugins)** — entries are shelved by
@@ -32,14 +32,14 @@ directory of the hermes-agent repository, declaring:
 
 | Field | Meaning |
 |---|---|
-| `name` | The catalog key you pass to `hermes plugins install` |
+| `name` | The catalog key you pass to `oria plugins install` |
 | `repo` | The plugin's public git repository |
 | `sha` | The **exact 40-hex commit** that was reviewed — installs check out this pin, not a branch tip |
 | `tier` | `official` (maintained by NousResearch) or `community` |
 | `category` | Browse shelf: `desktop` (default), `memory`, `platform`, `web`, `tools`, `voice`, `automation`, `models` or `general` |
 | `maintainer` | Who owns the plugin |
 | `capabilities` | Declared tools, hooks, middleware, and required env vars |
-| `requires_hermes` | Minimum Hermes version, e.g. `>=0.19` (optional) |
+| `requires_hermes` | Minimum Oria version, e.g. `>=0.19` (optional) |
 | `platforms` | OS restrictions, empty = all (optional) |
 | `docs_url` | External documentation link (optional) |
 
@@ -74,10 +74,10 @@ repository. Review the code of anything you give credentials to.
 
 ```bash
 # Install a reviewed catalog entry by name (checks out the pinned SHA)
-hermes plugins install <name>
+oria plugins install <name>
 
 # Then enable it, as with any plugin
-hermes plugins enable <name>
+oria plugins enable <name>
 ```
 
 The install prompt shows the entry's capability summary — declared tools,
@@ -91,26 +91,26 @@ bundles the twozero MCP server with the `touchdesigner-mcp` skill) installs as
 function-name limits:
 
 ```bash
-hermes plugins install touchdesigner
-hermes plugins enable td
+oria plugins install touchdesigner
+oria plugins enable td
 ```
 
 Portable packages can also carry a stdio MCP server. The `snyk` entry pins the
 Snyk CLI (`npx -y snyk@<version> mcp`) and bundles the `snyk-security-scan`
-skill, so one install gives Hermes code, dependency, container and IaC scanning
+skill, so one install gives Oria code, dependency, container and IaC scanning
 plus the workflow for using it; the catalog name and manifest name match:
 
 ```bash
-hermes plugins install snyk
-hermes plugins enable snyk
+oria plugins install snyk
+oria plugins enable snyk
 ```
 
 ### Updating a catalog install
 
-`hermes plugins update <name>` never runs `git pull` for catalog installs —
+`oria plugins update <name>` never runs `git pull` for catalog installs —
 it compares your installed pin against the current catalog pin and, when the
 catalog moved (via a reviewed PR), force-reinstalls at the new SHA. Your
-enabled/disabled state is preserved. `hermes plugins list` shows catalog
+enabled/disabled state is preserved. `oria plugins list` shows catalog
 installs as `catalog:<tier>@<sha>` so you can see provenance at a glance.
 
 ### Names not in the catalog
@@ -125,12 +125,12 @@ The docs build publishes the catalog as one JSON document
 (`https://hermes-agent.nousresearch.com/docs/api/plugin-catalog.json`).
 `search`/`install`/`update` fetch it at most every six hours and cache it under
 `~/.hermes/cache/`, so new entries and removals reach installed clients without
-updating Hermes. Offline, the copy shipped with your checkout is used. Removals
+updating Oria. Offline, the copy shipped with your checkout is used. Removals
 from the in-tree list and the live list are always both enforced.
 
 ### Custom git URLs are different
 
-`hermes plugins install <git-url>` still works for any repository, but it
+`oria plugins install <git-url>` still works for any repository, but it
 bypasses the catalog entirely:
 
 - **No review** — you get whatever is at the branch tip, not a reviewed pin.
@@ -157,7 +157,7 @@ in short, an entry must be:
    the PR (schema, SHA format, reachability).
 5. **Not self-updating** — the catalog build must not download and replace
    its own files; the pinned SHA is the only update path (a SHA-bump PR plus
-   `hermes plugins update <name>`).
+   `oria plugins update <name>`).
 
 Pin updates (bumping `sha` to a newer commit) follow the same PR + review
 process.
@@ -166,6 +166,6 @@ process.
 
 - [Plugins](plugins.md) — the plugin system itself: manifest format, enabling,
   configuration
-- [Built-in Plugins](built-in-plugins.md) — plugins that ship with Hermes
-- [Build a Hermes Plugin](/developer-guide/plugins) — write your own
+- [Built-in Plugins](built-in-plugins.md) — plugins that ship with Oria
+- [Build an Oria Plugin](/developer-guide/plugins) — write your own
 - [Plugin Catalog page](/plugins) — the browsable catalog

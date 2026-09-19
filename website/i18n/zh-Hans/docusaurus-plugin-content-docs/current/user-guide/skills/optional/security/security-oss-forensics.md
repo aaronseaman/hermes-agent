@@ -17,14 +17,14 @@ GitHub 仓库的供应链调查、证据恢复与取证分析。
 
 | | |
 |---|---|
-| 来源 | 可选 — 通过 `hermes skills install official/security/oss-forensics` 安装 |
+| 来源 | 可选 — 通过 `oria skills install official/security/oss-forensics` 安装 |
 | 路径 | `optional-skills/security/oss-forensics` |
 | 平台 | linux, macos, windows |
 
 ## 参考：完整 SKILL.md
 
 :::info
-以下是 Hermes 在触发此 skill 时加载的完整 skill 定义。这是 agent 在 skill 激活时所看到的指令内容。
+以下是 Oria 在触发此 skill 时加载的完整 skill 定义。这是 agent 在 skill 激活时所看到的指令内容。
 :::
 
 # OSS 安全取证 Skill

@@ -6,7 +6,7 @@ description: "在关键生命周期节点运行自定义代码——记录活动
 
 # Event Hooks
 
-Hermes 有四套 hook 系统，可在关键生命周期节点运行自定义代码：
+Oria 有四套 hook 系统，可在关键生命周期节点运行自定义代码：
 
 | 系统 | 注册方式 | 运行环境 | 使用场景 |
 |------|---------|---------|---------|
@@ -187,7 +187,7 @@ async def handle(event_type: str, context: dict):
 
 这是社区中流行的一种模式：在 `~/.hermes/BOOT.md` 放置一个 Markdown 检查清单，让 agent 在每次 gateway 启动时执行一次。适用于"每次启动时检查隔夜 cron 失败情况，若有失败则在 Discord 上通知我"，或"汇总过去 24 小时的 deploy.log 并发布到 Slack #ops"等场景。
 
-本教程展示如何以用户自定义 hook 的方式自行构建。Hermes 不内置 BOOT.md hook——你可以精确配置自己想要的行为。
+本教程展示如何以用户自定义 hook 的方式自行构建。Oria 不内置 BOOT.md hook——你可以精确配置自己想要的行为。
 
 #### 我们要构建什么
 
@@ -202,7 +202,7 @@ async def handle(event_type: str, context: dict):
 ```markdown
 # Startup Checklist
 
-1. Run `hermes cron list` and check if any scheduled jobs failed overnight.
+1. Run `oria cron list` and check if any scheduled jobs failed overnight.
 2. If any failed, send a summary to Discord #ops using the `send_message` tool.
 3. Check if `/opt/app/deploy.log` has any ERROR lines from the last 24 hours. If yes, summarize them and include in the same Discord message.
 4. If nothing went wrong, reply with only `[SILENT]` so no message is sent.
@@ -315,13 +315,13 @@ async def handle(event_type: str, context: dict) -> None:
 重启 gateway：
 
 ```bash
-hermes gateway restart
+oria gateway restart
 ```
 
 查看日志：
 
 ```bash
-hermes logs --follow --level INFO | grep boot-md
+oria logs --follow --level INFO | grep boot-md
 ```
 
 你应该看到 `Running BOOT.md (N chars)`，随后是 `boot-md completed: ...`（agent 执行内容的摘要）或 `boot-md completed (nothing to report)`（agent 回复了 `[SILENT]`）。
@@ -336,7 +336,7 @@ hermes logs --follow --level INFO | grep boot-md
 
 #### 为什么这不是内置功能
 
-Hermes 早期版本将此作为内置 hook 发布，每次 gateway 启动时都会静默生成一个使用裸默认值的 agent。这让使用自定义端点的用户感到意外，也让不知道它在运行的用户无从察觉。将其作为文档化模式保留——由你在 hooks 目录中构建——意味着你能清楚地看到它的行为，并通过编写文件来选择启用。
+Oria 早期版本将此作为内置 hook 发布，每次 gateway 启动时都会静默生成一个使用裸默认值的 agent。这让使用自定义端点的用户感到意外，也让不知道它在运行的用户无从察觉。将其作为文档化模式保留——由你在 hooks 目录中构建——意味着你能清楚地看到它的行为，并通过编写文件来选择启用。
 
 ### 工作原理
 
@@ -370,7 +370,7 @@ def register(ctx):
 - 回调异常会被记录并跳过，后续回调仍会继续。
 - 下表分类仅描述当前行为：**观察者**忽略返回值，**Transform** 接受第一个有效字符串替换，**指令/控制**消费已说明的返回结构。Plugin middleware 是独立的 registry/surface，不属于另一类 hook。
 - `turn_id`、`api_request_id`、`task_id`、`session_id`、`api_call_count` 等关联字段因 hook 而异，可能不存在；应将这些 ID 视为 opaque 值。
-- 运行时事件名以 `hermes_cli.plugins.VALID_HOOKS` 为准。`hermes hooks list` 只列出已配置的 shell/outbound hook，并非可用事件目录；只有 `hermes hooks test <event>` 收到无效事件时才会打印有效集合。
+- 运行时事件名以 `hermes_cli.plugins.VALID_HOOKS` 为准。`oria hooks list` 只列出已配置的 shell/outbound hook，并非可用事件目录；只有 `oria hooks test <event>` 收到无效事件时才会打印有效集合。
 
 ### 已发布的 plugin-hook 目录
 
@@ -552,9 +552,9 @@ return "Recalled memories:\n- User likes Python"
 return None
 ```
 
-**上下文注入位置：** 始终注入到**用户消息**，而非系统 prompt。这保留了 prompt 缓存——系统 prompt 在各轮次间保持不变，已缓存的 token 得以复用。系统 prompt 是 Hermes 的领域（模型指导、工具执行、个性、技能）。插件在用户输入旁边贡献上下文。
+**上下文注入位置：** 始终注入到**用户消息**，而非系统 prompt。这保留了 prompt 缓存——系统 prompt 在各轮次间保持不变，已缓存的 token 得以复用。系统 prompt 是 Oria 的领域（模型指导、工具执行、个性、技能）。插件在用户输入旁边贡献上下文。
 
-干净的用户消息 `content` 保持不变。为保证 replay 和 prompt cache 稳定，Hermes 可能把实际发送给 API 的消息（包括插件注入上下文）持久化到该行的 `api_content` sidecar。
+干净的用户消息 `content` 保持不变。为保证 replay 和 prompt cache 稳定，Oria 可能把实际发送给 API 的消息（包括插件注入上下文）持久化到该行的 `api_content` sidecar。
 
 当**多个插件**返回上下文时，其输出按插件发现顺序（按目录名字母顺序）以双换行符连接。
 
@@ -973,7 +973,7 @@ def my_callback(
 import subprocess
 
 def notify_approval(command, description, session_key, **kwargs):
-    title = "Hermes needs approval"
+    title = "Oria needs approval"
     body = f"{description}: {command[:80]}"
     subprocess.Popen([
         "osascript", "-e",
@@ -1181,7 +1181,7 @@ Completion 和 cleanup 后触发，通常位于 worker 进程；`summary` 可能
 
 ## Shell Hooks
 
-在 `cli-config.yaml` 中声明 shell 脚本 hook，Hermes 会在对应的插件 hook 事件触发时将其作为子进程运行——在 CLI 和 gateway 会话中均适用。无需编写 Python 插件。
+在 `cli-config.yaml` 中声明 shell 脚本 hook，Oria 会在对应的插件 hook 事件触发时将其作为子进程运行——在 CLI 和 gateway 会话中均适用。无需编写 Python 插件。
 
 当你希望用一个即插即用的单文件脚本（Bash、Python 或任何带 shebang 的脚本）来实现以下功能时，使用 shell hooks：
 
@@ -1222,7 +1222,7 @@ hooks_auto_accept: false         # See "Consent model" below
 
 ### JSON 通信协议
 
-每次事件触发时，Hermes 为每个匹配的 hook（在 matcher 允许的情况下）生成一个子进程，将 JSON 载荷通过 **stdin** 传入，并从 **stdout** 读取 JSON 响应。
+每次事件触发时，Oria 为每个匹配的 hook（在 matcher 允许的情况下）生成一个子进程，将 JSON 载荷通过 **stdin** 传入，并从 **stdout** 读取 JSON 响应。
 
 **stdin——脚本接收的载荷：**
 
@@ -1319,7 +1319,7 @@ else
 fi
 ```
 
-Claude Code 的 `UserPromptSubmit` 事件在 Hermes 中没有对应的独立事件——`pre_llm_call` 在相同位置触发，且已支持上下文注入。在此使用即可。
+Claude Code 的 `UserPromptSubmit` 事件在 Oria 中没有对应的独立事件——`pre_llm_call` 在相同位置触发，且已支持上下文注入。在此使用即可。
 
 #### 4. 记录每次子 agent 完成
 
@@ -1339,26 +1339,26 @@ printf '{}\n'
 
 ### 授权模型
 
-每个唯一的 `(event, command)` 对在 Hermes 首次遇到时会提示用户审批，然后将决定持久化到 `~/.hermes/shell-hooks-allowlist.json`。后续运行（CLI 或 gateway）跳过提示。
+每个唯一的 `(event, command)` 对在 Oria 首次遇到时会提示用户审批，然后将决定持久化到 `~/.hermes/shell-hooks-allowlist.json`。后续运行（CLI 或 gateway）跳过提示。
 
 三种方式可绕过交互式提示——满足其一即可：
 
-1. CLI 上的 `--accept-hooks` 标志（如 `hermes --accept-hooks chat`）
+1. CLI 上的 `--accept-hooks` 标志（如 `oria --accept-hooks chat`）
 2. `HERMES_ACCEPT_HOOKS=1` 环境变量
 3. `cli-config.yaml` 中的 `hooks_auto_accept: true`
 
 非 TTY 运行（gateway、cron、CI）需要这三种方式之一——否则任何新添加的 hook 会静默保持未注册状态并记录警告。
 
-**脚本编辑被静默信任。** 允许列表以精确的命令字符串为键，而非脚本的哈希值，因此编辑磁盘上的脚本不会使授权失效。`hermes hooks doctor` 会标记 mtime 漂移，以便你发现编辑并决定是否重新审批。
+**脚本编辑被静默信任。** 允许列表以精确的命令字符串为键，而非脚本的哈希值，因此编辑磁盘上的脚本不会使授权失效。`oria hooks doctor` 会标记 mtime 漂移，以便你发现编辑并决定是否重新审批。
 
-### `hermes hooks` CLI
+### `oria hooks` CLI
 
 | 命令 | 功能 |
 |------|------|
-| `hermes hooks list` | 列出已配置的 hook，包含 matcher、超时和授权状态 |
-| `hermes hooks test <event> [--for-tool X] [--payload-file F]` | 对合成载荷触发所有匹配的 hook 并打印解析后的响应 |
-| `hermes hooks revoke <command>` | 删除所有匹配 `<command>` 的允许列表条目（下次重启后生效） |
-| `hermes hooks doctor` | 对每个已配置的 hook 检查：执行位、允许列表状态、mtime 漂移、JSON 输出有效性和大致执行时间 |
+| `oria hooks list` | 列出已配置的 hook，包含 matcher、超时和授权状态 |
+| `oria hooks test <event> [--for-tool X] [--payload-file F]` | 对合成载荷触发所有匹配的 hook 并打印解析后的响应 |
+| `oria hooks revoke <command>` | 删除所有匹配 `<command>` 的允许列表条目（下次重启后生效） |
+| `oria hooks doctor` | 对每个已配置的 hook 检查：执行位、允许列表状态、mtime 漂移、JSON 输出有效性和大致执行时间 |
 
 ### 安全性
 
@@ -1366,7 +1366,7 @@ Shell hooks 以**你的完整用户凭据**运行——与 cron 条目或 shell 
 
 - 只引用你自己编写或完整审查过的脚本。
 - 将脚本保存在 `~/.hermes/agent-hooks/` 内，便于审计路径。
-- 拉取共享配置后重新运行 `hermes hooks doctor`，在新添加的 hook 注册前发现它们。
+- 拉取共享配置后重新运行 `oria hooks doctor`，在新添加的 hook 注册前发现它们。
 - 如果你的 config.yaml 在团队中进行版本控制，审查修改 `hooks:` 部分的 PR 时应与审查 CI 配置一样严格。
 
 ### 顺序与优先级
@@ -1385,4 +1385,4 @@ hooks:
       secret_env: HERMES_WEBHOOK_SECRET
 ```
 
-配置中的事件名同样以 `hermes_cli.plugins.VALID_HOOKS` 为准。`hermes hooks list` 会列出这些已配置 target，但不会输出完整的可用事件目录。
+配置中的事件名同样以 `hermes_cli.plugins.VALID_HOOKS` 为准。`oria hooks list` 会列出这些已配置 target，但不会输出完整的可用事件目录。

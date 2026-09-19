@@ -14,7 +14,7 @@ Spaced-repetition flashcards: create, review, quiz, export.
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/productivity/memento-flashcards` |
+| Source | Optional — install with `oria skills install official/productivity/memento-flashcards` |
 | Path | `optional-skills/productivity\memento-flashcards` |
 | Version | `1.0.0` |
 | Author | Memento AI |
@@ -25,7 +25,7 @@ Spaced-repetition flashcards: create, review, quiz, export.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Memento Flashcards — Spaced-Repetition Flashcard Skill

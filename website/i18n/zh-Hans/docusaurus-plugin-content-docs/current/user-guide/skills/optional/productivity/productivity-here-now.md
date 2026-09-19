@@ -14,7 +14,7 @@ description: "将静态站点发布到 {slug}"
 
 | | |
 |---|---|
-| 来源 | 可选 — 通过 `hermes skills install official/productivity/here-now` 安装 |
+| 来源 | 可选 — 通过 `oria skills install official/productivity/here-now` 安装 |
 | 路径 | `optional-skills/productivity/here-now` |
 | 版本 | `1.15.3` |
 | 作者 | here.now |
@@ -25,7 +25,7 @@ description: "将静态站点发布到 {slug}"
 ## 参考：完整 SKILL.md
 
 :::info
-以下是 Hermes 在触发此 skill 时加载的完整 skill 定义。这是 skill 激活时 agent 所看到的指令内容。
+以下是 Oria 在触发此 skill 时加载的完整 skill 定义。这是 skill 激活时 agent 所看到的指令内容。
 :::
 
 # here.now

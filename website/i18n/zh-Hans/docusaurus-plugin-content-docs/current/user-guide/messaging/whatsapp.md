@@ -1,12 +1,12 @@
 ---
 sidebar_position: 5
 title: "WhatsApp"
-description: "通过内置 Baileys 桥接将 Hermes Agent 设置为 WhatsApp 机器人"
+description: "通过内置 Baileys 桥接将 Oria 设置为 WhatsApp 机器人"
 ---
 
 # WhatsApp 配置
 
-Hermes 通过基于 **Baileys** 的内置桥接连接到 WhatsApp。其工作原理是模拟 WhatsApp Web 会话——**而非**通过官方 WhatsApp Business API。无需 Meta 开发者账号或 Business 认证。
+Oria 通过基于 **Baileys** 的内置桥接连接到 WhatsApp。其工作原理是模拟 WhatsApp Web 会话——**而非**通过官方 WhatsApp Business API。无需 Meta 开发者账号或 Business 认证。
 
 :::warning 非官方 API — 封号风险
 WhatsApp **不**官方支持 Business API 以外的第三方机器人。使用第三方桥接存在账号受限的小概率风险。为降低风险：
@@ -17,8 +17,8 @@ WhatsApp **不**官方支持 Business API 以外的第三方机器人。使用�
 
 :::warning WhatsApp Web 协议更新
 WhatsApp 会定期更新其 Web 协议，这可能导致第三方桥接暂时失效。
-发生这种情况时，Hermes 会更新桥接依赖。如果机器人在 WhatsApp 更新后停止工作，
-请拉取最新版 Hermes 并重新配对。
+发生这种情况时，Oria 会更新桥接依赖。如果机器人在 WhatsApp 更新后停止工作，
+请拉取最新版 Oria 并重新配对。
 :::
 
 ## 两种模式
@@ -42,7 +42,7 @@ WhatsApp 会定期更新其 Web 协议，这可能导致第三方桥接暂时失
 ## 第一步：运行配置向导
 
 ```bash
-hermes whatsapp
+oria whatsapp
 ```
 
 向导将：
@@ -82,11 +82,11 @@ hermes whatsapp
 
 1. 在手机上安装 WhatsApp（或使用支持双 SIM 的 WhatsApp Business 应用）
 2. 用新号码注册 WhatsApp
-3. 运行 `hermes whatsapp` 并从该 WhatsApp 账号扫描二维码
+3. 运行 `oria whatsapp` 并从该 WhatsApp 账号扫描二维码
 
 ---
 
-## 第三步：配置 Hermes
+## 第三步：配置 Oria
 
 在 `~/.hermes/.env` 文件中添加以下内容：
 
@@ -123,9 +123,9 @@ whatsapp:
 然后启动 gateway（网关）：
 
 ```bash
-hermes gateway              # 前台运行
-hermes gateway install      # 安装为用户服务
-sudo hermes gateway install --system   # 仅 Linux：开机启动系统服务
+oria gateway                # 前台运行
+oria gateway install        # 安装为用户服务
+sudo oria gateway install --system     # 仅 Linux：开机启动系统服务
 ```
 
 Gateway 会使用已保存的会话自动启动 WhatsApp 桥接。
@@ -147,7 +147,7 @@ Baileys 桥接将会话保存在 `~/.hermes/platforms/whatsapp/session` 目录�
 如果会话中断（手机重置、WhatsApp 更新、手动取消关联），你将在 gateway 日志中看到连接错误。修复方法：
 
 ```bash
-hermes whatsapp
+oria whatsapp
 ```
 
 这将生成新的二维码。重新扫描后会话即恢复。Gateway 会通过重连逻辑自动处理**临时**断线（网络抖动、手机短暂离线）。
@@ -156,11 +156,11 @@ hermes whatsapp
 
 ## 语音消息
 
-Hermes 支持 WhatsApp 上的语音功能：
+Oria 支持 WhatsApp 上的语音功能：
 
 - **接收：** 语音消息（`.ogg` opus 格式）会使用已配置的 STT 提供商自动转录：本地 `faster-whisper`、Groq Whisper（`GROQ_API_KEY`）或 OpenAI Whisper（`VOICE_TOOLS_OPENAI_KEY`）
 - **发送：** TTS 响应以 MP3 音频文件附件形式发送
-- Agent 响应默认以"☤ **Hermes Agent**"为前缀。可在 `config.yaml` 中自定义或禁用：
+- Agent 响应默认以"☤ **Oria**"为前缀。可在 `config.yaml` 中自定义或禁用：
 
 ```yaml
 # ~/.hermes/config.yaml
@@ -203,12 +203,12 @@ AI 响应中的标准 Markdown 会自动转换为 WhatsApp 的原生格式：
 | 问题 | 解决方案 |
 |------|---------|
 | **二维码无法扫描** | 确保终端宽度足够（60 列以上）。尝试换用其他终端。确保从正确的 WhatsApp 账号（机器人号码，而非个人号码）扫描。 |
-| **二维码过期** | 二维码约每 20 秒刷新一次。如果超时，重新运行 `hermes whatsapp`。 |
+| **二维码过期** | 二维码约每 20 秒刷新一次。如果超时，重新运行 `oria whatsapp`。 |
 | **会话未持久化** | 检查 `~/.hermes/platforms/whatsapp/session` 是否存在且可写。如在容器中运行，请将其挂载为持久卷。 |
-| **意外退出登录** | WhatsApp 会在长时间不活跃后取消关联设备。保持手机开机并连接网络，如有需要使用 `hermes whatsapp` 重新配对。 |
-| **桥接崩溃或重连循环** | 重启 gateway，更新 Hermes，如会话因 WhatsApp 协议变更而失效则重新配对。 |
-| **WhatsApp 更新后机器人停止工作** | 更新 Hermes 以获取最新桥接版本，然后重新配对。 |
-| **macOS："Node.js not installed"但终端中 node 可用** | launchd 服务不继承你的 shell PATH。运行 `hermes gateway install` 将当前 PATH 重新快照到 plist 中，然后运行 `hermes gateway start`。详见 [Gateway 服务文档](./index.md#macos-launchd)。 |
+| **意外退出登录** | WhatsApp 会在长时间不活跃后取消关联设备。保持手机开机并连接网络，如有需要使用 `oria whatsapp` 重新配对。 |
+| **桥接崩溃或重连循环** | 重启 gateway，更新 Oria，如会话因 WhatsApp 协议变更而失效则重新配对。 |
+| **WhatsApp 更新后机器人停止工作** | 更新 Oria 以获取最新桥接版本，然后重新配对。 |
+| **macOS："Node.js not installed"但终端中 node 可用** | launchd 服务不继承你的 shell PATH。运行 `oria gateway install` 将当前 PATH 重新快照到 plist 中，然后运行 `oria gateway start`。详见 [Gateway 服务文档](./index.md#macos-launchd)。 |
 | **未收到消息** | 确认 `WHATSAPP_ALLOWED_USERS` 包含发送者号码（含国家代码，不含 `+` 或空格），或将其设为 `*` 允许所有人。在 `.env` 中设置 `WHATSAPP_DEBUG=true` 并重启 gateway，可在 `bridge.log` 中查看原始消息事件。 |
 | **机器人向陌生人回复配对码** | 如需对未授权私信静默处理，在 `~/.hermes/config.yaml` 中设置 `whatsapp.unauthorized_dm_behavior: ignore`。 |
 

@@ -17,7 +17,7 @@ description: "调试 Python：pdb REPL + debugpy 远程（DAP）"
 | 来源 | 内置（默认安装） |
 | 路径 | `skills/software-development/python-debugpy` |
 | 版本 | `1.0.0` |
-| 作者 | Hermes Agent |
+| 作者 | Oria |
 | 许可证 | MIT |
 | 平台 | linux, macos |
 | 标签 | `debugging`, `python`, `pdb`, `debugpy`, `breakpoints`, `dap`, `post-mortem` |
@@ -26,7 +26,7 @@ description: "调试 Python：pdb REPL + debugpy 远程（DAP）"
 ## 参考：完整 SKILL.md
 
 :::info
-以下是 Hermes 在触发此 skill 时加载的完整 skill 定义。这是 agent 在 skill 激活时所看到的指令内容。
+以下是 Oria 在触发此 skill 时加载的完整 skill 定义。这是 agent 在 skill 激活时所看到的指令内容。
 :::
 
 # Python 调试器（pdb + debugpy）
@@ -162,7 +162,7 @@ sys.excepthook = excepthook
 
 ## 方案 5：使用 debugpy 进行远程调试（附加到运行中的进程）
 
-适用于长期运行的进程：Hermes gateway、tui_gateway、daemon，或已出现异常且无法干净重启的进程。
+适用于长期运行的进程：Oria gateway、tui_gateway、daemon，或已出现异常且无法干净重启的进程。
 
 ### 安装
 
@@ -213,7 +213,7 @@ echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
 
 ### 从终端连接客户端
 
-最简便的终端侧 DAP 客户端是 VS Code CLI 或一个小脚本。在 Hermes 内部有两个实用选项：
+最简便的终端侧 DAP 客户端是 VS Code CLI 或一个小脚本。在 Oria 内部有两个实用选项：
 
 **选项 1：`debugpy` 自带 CLI REPL** — 并非官方功能，而是一个小型 DAP 客户端脚本：
 
@@ -258,7 +258,7 @@ send({"type": "request", "command": "configurationDone"})
 
 ```json
 {
-  "name": "Attach to Hermes",
+  "name": "Attach to Oria",
   "type": "debugpy",
   "request": "attach",
   "connect": { "host": "127.0.0.1", "port": 5678 },
@@ -289,7 +289,7 @@ nc 127.0.0.1 4444
 
 当 `debugpy` 的 DAP 协议过于繁重时，`remote-pdb` 是最适合 agent 的选择。仅在确实需要 IDE 集成时才使用 `debugpy`。
 
-## 调试 Hermes 特定进程
+## 调试 Oria 特定进程
 
 ### 测试
 参见方案 3。wrapper 会捕获子进程输出，交互式 pdb 请直接运行 pytest。
@@ -343,7 +343,7 @@ set_trace(host="127.0.0.1", port=4444)   # 在你想捕获的 RPC 处理器中
 
 8. **`scripts/run_tests.sh` 会剥离凭据并设置 `HOME=<tmpdir>`。** 如果你的 bug 依赖用户配置或真实 API 密钥，在 wrapper 下将无法复现。先用原始 `pytest` 复现，再在 wrapper 下确认。
 
-9. **fork / 多进程。** pdb 不会跟随 fork。每个子进程需要自己的 `breakpoint()` 或 `set_trace()`。对于 Hermes 子 agent，每次只调试一个进程。
+9. **fork / 多进程。** pdb 不会跟随 fork。每个子进程需要自己的 `breakpoint()` 或 `set_trace()`。对于 Oria 子 agent，每次只调试一个进程。
 
 ## 验证清单
 

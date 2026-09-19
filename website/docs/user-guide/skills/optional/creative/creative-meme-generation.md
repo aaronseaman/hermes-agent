@@ -14,7 +14,7 @@ Create meme PNGs from templates with Pillow text overlay.
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/creative/meme-generation` |
+| Source | Optional — install with `oria skills install official/creative/meme-generation` |
 | Path | `optional-skills/creative\meme-generation` |
 | Version | `2.0.0` |
 | Author | adanaleycio |
@@ -26,7 +26,7 @@ Create meme PNGs from templates with Pillow text overlay.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Meme Generation

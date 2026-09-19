@@ -14,7 +14,7 @@ description: "通过 curl 调用 SiYuan Note API，在自托管知识库中搜�
 
 | | |
 |---|---|
-| 来源 | 可选 — 使用 `hermes skills install official/productivity/siyuan` 安装 |
+| 来源 | 可选 — 使用 `oria skills install official/productivity/siyuan` 安装 |
 | 路径 | `optional-skills/productivity/siyuan` |
 | 版本 | `1.0.0` |
 | 作者 | FEUAZUR |
@@ -26,7 +26,7 @@ description: "通过 curl 调用 SiYuan Note API，在自托管知识库中搜�
 ## 参考：完整 SKILL.md
 
 :::info
-以下是 Hermes 在触发此 skill 时加载的完整 skill 定义。这是 agent 在 skill 激活时所看到的指令内容。
+以下是 Oria 在触发此 skill 时加载的完整 skill 定义。这是 agent 在 skill 激活时所看到的指令内容。
 :::
 
 # SiYuan Note API

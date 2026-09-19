@@ -14,7 +14,7 @@ description: "通过 AgentMail 为 Agent 提供专属电子邮件收件箱"
 
 | | |
 |---|---|
-| 来源 | 可选 — 使用 `hermes skills install official/email/agentmail` 安装 |
+| 来源 | 可选 — 使用 `oria skills install official/email/agentmail` 安装 |
 | 路径 | `optional-skills/email/agentmail` |
 | 版本 | `1.0.0` |
 | 平台 | linux, macos, windows |
@@ -23,7 +23,7 @@ description: "通过 AgentMail 为 Agent 提供专属电子邮件收件箱"
 ## 参考：完整 SKILL.md
 
 :::info
-以下是 Hermes 在触发此 skill 时加载的完整 skill 定义。这是 skill 激活时 Agent 所看到的指令内容。
+以下是 Oria 在触发此 skill 时加载的完整 skill 定义。这是 skill 激活时 Agent 所看到的指令内容。
 :::
 
 # AgentMail — Agent 专属电子邮件收件箱
@@ -62,7 +62,7 @@ mcp_servers:
       AGENTMAIL_API_KEY: "am_your_key_here"
 ```
 
-### 3. 重启 Hermes
+### 3. 重启 Oria
 ```bash
 hermes
 ```

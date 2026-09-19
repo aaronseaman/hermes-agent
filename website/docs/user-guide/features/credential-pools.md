@@ -7,7 +7,7 @@ sidebar_position: 9
 
 # Credential Pools
 
-Credential pools let you register multiple API keys or OAuth tokens for the same provider. When one key hits a rate limit or billing quota, Hermes automatically rotates to the next healthy key — keeping your session alive without switching providers.
+Credential pools let you register multiple API keys or OAuth tokens for the same provider. When one key hits a rate limit or billing quota, Oria automatically rotates to the next healthy key — keeping your session alive without switching providers.
 
 This is different from [fallback providers](./fallback-providers.md), which switch to a *different* provider entirely. Credential pools are same-provider rotation; fallback providers are cross-provider failover. Pools are tried first — if all pool keys are exhausted, *then* the fallback provider activates.
 
@@ -42,27 +42,27 @@ Your request
 
 ## Quick Start
 
-If you already have an API key set in `.env`, Hermes auto-discovers it as a 1-key pool. To benefit from pooling, add more keys:
+If you already have an API key set in `.env`, Oria auto-discovers it as a 1-key pool. To benefit from pooling, add more keys:
 
 ```bash
 # Add a second OpenRouter key
-hermes auth add openrouter --api-key sk-or-v1-your-second-key
+oria auth add openrouter --api-key sk-or-v1-your-second-key
 
 # ...or let a browser login mint one (OpenRouter OAuth PKCE; stored as a plain API key)
-hermes auth add openrouter --type oauth
+oria auth add openrouter --type oauth
 
 # Add a second Anthropic key
-hermes auth add anthropic --type api-key --api-key sk-ant-api03-your-second-key
+oria auth add anthropic --type api-key --api-key sk-ant-api03-your-second-key
 
 # Add an Anthropic OAuth credential (requires Claude Max plan + extra usage credits)
-hermes auth add anthropic --type oauth
+oria auth add anthropic --type oauth
 # Opens browser for OAuth login
 ```
 
 Check your pools:
 
 ```bash
-hermes auth list
+oria auth list
 ```
 
 Output:
@@ -78,15 +78,15 @@ anthropic (3 credentials):
 ```
 
 The `←` marks the currently selected credential. `id=` is the entry id accepted by
-`hermes auth remove <provider> <target>` when a label is ambiguous, and `priority=` is
+`oria auth remove <provider> <target>` when a label is ambiguous, and `priority=` is
 the order the pool tries credentials in under the `fill_first` strategy.
 
 ## Interactive Management
 
-Run `hermes auth` with no subcommand for an interactive wizard:
+Run `oria auth` with no subcommand for an interactive wizard:
 
 ```bash
-hermes auth
+oria auth
 ```
 
 This shows your full pool status and offers a menu:
@@ -113,22 +113,22 @@ Type [1/2]:
 
 | Command | Description |
 |---------|-------------|
-| `hermes auth` | Interactive pool management wizard |
-| `hermes auth list` | Show all pools and credentials |
-| `hermes auth list <provider>` | Show a specific provider's pool |
-| `hermes auth add <provider>` | Add a credential (prompts for type and key) |
-| `hermes auth add <provider> --type api-key --api-key <key>` | Add an API key non-interactively |
-| `hermes auth add <provider> --type oauth` | Add an OAuth credential via browser login |
-| `hermes auth add <provider> --priority 0` | Add a credential and place it first in the `fill_first` order |
-| `hermes auth priority <provider> <target> <n>` | Move a credential to priority `n` (0 = tried first); the rest are renumbered |
-| `hermes auth remove <provider> <index>` | Remove credential by 1-based index |
-| `hermes auth reset <provider>` | Clear all cooldowns/exhaustion status |
-| `hermes auth reset <provider> <target>` | Clear the cooldown on one credential by index, id, or label |
-| `hermes auth refresh <provider> [target]` | Refresh one OAuth credential's tokens and return it to rotation (proves the grant is alive; the next request re-checks quota) |
+| `oria auth` | Interactive pool management wizard |
+| `oria auth list` | Show all pools and credentials |
+| `oria auth list <provider>` | Show a specific provider's pool |
+| `oria auth add <provider>` | Add a credential (prompts for type and key) |
+| `oria auth add <provider> --type api-key --api-key <key>` | Add an API key non-interactively |
+| `oria auth add <provider> --type oauth` | Add an OAuth credential via browser login |
+| `oria auth add <provider> --priority 0` | Add a credential and place it first in the `fill_first` order |
+| `oria auth priority <provider> <target> <n>` | Move a credential to priority `n` (0 = tried first); the rest are renumbered |
+| `oria auth remove <provider> <index>` | Remove credential by 1-based index |
+| `oria auth reset <provider>` | Clear all cooldowns/exhaustion status |
+| `oria auth reset <provider> <target>` | Clear the cooldown on one credential by index, id, or label |
+| `oria auth refresh <provider> [target]` | Refresh one OAuth credential's tokens and return it to rotation (proves the grant is alive; the next request re-checks quota) |
 
 For Nous, `auth refresh` supports only the login's `device_code` singleton.
 Independent Nous pool accounts are rejected before refresh; their tokens and
-cooldowns are preserved. Reauthenticate with `hermes auth add nous --type oauth`
+cooldowns are preserved. Reauthenticate with `oria auth add nous --type oauth`
 to update the singleton; this does not refresh an independent account. Other
 providers retain their existing source-specific refresh support.
 
@@ -148,7 +148,7 @@ multiple requests. Counts remain in memory until the next existing pool write
 (for example rotation, exhaustion, refresh, or an administrative change); this does
 not add a disk write per selection.
 
-Configure via `hermes auth` → "Set rotation strategy" or in `config.yaml`:
+Configure via `oria auth` → "Set rotation strategy" or in `config.yaml`:
 
 ```yaml
 credential_pool_strategies:
@@ -158,7 +158,7 @@ credential_pool_strategies:
 
 | Strategy | Behavior |
 |----------|----------|
-| `fill_first` (default) | Use the first healthy key until it's exhausted, then move to the next; order is each credential's `priority` (`hermes auth priority` changes it) |
+| `fill_first` (default) | Use the first healthy key until it's exhausted, then move to the next; order is each credential's `priority` (`oria auth priority` changes it) |
 | `round_robin` | Cycle through keys evenly, rotating after each selection |
 | `least_used` | Always pick the key with the lowest request count |
 | `random` | Random selection among healthy keys |
@@ -182,17 +182,17 @@ The `has_retried_429` flag resets on every successful API call, so a single tran
 
 Custom OpenAI-compatible endpoints (Together.ai, RunPod, local servers) get their own pools, keyed by the endpoint name from the `providers:` dict in config.yaml (or the legacy `custom_providers` list, which is auto-migrated).
 
-When you set up a custom endpoint via `hermes model`, it auto-generates a name like "Together.ai" or "Local (localhost:8080)". This name becomes the pool key.
+When you set up a custom endpoint via `oria model`, it auto-generates a name like "Together.ai" or "Local (localhost:8080)". This name becomes the pool key.
 
 ```bash
-# After setting up a custom endpoint via hermes model:
-hermes auth list
+# After setting up a custom endpoint via oria model:
+oria auth list
 # Shows:
 #   Together.ai (1 credential):
 #     #1  config key    api_key config:Together.ai ←
 
 # Add a second key for the same endpoint:
-hermes auth add Together.ai --api-key sk-together-second-key
+oria auth add Together.ai --api-key sk-together-second-key
 ```
 
 Custom endpoint pools are stored in `auth.json` under `credential_pool` with a `custom:` prefix:
@@ -208,7 +208,7 @@ Custom endpoint pools are stored in `auth.json` under `credential_pool` with a `
 
 ## Auto-Discovery
 
-Hermes automatically discovers credentials from multiple sources and seeds the pool on startup:
+Oria automatically discovers credentials from multiple sources and seeds the pool on startup:
 
 | Source | Example | Auto-seeded? |
 |--------|---------|-------------|
@@ -216,11 +216,11 @@ Hermes automatically discovers credentials from multiple sources and seeds the p
 | Numbered env siblings | `OPENROUTER_API_KEY_2`, `OPENROUTER_API_KEY_3`, … | Yes (see below) |
 | OAuth tokens (auth.json) | Codex device code, Nous device code | Yes |
 | Claude Code credentials | `~/.claude/.credentials.json` | Yes (Anthropic) |
-| Hermes PKCE OAuth | `~/.hermes/auth.json` | Yes (Anthropic) |
+| Oria PKCE OAuth | `~/.hermes/auth.json` | Yes (Anthropic) |
 | Custom endpoint config | `model.api_key` in config.yaml | Yes (custom endpoints) |
-| Manual entries | Added via `hermes auth add` | Persisted in auth.json |
+| Manual entries | Added via `oria auth add` | Persisted in auth.json |
 
-Auto-seeded entries are updated on each pool load — if you remove an env var, its pool entry is automatically pruned. Manual entries (added via `hermes auth add`) are never auto-pruned.
+Auto-seeded entries are updated on each pool load — if you remove an env var, its pool entry is automatically pruned. Manual entries (added via `oria auth add`) are never auto-pruned.
 
 ### Several keys from the environment
 
@@ -231,7 +231,7 @@ credential_pool_strategies:
   nvidia: round_robin
 ```
 
-Borrowed runtime secrets (for example env vars, Bitwarden/Vault/keyring/systemd references, and custom config values) are reference-only at the `auth.json` boundary. Hermes can use the resolved value in memory for the current run, but it persists only metadata such as the source ref, label, status, request counters, and a non-reversible fingerprint. Manual entries and Hermes-owned OAuth/device-code state keep the durable tokens they need to refresh.
+Borrowed runtime secrets (for example env vars, Bitwarden/Vault/keyring/systemd references, and custom config values) are reference-only at the `auth.json` boundary. Oria can use the resolved value in memory for the current run, but it persists only metadata such as the source ref, label, status, request counters, and a non-reversible fingerprint. Manual entries and Hermes-owned OAuth/device-code state keep the durable tokens they need to refresh.
 
 ## Delegation & Subagent Sharing
 
@@ -295,9 +295,9 @@ Pool state is stored in `~/.hermes/auth.json` under the `credential_pool` key:
 }
 ```
 
-The OpenRouter entry above was borrowed from an external source, so the raw key is not stored in `auth.json`. The manual Anthropic entry was intentionally added to Hermes' credential store, so its token remains persistable.
+The OpenRouter entry above was borrowed from an external source, so the raw key is not stored in `auth.json`. The manual Anthropic entry was intentionally added to Oria' credential store, so its token remains persistable.
 
-An `env:` row is re-hydrated from the environment on every load, and the variable name does not have to be one Hermes declares for the provider: numbered siblings (`OPENROUTER_API_KEY_2`, see [Auto-Discovery](#auto-discovery)) appear here automatically, and a hand-written row pointing at any other variable is filled the same way, without the secret ever being written to `auth.json`.
+An `env:` row is re-hydrated from the environment on every load, and the variable name does not have to be one Oria declares for the provider: numbered siblings (`OPENROUTER_API_KEY_2`, see [Auto-Discovery](#auto-discovery)) appear here automatically, and a hand-written row pointing at any other variable is filled the same way, without the secret ever being written to `auth.json`.
 
 Strategies are stored in `config.yaml` (not `auth.json`):
 

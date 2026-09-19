@@ -2,19 +2,19 @@
 sidebar_position: 11
 sidebar_label: "Plugins"
 title: "Plugins"
-description: "Extend Hermes with custom tools, hooks, and integrations via the plugin system"
+description: "Extend Oria with custom tools, hooks, and integrations via the plugin system"
 ---
 
 # Plugins
 
-Hermes has a plugin system for adding custom tools, hooks, and integrations without modifying core code.
+Oria has a plugin system for adding custom tools, hooks, and integrations without modifying core code.
 
 If you want to create a custom tool for yourself, your team, or one project,
 this is usually the right path. The developer guide's
-[Adding Tools](/developer-guide/adding-tools) page is for built-in Hermes
+[Adding Tools](/developer-guide/adding-tools) page is for built-in Oria
 core tools that live in `tools/` and `toolsets.py`.
 
-**→ [Build a Hermes Plugin](/developer-guide/plugins)** — step-by-step guide with a complete working example.
+**→ [Build an Oria Plugin](/developer-guide/plugins)** — step-by-step guide with a complete working example.
 
 ## Quick overview
 
@@ -28,7 +28,7 @@ Drop a directory into `~/.hermes/plugins/` with a `plugin.yaml` and Python code:
 └── tools.py         # tool handlers (what runs when called)
 ```
 
-Start Hermes — your tools appear alongside built-in tools. The model can call them immediately.
+Start Oria — your tools appear alongside built-in tools. The model can call them immediately.
 
 ### Minimal working example
 
@@ -45,7 +45,7 @@ description: A minimal example plugin
 **`~/.hermes/plugins/hello-world/__init__.py`**
 
 ```python
-"""Minimal Hermes plugin — registers a tool and a hook."""
+"""Minimal Oria plugin — registers a tool and a hook."""
 
 import json
 
@@ -86,11 +86,11 @@ def register(ctx):
     ctx.register_hook("post_tool_call", on_tool_call)
 ```
 
-Drop both files into `~/.hermes/plugins/hello-world/`, restart Hermes, and the model can immediately call `hello_world`. The hook prints a log line after every tool invocation.
+Drop both files into `~/.hermes/plugins/hello-world/`, restart Oria, and the model can immediately call `hello_world`. The hook prints a log line after every tool invocation.
 
-The model-facing tool description belongs in `schema["description"]`. The optional `ctx.register_tool(description=...)` value is separate `ToolEntry` registry metadata: when omitted, it defaults to the schema description, but Hermes does not copy it back into a schema that lacks `description`. Prefer defining the text once in the schema. If you provide both values, keep them synchronized; the model sees the schema value.
+The model-facing tool description belongs in `schema["description"]`. The optional `ctx.register_tool(description=...)` value is separate `ToolEntry` registry metadata: when omitted, it defaults to the schema description, but Oria does not copy it back into a schema that lacks `description`. Prefer defining the text once in the schema. If you provide both values, keep them synchronized; the model sees the schema value.
 
-Project-local plugins under `./.hermes/plugins/` are disabled by default. Enable them only for trusted repositories by setting `HERMES_ENABLE_PROJECT_PLUGINS=true` before starting Hermes.
+Project-local plugins under `./.hermes/plugins/` are disabled by default. Enable them only for trusted repositories by setting `HERMES_ENABLE_PROJECT_PLUGINS=true` before starting Oria.
 
 ## What plugins can do
 
@@ -106,7 +106,7 @@ Every `ctx.*` API below is available inside a plugin's `register(ctx)` function.
 | Inject messages | `ctx.inject_message(content, role="user", session_key=...)` - see [Injecting Messages](#injecting-messages) |
 | Ship data files | `Path(__file__).parent / "data" / "file.yaml"` |
 | Bundle skills | `ctx.register_skill(name, path)` — namespaced as `plugin:skill`, loaded via `skill_view("plugin:skill")` |
-| Gate on env vars | `requires_env: [API_KEY]` in plugin.yaml — prompted during `hermes plugins install` |
+| Gate on env vars | `requires_env: [API_KEY]` in plugin.yaml — prompted during `oria plugins install` |
 | Distribute via pip | `[project.entry-points."hermes_agent.plugins"]` |
 | Register a gateway platform (Discord, Telegram, IRC, …) | `ctx.register_platform(name, label, adapter_factory, check_fn, ...)` — see [Adding Platform Adapters](/developer-guide/adding-platform-adapters) |
 | Register an image-generation backend | `ctx.register_image_gen_provider(provider)` — see [Image Generation Provider Plugins](/developer-guide/image-gen-provider-plugin) |
@@ -123,7 +123,7 @@ Every `ctx.*` API below is available inside a plugin's `register(ctx)` function.
 
 | Source | Path | Use case |
 |--------|------|----------|
-| Bundled | `<repo>/plugins/` | Ships with Hermes — see [Built-in Plugins](/user-guide/features/built-in-plugins) |
+| Bundled | `<repo>/plugins/` | Ships with Oria — see [Built-in Plugins](/user-guide/features/built-in-plugins) |
 | User | `~/.hermes/plugins/` | Personal plugins |
 | Project | `.hermes/plugins/` | Project-specific plugins (requires `HERMES_ENABLE_PROJECT_PLUGINS=true`) |
 | pip | `hermes_agent.plugins` entry_points | Distributed packages |
@@ -133,7 +133,7 @@ Later sources override earlier ones on name collision, so a user plugin with the
 
 ### Plugin sub-categories
 
-Within each source, Hermes also recognizes sub-category directories that route plugins to specialized discovery systems:
+Within each source, Oria also recognizes sub-category directories that route plugins to specialized discovery systems:
 
 | Sub-directory | What it holds | Discovery system |
 |---|---|---|
@@ -148,7 +148,7 @@ User plugins at `~/.hermes/plugins/model-providers/<name>/` override bundled mod
 
 ## Plugins are opt-in (with a few exceptions)
 
-**General plugins and user-installed backends are disabled by default** — discovery finds them (so they show up in `hermes plugins` and `/plugins`), but nothing with hooks or tools loads until you add the plugin's name to `plugins.enabled` in `~/.hermes/config.yaml`. This stops third-party code from running without your explicit consent.
+**General plugins and user-installed backends are disabled by default** — discovery finds them (so they show up in `oria plugins` and `/plugins`), but nothing with hooks or tools loads until you add the plugin's name to `plugins.enabled` in `~/.hermes/config.yaml`. This stops third-party code from running without your explicit consent.
 
 ```yaml
 plugins:
@@ -169,39 +169,39 @@ plugins:
 Three ways to flip state:
 
 ```bash
-hermes plugins                    # interactive toggle (space to check/uncheck)
-hermes plugins enable <name>      # add to allow-list
-hermes plugins disable <name>     # remove from allow-list + add to disabled
+oria plugins                      # interactive toggle (space to check/uncheck)
+oria plugins enable <name>        # add to allow-list
+oria plugins disable <name>       # remove from allow-list + add to disabled
 ```
 
-After `hermes plugins install owner/repo`, you're asked `Enable 'name' now? [y/N]` — defaults to no. Skip the prompt for scripted installs with `--enable` or `--no-enable`.
+After `oria plugins install owner/repo`, you're asked `Enable 'name' now? [y/N]` — defaults to no. Skip the prompt for scripted installs with `--enable` or `--no-enable`.
 
 For a reproducible install, pin a full immutable commit (tags, branches, and
 abbreviated SHAs are not accepted):
 
 ```bash
-hermes plugins install owner/repo --ref 0123456789abcdef0123456789abcdef01234567
+oria plugins install owner/repo --ref 0123456789abcdef0123456789abcdef01234567
 ```
 
-Hermes checks out the commit detached, verifies that `HEAD` exactly matches the
+Oria checks out the commit detached, verifies that `HEAD` exactly matches the
 requested SHA, and records the canonical source, installed revision, and pin
-status in the current profile. `hermes plugins update` refuses to move a pinned
+status in the current profile. `oria plugins update` refuses to move a pinned
 plugin; choose a new exact commit explicitly with
-`hermes plugins install <source> --force --ref <new-commit>`. The
+`oria plugins install <source> --force --ref <new-commit>`. The
 profile-local install metadata contains no config values, environment values,
 secrets, or capability grants.
 
-The same pin is available in Hermes Desktop: **Skills → Plugins → Install from
+The same pin is available in Oria Desktop: **Skills → Plugins → Install from
 Git** has a *Pin to commit* field that takes the full 40-character SHA, and the
 plugins list shows a `pinned @ <sha8>` badge on every pinned install so a team
-can confirm everyone is running the same commit. `hermes plugins list` prints
+can confirm everyone is running the same commit. `oria plugins list` prints
 the pin in its Source column (`git pinned@<sha8>`). Pins work for private
 repositories too, through the same stored credentials described below.
 
 ### Installing from a private repository
 
-`hermes plugins install` clones non-interactively (it never prompts for a
-username or password), so a private repo needs a credential Hermes can find on
+`oria plugins install` clones non-interactively (it never prompts for a
+username or password), so a private repo needs a credential Oria can find on
 its own. For an `https://` source it tries, in order:
 
 1. `GITHUB_TOKEN` or `GH_TOKEN` from your `.env` (GitHub hosts only).
@@ -212,12 +212,12 @@ its own. For an `https://` source it tries, in order:
 The credential is sent as a one-shot HTTP header for that install or update;
 it is never written into the plugin's `.git/config` or the install metadata.
 SSH sources (`git@host:owner/repo.git`) authenticate through your ssh-agent as
-before. The same resolution applies to `hermes plugins update`, catalog MCP
+before. The same resolution applies to `oria plugins update`, catalog MCP
 installs from git, and profile distributions fetched from a git URL.
 
 ### What the allow-list does NOT gate
 
-Several categories of plugin bypass `plugins.enabled` — they're part of Hermes' built-in surface and would break basic functionality if gated off by default:
+Several categories of plugin bypass `plugins.enabled` — they're part of Oria' built-in surface and would break basic functionality if gated off by default:
 
 | Plugin kind | How it's activated instead |
 |---|---|
@@ -234,7 +234,7 @@ In short: **bundled "always-works" infrastructure loads automatically; third-par
 ### Approval transports
 
 An approval transport changes **where a human sees and answers** an existing
-Hermes tool-approval request. It does not decide whether a command needs
+Oria tool-approval request. It does not decide whether a command needs
 approval and it is not an authorization-policy API.
 
 ```python
@@ -249,7 +249,7 @@ def register(ctx):
     ctx.register_approval_transport("my-ui", present)
 ```
 
-`present` may be synchronous or async. Hermes runs it on a bounded worker and
+`present` may be synchronous or async. Oria runs it on a bounded worker and
 enforces the canonical `approvals.timeout` even if the plugin does not. The
 request is immutable and contains redacted display text, its host presentation
 class (`cli` or `gateway`), the host timeout, allowed choices, and an opaque
@@ -275,10 +275,10 @@ security:
 Transport exceptions, timeouts, unavailable registrations, invalid choices,
 and stale responses deny by default. To deliberately show the prompt on the
 ordinary CLI/TUI/gateway/ACP surface when the selected transport fails, set
-`transport_fallback: builtin`. Without that exact opt-in, Hermes never
+`transport_fallback: builtin`. Without that exact opt-in, Oria never
 materializes the prompt on another surface.
 
-Hermes still owns hardline blocks, sudo-stdin protection, user deny rules,
+Oria still owns hardline blocks, sudo-stdin protection, user deny rules,
 request binding, allowed scopes, persistence, hooks, and final authorization.
 Hardline commands are blocked before any transport callback. There is
 intentionally **no plugin approval policy, auto-allow callback, or required
@@ -288,7 +288,7 @@ grant it.
 
 ### Migration for existing users
 
-When you upgrade to a version of Hermes that has opt-in plugins (config schema v21+), any user plugins already installed under `~/.hermes/plugins/` that weren't already in `plugins.disabled` are **automatically grandfathered** into `plugins.enabled`. Your existing setup keeps working. Bundled standalone plugins are NOT grandfathered — even existing users have to opt in explicitly. (Bundled platform/backend plugins never needed grandfathering because they were never gated.)
+When you upgrade to a version of Oria that has opt-in plugins (config schema v21+), any user plugins already installed under `~/.hermes/plugins/` that weren't already in `plugins.disabled` are **automatically grandfathered** into `plugins.enabled`. Your existing setup keeps working. Bundled standalone plugins are NOT grandfathered — even existing users have to opt in explicitly. (Bundled platform/backend plugins never needed grandfathering because they were never gated.)
 
 ## Available hooks
 
@@ -303,7 +303,7 @@ Plugins can register the 27 lifecycle events currently accepted by `hermes_cli.p
 These categories describe current behavior rather than defining future naming rules. Plugin middleware remains a separate registry/surface.
 ## Plugin types
 
-Hermes has four kinds of plugins:
+Oria has four kinds of plugins:
 
 | Type | What it does | Selection | Location |
 |------|-------------|-----------|----------|
@@ -316,13 +316,13 @@ Memory providers and context engines are **provider plugins** — only one of ea
 
 ## Pluggable interfaces — where to go for each
 
-The table above shows the four plugin categories, but within "General plugins" the `PluginContext` exposes several distinct extension points — and Hermes also accepts extensions outside the Python plugin system (config-driven backends, shell-hooked commands, external servers, etc.). Use this table to find the right doc for what you want to build:
+The table above shows the four plugin categories, but within "General plugins" the `PluginContext` exposes several distinct extension points — and Oria also accepts extensions outside the Python plugin system (config-driven backends, shell-hooked commands, external servers, etc.). Use this table to find the right doc for what you want to build:
 
 | Want to add… | How | Authoring guide |
 |---|---|---|
-| A **tool** the LLM can call | Python plugin — `ctx.register_tool()` | [Build a Hermes Plugin](/developer-guide/plugins) · [Adding Tools](/developer-guide/adding-tools) |
-| A **lifecycle hook** (pre/post LLM, session start/end, tool filter) | Python plugin — `ctx.register_hook()` | [Hooks reference](/user-guide/features/hooks) · [Build a Hermes Plugin](/developer-guide/plugins) |
-| A **slash command** for the CLI / gateway | Python plugin — `ctx.register_command()` | [Build a Hermes Plugin](/developer-guide/plugins) · [Extending the CLI](/developer-guide/extending-the-cli) |
+| A **tool** the LLM can call | Python plugin — `ctx.register_tool()` | [Build an Oria Plugin](/developer-guide/plugins) · [Adding Tools](/developer-guide/adding-tools) |
+| A **lifecycle hook** (pre/post LLM, session start/end, tool filter) | Python plugin — `ctx.register_hook()` | [Hooks reference](/user-guide/features/hooks) · [Build an Oria Plugin](/developer-guide/plugins) |
+| A **slash command** for the CLI / gateway | Python plugin — `ctx.register_command()` | [Build an Oria Plugin](/developer-guide/plugins) · [Extending the CLI](/developer-guide/extending-the-cli) |
 | A **subcommand** for `hermes <thing>` | Python plugin — `ctx.register_cli_command()` | [Extending the CLI](/developer-guide/extending-the-cli) |
 | A bundled **skill** that your plugin ships | Python plugin — `ctx.register_skill()` | [Creating Skills](/developer-guide/creating-skills) |
 | An **inference backend** (LLM provider: OpenAI-compat, Codex, Anthropic-Messages, Bedrock) | Provider plugin — `register_provider(ProviderProfile(...))` in `plugins/model-providers/<name>/` | **[Model Provider Plugins](/developer-guide/model-provider-plugin)** · [Adding Providers](/developer-guide/adding-providers) |
@@ -333,8 +333,8 @@ The table above shows the four plugin categories, but within "General plugins" t
 | A **video-generation backend** (Veo, Kling, Pixverse, Grok-Imagine, Runway, …) | Backend plugin — `ctx.register_video_gen_provider()` | [Video Generation Provider Plugins](/developer-guide/video-gen-provider-plugin) |
 | A **TTS backend** (any CLI — Piper, VoxCPM, Kokoro, xtts, voice-cloning scripts, …) | Config-driven (recommended) — declare under `tts.providers.<name>` with `type: command` in `config.yaml`. OR Python backend plugin — `ctx.register_tts_provider()` for Python-SDK / streaming engines that need more than a shell template. | [TTS Setup](/user-guide/features/tts#custom-command-providers) · [Python plugin guide](/user-guide/features/tts#python-plugin-providers) |
 | An **STT backend** (any CLI — whisper.cpp, custom whisper binary, local ASR CLI) | Config-driven (recommended) — declare under `stt.providers.<name>` with `type: command` in `config.yaml`, or set `HERMES_LOCAL_STT_COMMAND` for the legacy single-command escape hatch. OR Python backend plugin — `ctx.register_transcription_provider()` for Python-SDK engines (OpenRouter, SenseAudio, Gemini-STT, etc.). | [STT Setup](/user-guide/features/tts#stt-custom-command-providers) · [Python plugin guide](/user-guide/features/tts#python-plugin-providers-stt) |
-| **External tools via MCP** (filesystem, GitHub, Linear, Notion, any MCP server) | Config-driven — declare `mcp_servers.<name>` with `command:` / `url:` in `config.yaml`. Hermes auto-discovers the server's tools and registers them alongside built-ins. | [MCP](/user-guide/features/mcp) |
-| **Additional skill sources** (custom GitHub repos, private skill indexes) | CLI — `hermes skills tap add <repo>` | [Skills Hub](/user-guide/features/skills#skills-hub) · [Publishing a custom tap](/user-guide/features/skills#publishing-a-custom-skill-tap) |
+| **External tools via MCP** (filesystem, GitHub, Linear, Notion, any MCP server) | Config-driven — declare `mcp_servers.<name>` with `command:` / `url:` in `config.yaml`. Oria auto-discovers the server's tools and registers them alongside built-ins. | [MCP](/user-guide/features/mcp) |
+| **Additional skill sources** (custom GitHub repos, private skill indexes) | CLI — `oria skills tap add <repo>` | [Skills Hub](/user-guide/features/skills#skills-hub) · [Publishing a custom tap](/user-guide/features/skills#publishing-a-custom-skill-tap) |
 | **Gateway event hooks** (fire on `gateway:startup`, `session:start`, `agent:end`, `command:*`) | Drop `HOOK.yaml` + `handler.py` into `~/.hermes/hooks/<name>/` | [Event Hooks](/user-guide/features/hooks#gateway-event-hooks) |
 | **Shell hooks** (run a shell command on events — notifications, audit logs, desktop alerts) | Config-driven — declare under `hooks:` in `config.yaml` | [Shell Hooks](/user-guide/features/hooks#shell-hooks) |
 
@@ -344,7 +344,7 @@ Not everything is a Python plugin. Some extension surfaces intentionally use **c
 
 ## NixOS declarative plugins
 
-On NixOS, plugins can be installed declaratively via the module options — no `hermes plugins install` needed. See the **[Nix Setup guide](/getting-started/nix-setup#plugins)** for full details.
+On NixOS, plugins can be installed declaratively via the module options — no `oria plugins install` needed. See the **[Nix Setup guide](/getting-started/nix-setup#plugins)** for full details.
 
 ```nix
 services.hermes-agent = {
@@ -362,23 +362,23 @@ Declarative plugins are symlinked with a `nix-managed-` prefix — they coexist 
 ## Managing plugins
 
 ```bash
-hermes plugins                               # unified interactive UI
-hermes plugins list                          # table: enabled / disabled / not enabled
-hermes plugins search <term>                 # search the Hermes plugin catalog
-hermes plugins install <name>                # install a catalog entry (repo @ reviewed pinned SHA)
-hermes plugins install user/repo             # install from Git, then prompt Enable? [y/N]
-hermes plugins install user/repo --enable    # install AND enable (no prompt)
-hermes plugins install user/repo --no-enable # install but leave disabled (no prompt)
-hermes plugins update my-plugin              # pull latest (local edits are autostashed and re-applied)
-hermes plugins remove my-plugin              # uninstall
-hermes plugins enable my-plugin              # add to allow-list
-hermes plugins disable my-plugin             # remove from allow-list + add to disabled
-hermes plugins capabilities [my-plugin]      # declared vs granted capabilities
+oria plugins                                 # unified interactive UI
+oria plugins list                            # table: enabled / disabled / not enabled
+oria plugins search <term>                 # search the Oria plugin catalog
+oria plugins install <name>                  # install a catalog entry (repo @ reviewed pinned SHA)
+oria plugins install user/repo               # install from Git, then prompt Enable? [y/N]
+oria plugins install user/repo --enable      # install AND enable (no prompt)
+oria plugins install user/repo --no-enable # install but leave disabled (no prompt)
+oria plugins update my-plugin                # pull latest (local edits are autostashed and re-applied)
+oria plugins remove my-plugin                # uninstall
+oria plugins enable my-plugin                # add to allow-list
+oria plugins disable my-plugin               # remove from allow-list + add to disabled
+oria plugins capabilities [my-plugin]        # declared vs granted capabilities
 ```
 
 ### One-click install links (Desktop)
 
-Hermes Desktop registers the `hermes://` URL scheme, so a website, README, or
+Oria Desktop registers the `hermes://` URL scheme, so a website, README, or
 chat message can link straight to a plugin install:
 
 ```
@@ -387,14 +387,14 @@ hermes://plugin/install?repo=owner/repo&enable=1   # enable the agent plugin aft
 hermes://plugin/install?repo=owner/repo&force=1    # replace an existing install
 ```
 
-Clicking one opens Hermes and shows a **confirmation dialog** — the repo id,
+Clicking one opens Oria and shows a **confirmation dialog** — the repo id,
 a "Before you install" note, and GitHub browse + clone links — then
 shallow-clones the repo to detect what it ships (an **agent plugin** —
 backend Python, a **desktop plugin** — app UI, or both). You pick the
 components with checkboxes and confirm. Nothing is installed until you do;
 deep links never auto-install, and agent-plugin installs go through the same
 [install-time security scanning](#install-time-security-scanning) as
-`hermes plugins install`.
+`oria plugins install`.
 
 Hybrid repos (agent + desktop halves in one repo) use one link and one
 dialog. The same modal is reachable without a link via **Capabilities →
@@ -405,11 +405,11 @@ Plugins → Install from Git**. Legacy `hermes://plugin-agent/…` and
 Websites need no SDK — a normal anchor works:
 
 ```html
-<a href="hermes://plugin/install?repo=owner/repo&enable=1">Install in Hermes</a>
+<a href="hermes://plugin/install?repo=owner/repo&enable=1">Install in Oria</a>
 ```
 
 MCP servers have the equivalent link form — see
-[Add to Hermes link](/reference/mcp-config-reference#add-to-hermes-link).
+[Add to Oria link](/reference/mcp-config-reference#add-to-oria-link).
 
 ### Plugin capabilities and consent
 
@@ -423,8 +423,8 @@ capabilities:
   - llm.model_override    # pick the model for host-owned LLM calls
 ```
 
-When a plugin declares capabilities, `hermes plugins install` (and
-`hermes plugins enable`) shows the list with one-line risk descriptions and
+When a plugin declares capabilities, `oria plugins install` (and
+`oria plugins enable`) shows the list with one-line risk descriptions and
 asks once. Consenting records the grant under
 `plugins.entries.<id>.granted_capabilities` together with a consent hash and
 timestamp. Declining leaves the plugin enabled with those capabilities off —
@@ -432,19 +432,19 @@ a well-behaved plugin probes with `ctx.has_capability()` and degrades
 gracefully.
 
 **Update re-consent:** if a plugin update declares capabilities you haven't
-granted, `hermes plugins update` surfaces the additions and asks again. New
+granted, `oria plugins update` surfaces the additions and asks again. New
 capabilities stay off until you consent — a plugin update can never silently
 widen its access.
 
 **Non-interactive sessions fail closed:** installing or updating without a
 TTY completes the install, but declared capabilities are *not* granted. Run
-`hermes plugins enable <id>` interactively to grant them later.
+`oria plugins enable <id>` interactively to grant them later.
 
 Inspect the state at any time:
 
 ```bash
-hermes plugins capabilities             # all plugins with declared/granted capabilities
-hermes plugins capabilities my-plugin   # one plugin, declared vs granted
+oria plugins capabilities               # all plugins with declared/granted capabilities
+oria plugins capabilities my-plugin     # one plugin, declared vs granted
 ```
 
 Capability ids map 1:1 to the older per-feature config gates, which keep
@@ -467,7 +467,7 @@ set — existing configs keep working unchanged.
 Capabilities are a **consent and audit layer**, not isolation. Plugins run as
 regular in-process Python: a malicious plugin can ignore every gate here.
 Granting a capability is a statement of trust in the plugin author — it is
-not a code audit, and Hermes has not reviewed the plugin's code. Only install
+not a code audit, and Oria has not reviewed the plugin's code. Only install
 plugins from sources you trust.
 :::
 
@@ -518,25 +518,25 @@ capability (`gateway.raw_events`) with a "no stability guarantee" label and a
 separate design, and has not shipped.
 :::
 
-### Discovering plugins — the Hermes plugin catalog
+### Discovering plugins — the Oria plugin catalog
 
-`hermes plugins search <term>` searches the **Hermes plugin catalog** — the
+`oria plugins search <term>` searches the **Oria plugin catalog** — the
 curated, SHA-pinned catalog maintained in the hermes-agent repository
 (`plugin-catalog/`). Matching covers entry names, descriptions, and declared
 tools:
 
 ```bash
-hermes plugins search telegram    # search the catalog
-hermes plugins browse             # browse every entry
-hermes plugins info <name>        # full details for one entry
+oria plugins search telegram      # search the catalog
+oria plugins browse               # browse every entry
+oria plugins info <name>          # full details for one entry
 ```
 
 Once you've found a plugin, install it by bare name — the name resolves to
 the entry's repository at its **pinned commit SHA**, and catalog provenance is
-recorded so `hermes plugins update` can re-pin when the catalog moves:
+recorded so `oria plugins update` can re-pin when the catalog moves:
 
 ```bash
-hermes plugins install <catalog-name>
+oria plugins install <catalog-name>
 ```
 
 Explicit `owner/repo` or Git-URL identifiers never touch the catalog and are
@@ -578,16 +578,16 @@ skills: []                               # declared list only (not auto-installe
 ```
 
 ```bash
-hermes plugins pack show ./hermes-pack.yaml     # dry-run review
-hermes plugins pack install ./hermes-pack.yaml  # review → confirm → install
-hermes plugins pack export > hermes-pack.yaml   # snapshot the current install
-hermes plugins pack export --enabled-only       # only plugins.enabled
+oria plugins pack show ./hermes-pack.yaml       # dry-run review
+oria plugins pack install ./hermes-pack.yaml    # review → confirm → install
+oria plugins pack export > hermes-pack.yaml     # snapshot the current install
+oria plugins pack export --enabled-only         # only plugins.enabled
 ```
 
 **Supply-chain posture.** Every entry's `ref` must be an exact 40-character
 commit SHA — tags and branch names are rejected with an error naming the
 entry, the same rule as the plugin catalog. Pack installs ride the exact
-same pinned install path as `hermes plugins install --ref <sha>` and record
+same pinned install path as `oria plugins install --ref <sha>` and record
 the same provenance in `plugins/.install-metadata.json`, so two installs of
 the same pack resolve identically. Packs build on the
 [manifest v2 fields](/developer-guide/plugins) (`manifest_version`,
@@ -598,7 +598,7 @@ validates through the normal install path.
 screen (every plugin, source, pinned ref, and the capabilities it declares),
 then asks **one** confirmation for the pack contents. After that, each
 plugin's declared capabilities go through the standard per-plugin
-capability-consent prompt — identical to a single `hermes plugins install`.
+capability-consent prompt — identical to a single `oria plugins install`.
 There is no `--yes`, and non-interactive sessions cannot install packs.
 
 **Secrets never travel in packs.** `config:` seeds are limited to
@@ -614,16 +614,16 @@ reported per plugin, the rest continue, and the command exits non-zero if
 any plugin failed.
 
 **Export caveats.** `pack export` only includes plugins with known Git
-provenance (installed via `hermes plugins install`). Local-only plugins are
+provenance (installed via `oria plugins install`). Local-only plugins are
 listed as warning comments in the emitted YAML, not as installable entries.
 
 The `skills:` list is parsed and displayed at install time but not yet
-auto-installed — install those manually for now (`hermes skills`). Wiring
+auto-installed — install those manually for now (`oria skills`). Wiring
 skill-hub ids into pack install is a documented follow-up seam.
 
 ### Install-time security scanning
 
-Every `hermes plugins install` and `hermes plugins update` runs a static
+Every `oria plugins install` and `oria plugins update` runs a static
 security scan over the plugin tree before it is activated (inspired by
 Claude Cowork's skill & plugin security scanning). The scanner reuses the
 same threat-pattern engine as the [Skills Hub guard](/user-guide/features/skills)
@@ -641,7 +641,7 @@ Three verdicts, matching Cowork's pass/warn/fail:
 | **caution** | Findings are shown; you confirm `Install anyway? [y/N]` (or pass `--force`) |
 | **dangerous** | Blocked. `--force` does **not** override |
 
-On `hermes plugins update`, a dangerous verdict on the updated tree
+On `oria plugins update`, a dangerous verdict on the updated tree
 disables the plugin until you review the findings and re-enable it. A
 dangerous block names the critical findings that caused it (e.g.
 `1 critical of 42 findings (destructive_root_rm)`), so a single blocking
@@ -664,7 +664,7 @@ plugins:
 
 ### Interactive UI
 
-Running `hermes plugins` with no arguments opens a composite interactive screen:
+Running `oria plugins` with no arguments opens a composite interactive screen:
 
 ```
 Plugins
@@ -704,7 +704,7 @@ Plugins occupy one of three states:
 | `disabled` | Explicitly off — won't load even if also in `enabled` | (irrelevant) | Yes |
 | `not enabled` | Discovered but never opted in | No | No |
 
-The default for a newly-installed or bundled plugin is `not enabled`. `hermes plugins list` shows all three distinct states so you can tell what's been explicitly turned off vs. what's just waiting to be enabled.
+The default for a newly-installed or bundled plugin is `not enabled`. `oria plugins list` shows all three distinct states so you can tell what's been explicitly turned off vs. what's just waiting to be enabled.
 
 In a running session, `/plugins` shows which plugins are currently loaded.
 
@@ -736,11 +736,11 @@ In CLI mode:
 In gateway mode:
 
 - `session_key` is required and must identify an existing gateway session. It is the stable routing key, not the CLI session ID.
-- Hermes reuses that session's stored platform, chat, thread, profile, and conversation history. Plugins cannot supply a new chat route through this API.
-- Hermes rechecks the stored route against the gateway's current authorisation rules before dispatch.
-- Routes that relied only on an adapter-time or upstream authorisation decision are rejected unless Hermes can revalidate them from current core allowlists, pairing, or explicit allow-all configuration.
+- Oria reuses that session's stored platform, chat, thread, profile, and conversation history. Plugins cannot supply a new chat route through this API.
+- Oria rechecks the stored route against the gateway's current authorisation rules before dispatch.
+- Routes that relied only on an adapter-time or upstream authorisation decision are rejected unless Oria can revalidate them from current core allowlists, pairing, or explicit allow-all configuration.
 - Injected text is always conversational input. It cannot invoke slash commands, approve tools, or resolve pending confirmation and clarification prompts.
-- The route and conversation are pinned while dispatch is pending. Hermes drops the request if topic recovery changes the route or the session rotates before handling starts.
+- The route and conversation are pinned while dispatch is pending. Oria drops the request if topic recovery changes the route or the session rotates before handling starts.
 - The request enters the platform adapter's normal message path. Active sessions use the existing busy-session queue rather than starting a competing turn.
 - Returns `True` when the live gateway accepts the request for asynchronous dispatch. This does not confirm that the agent turn or platform delivery has completed.
 - Returns `False` when `session_key` is omitted, the permission is not granted, or no live gateway can accept the request. Unknown or unroutable session keys discovered after asynchronous acceptance are written to the gateway log.
@@ -757,7 +757,7 @@ plugins:
 ```
 
 :::warning
-Only grant gateway injection to plugins you trust. Hermes checks this host API permission and restricts it to existing session routes, but Python plugins run in-process and this setting is not a sandbox.
+Only grant gateway injection to plugins you trust. Oria checks this host API permission and restricts it to existing session routes, but Python plugins run in-process and this setting is not a sandbox.
 :::
 
 :::note
@@ -766,7 +766,7 @@ This plugin API does not expose a public HTTP endpoint or CLI command for extern
 
 ## Calling MCP servers from plugins
 
-`ctx.call_mcp()` lets a plugin call a tool on one of the user's configured MCP servers — synchronously, from any hook or tool handler — routing through Hermes' existing native MCP client (same connections, trust-tier gates, circuit breaker, and reconnect logic as model-invoked MCP tools; never a parallel client).
+`ctx.call_mcp()` lets a plugin call a tool on one of the user's configured MCP servers — synchronously, from any hook or tool handler — routing through Oria' existing native MCP client (same connections, trust-tier gates, circuit breaker, and reconnect logic as model-invoked MCP tools; never a parallel client).
 
 ```python
 result = ctx.call_mcp(

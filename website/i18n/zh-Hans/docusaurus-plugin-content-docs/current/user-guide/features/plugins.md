@@ -2,17 +2,17 @@
 sidebar_position: 11
 sidebar_label: "Plugins"
 title: "Plugins"
-description: "通过插件系统为 Hermes 添加自定义工具、hook 和集成"
+description: "通过插件系统为 Oria 添加自定义工具、hook 和集成"
 ---
 
 # Plugins
 
-Hermes 提供了一套插件系统，可在不修改核心代码的情况下添加自定义工具、hook（钩子）和集成。
+Oria 提供了一套插件系统，可在不修改核心代码的情况下添加自定义工具、hook（钩子）和集成。
 
 如果你想为自己、团队或某个项目创建自定义工具，这通常是正确的路径。开发者指南中的
-[Adding Tools](/developer-guide/adding-tools) 页面针对的是存放在 `tools/` 和 `toolsets.py` 中的 Hermes 内置核心工具。
+[Adding Tools](/developer-guide/adding-tools) 页面针对的是存放在 `tools/` 和 `toolsets.py` 中的 Oria 内置核心工具。
 
-**→ [构建 Hermes Plugin](/developer-guide/plugins)** — 包含完整可运行示例的分步指南。
+**→ [构建 Oria Plugin](/developer-guide/plugins)** — 包含完整可运行示例的分步指南。
 
 ## 快速概览
 
@@ -26,7 +26,7 @@ Hermes 提供了一套插件系统，可在不修改核心代码的情况下添�
 └── tools.py         # tool 处理器（调用时实际执行的代码）
 ```
 
-启动 Hermes — 你的工具会与内置工具一同出现，模型可立即调用它们。
+启动 Oria — 你的工具会与内置工具一同出现，模型可立即调用它们。
 
 ### 最小可运行示例
 
@@ -43,7 +43,7 @@ description: A minimal example plugin
 **`~/.hermes/plugins/hello-world/__init__.py`**
 
 ```python
-"""Minimal Hermes plugin — registers a tool and a hook."""
+"""Minimal Oria plugin — registers a tool and a hook."""
 
 import json
 
@@ -84,11 +84,11 @@ def register(ctx):
     ctx.register_hook("post_tool_call", on_tool_call)
 ```
 
-将两个文件放入 `~/.hermes/plugins/hello-world/`，重启 Hermes，模型即可立即调用 `hello_world`。每次工具调用后，hook 会打印一行日志。
+将两个文件放入 `~/.hermes/plugins/hello-world/`，重启 Oria，模型即可立即调用 `hello_world`。每次工具调用后，hook 会打印一行日志。
 
-面向模型的工具描述应写在 `schema["description"]` 中。可选的 `ctx.register_tool(description=...)` 值是独立的 `ToolEntry` 注册表元数据：省略时，它会默认使用 schema 中的描述；但如果 schema 缺少 `description`，Hermes 不会把该元数据反向复制到 schema。建议只在 schema 中定义一次描述。如果同时提供两个值，请保持同步；模型看到的是 schema 中的值。
+面向模型的工具描述应写在 `schema["description"]` 中。可选的 `ctx.register_tool(description=...)` 值是独立的 `ToolEntry` 注册表元数据：省略时，它会默认使用 schema 中的描述；但如果 schema 缺少 `description`，Oria 不会把该元数据反向复制到 schema。建议只在 schema 中定义一次描述。如果同时提供两个值，请保持同步；模型看到的是 schema 中的值。
 
-`./.hermes/plugins/` 下的项目本地插件默认禁用。仅对可信仓库启用，方法是在启动 Hermes 前设置 `HERMES_ENABLE_PROJECT_PLUGINS=true`。
+`./.hermes/plugins/` 下的项目本地插件默认禁用。仅对可信仓库启用，方法是在启动 Oria 前设置 `HERMES_ENABLE_PROJECT_PLUGINS=true`。
 
 ## 插件能做什么
 
@@ -104,7 +104,7 @@ def register(ctx):
 | 注入消息 | `ctx.inject_message(content, role="user")` — 参见 [注入消息](#injecting-messages) |
 | 附带数据文件 | `Path(__file__).parent / "data" / "file.yaml"` |
 | 打包 skill | `ctx.register_skill(name, path)` — 命名空间为 `plugin:skill`，通过 `skill_view("plugin:skill")` 加载 |
-| 按环境变量控制 | 在 plugin.yaml 中设置 `requires_env: [API_KEY]` — 在 `hermes plugins install` 时提示输入 |
+| 按环境变量控制 | 在 plugin.yaml 中设置 `requires_env: [API_KEY]` — 在 `oria plugins install` 时提示输入 |
 | 通过 pip 分发 | `[project.entry-points."hermes_agent.plugins"]` |
 | 注册 gateway 平台（Discord、Telegram、IRC 等） | `ctx.register_platform(name, label, adapter_factory, check_fn, ...)` — 参见 [Adding Platform Adapters](/developer-guide/adding-platform-adapters) |
 | 注册图像生成后端 | `ctx.register_image_gen_provider(provider)` — 参见 [Image Generation Provider Plugins](/developer-guide/image-gen-provider-plugin) |
@@ -118,7 +118,7 @@ def register(ctx):
 
 | 来源 | 路径 | 使用场景 |
 |--------|------|----------|
-| 内置 | `<repo>/plugins/` | 随 Hermes 附带 — 参见 [Built-in Plugins](/user-guide/features/built-in-plugins) |
+| 内置 | `<repo>/plugins/` | 随 Oria 附带 — 参见 [Built-in Plugins](/user-guide/features/built-in-plugins) |
 | 用户 | `~/.hermes/plugins/` | 个人插件 |
 | 项目 | `.hermes/plugins/` | 项目专属插件（需要 `HERMES_ENABLE_PROJECT_PLUGINS=true`） |
 | pip | `hermes_agent.plugins` entry_points | 分发包 |
@@ -128,7 +128,7 @@ def register(ctx):
 
 ### 插件子分类
 
-在每个来源内，Hermes 还识别将插件路由到专用发现系统的子分类目录：
+在每个来源内，Oria 还识别将插件路由到专用发现系统的子分类目录：
 
 | 子目录 | 内容 | 发现系统 |
 |---|---|---|
@@ -141,11 +141,11 @@ def register(ctx):
 
 `~/.hermes/plugins/model-providers/<name>/` 和 `~/.hermes/plugins/memory/<name>/` 下的用户插件会覆盖同名内置插件 — `register_provider()` / `register_memory_provider()` 中后写者胜出。放入一个目录即可替换内置实现，无需修改仓库。
 
-子分类插件在 `hermes plugins list` 和交互式 `hermes plugins` UI 中以**路径派生的 key** 显示 — 例如 `observability/langfuse`、`image_gen/openai`、`platforms/teams`。该 key（而非 manifest 中的 `name:`）是传给 `hermes plugins enable …` / `disable …` 的值，也是在 `config.yaml` 的 `plugins.enabled` 下填写的字符串。
+子分类插件在 `oria plugins list` 和交互式 `oria plugins` UI 中以**路径派生的 key** 显示 — 例如 `observability/langfuse`、`image_gen/openai`、`platforms/teams`。该 key（而非 manifest 中的 `name:`）是传给 `oria plugins enable …` / `disable …` 的值，也是在 `config.yaml` 的 `plugins.enabled` 下填写的字符串。
 
 ## 插件默认关闭（少数例外）
 
-**通用插件和用户安装的后端默认禁用** — 发现系统会找到它们（因此它们会出现在 `hermes plugins` 和 `/plugins` 中），但在你将插件名称添加到 `~/.hermes/config.yaml` 的 `plugins.enabled` 之前，任何带有 hook 或工具的内容都不会加载。这可防止第三方代码在未经明确同意的情况下运行。
+**通用插件和用户安装的后端默认禁用** — 发现系统会找到它们（因此它们会出现在 `oria plugins` 和 `/plugins` 中），但在你将插件名称添加到 `~/.hermes/config.yaml` 的 `plugins.enabled` 之前，任何带有 hook 或工具的内容都不会加载。这可防止第三方代码在未经明确同意的情况下运行。
 
 ```yaml
 plugins:
@@ -159,16 +159,16 @@ plugins:
 切换状态的三种方式：
 
 ```bash
-hermes plugins                    # 交互式切换（空格勾选/取消勾选）
-hermes plugins enable <name>      # 添加到允许列表
-hermes plugins disable <name>     # 从允许列表移除并添加到禁用列表
+oria plugins                      # 交互式切换（空格勾选/取消勾选）
+oria plugins enable <name>        # 添加到允许列表
+oria plugins disable <name>       # 从允许列表移除并添加到禁用列表
 ```
 
-执行 `hermes plugins install owner/repo` 后，会询问 `Enable 'name' now? [y/N]` — 默认为否。脚本化安装时可用 `--enable` 或 `--no-enable` 跳过提示。
+执行 `oria plugins install owner/repo` 后，会询问 `Enable 'name' now? [y/N]` — 默认为否。脚本化安装时可用 `--enable` 或 `--no-enable` 跳过提示。
 
 ### 允许列表不控制的内容
 
-某些类别的插件绕过 `plugins.enabled` — 它们是 Hermes 内置功能的一部分，若默认关闭会破坏基本功能：
+某些类别的插件绕过 `plugins.enabled` — 它们是 Oria 内置功能的一部分，若默认关闭会破坏基本功能：
 
 | 插件类型 | 激活方式 |
 |---|---|
@@ -184,7 +184,7 @@ hermes plugins disable <name>     # 从允许列表移除并添加到禁用列�
 
 ### 现有用户的迁移
 
-当你升级到支持选择加入插件的 Hermes 版本（config schema v21+）时，已安装在 `~/.hermes/plugins/` 下且不在 `plugins.disabled` 中的用户插件会**自动纳入** `plugins.enabled`。你的现有配置继续正常工作。内置独立插件**不会**自动纳入 — 即使是现有用户也需要明确选择加入。（内置平台/后端插件从未需要纳入，因为它们从未被控制。）
+当你升级到支持选择加入插件的 Oria 版本（config schema v21+）时，已安装在 `~/.hermes/plugins/` 下且不在 `plugins.disabled` 中的用户插件会**自动纳入** `plugins.enabled`。你的现有配置继续正常工作。内置独立插件**不会**自动纳入 — 即使是现有用户也需要明确选择加入。（内置平台/后端插件从未需要纳入，因为它们从未被控制。）
 
 ## 可用 hook
 
@@ -200,7 +200,7 @@ hermes plugins disable <name>     # 从允许列表移除并添加到禁用列�
 
 ## 插件类型
 
-Hermes 有四种插件：
+Oria 有四种插件：
 
 | 类型 | 作用 | 选择方式 | 位置 |
 |------|-------------|-----------|----------|
@@ -213,13 +213,13 @@ Memory provider 和 context engine 是 **provider 插件** — 每种类型同�
 
 ## 可插拔接口 — 各场景对应文档
 
-上表展示了四种插件类别，但在"通用插件"中，`PluginContext` 暴露了多个不同的扩展点 — Hermes 还接受 Python 插件系统之外的扩展（配置驱动的后端、shell hook 命令、外部服务器等）。使用下表找到适合你需求的文档：
+上表展示了四种插件类别，但在"通用插件"中，`PluginContext` 暴露了多个不同的扩展点 — Oria 还接受 Python 插件系统之外的扩展（配置驱动的后端、shell hook 命令、外部服务器等）。使用下表找到适合你需求的文档：
 
 | 想要添加… | 方式 | 编写指南 |
 |---|---|---|
-| LLM 可调用的**工具** | Python 插件 — `ctx.register_tool()` | [Build a Hermes Plugin](/developer-guide/plugins) · [Adding Tools](/developer-guide/adding-tools) |
-| **生命周期 hook**（LLM 前后、会话开始/结束、工具过滤） | Python 插件 — `ctx.register_hook()` | [Hooks reference](/user-guide/features/hooks) · [Build a Hermes Plugin](/developer-guide/plugins) |
-| CLI / gateway 的**斜杠命令** | Python 插件 — `ctx.register_command()` | [Build a Hermes Plugin](/developer-guide/plugins) · [Extending the CLI](/developer-guide/extending-the-cli) |
+| LLM 可调用的**工具** | Python 插件 — `ctx.register_tool()` | [Build an Oria Plugin](/developer-guide/plugins) · [Adding Tools](/developer-guide/adding-tools) |
+| **生命周期 hook**（LLM 前后、会话开始/结束、工具过滤） | Python 插件 — `ctx.register_hook()` | [Hooks reference](/user-guide/features/hooks) · [Build an Oria Plugin](/developer-guide/plugins) |
+| CLI / gateway 的**斜杠命令** | Python 插件 — `ctx.register_command()` | [Build an Oria Plugin](/developer-guide/plugins) · [Extending the CLI](/developer-guide/extending-the-cli) |
 | `hermes <thing>` 的**子命令** | Python 插件 — `ctx.register_cli_command()` | [Extending the CLI](/developer-guide/extending-the-cli) |
 | 插件附带的**skill** | Python 插件 — `ctx.register_skill()` | [Creating Skills](/developer-guide/creating-skills) |
 | **推理后端**（LLM provider：OpenAI 兼容、Codex、Anthropic-Messages、Bedrock） | Provider 插件 — 在 `plugins/model-providers/<name>/` 中调用 `register_provider(ProviderProfile(...))` | **[Model Provider Plugins](/developer-guide/model-provider-plugin)** · [Adding Providers](/developer-guide/adding-providers) |
@@ -230,8 +230,8 @@ Memory provider 和 context engine 是 **provider 插件** — 每种类型同�
 | **视频生成后端**（Veo、Kling、Pixverse、Grok-Imagine、Runway 等） | 后端插件 — `ctx.register_video_gen_provider()` | [Video Generation Provider Plugins](/developer-guide/video-gen-provider-plugin) |
 | **TTS 后端**（任意 CLI — Piper、VoxCPM、Kokoro、xtts、语音克隆脚本等） | 配置驱动（推荐）— 在 `config.yaml` 的 `tts.providers.<name>` 下以 `type: command` 声明。或 Python 后端插件 — 对需要超出 shell 模板的 Python SDK / 流式引擎使用 `ctx.register_tts_provider()`。 | [TTS Setup](/user-guide/features/tts#custom-command-providers) · [Python plugin guide](/user-guide/features/tts#python-plugin-providers) |
 | **STT 后端**（自定义 whisper 二进制、本地 ASR CLI） | 配置驱动 — 将 `HERMES_LOCAL_STT_COMMAND` 环境变量设置为 shell 模板 | [Voice Message Transcription (STT)](/user-guide/features/tts#voice-message-transcription-stt) |
-| **通过 MCP 使用外部工具**（文件系统、GitHub、Linear、Notion、任意 MCP 服务器） | 配置驱动 — 在 `config.yaml` 中以 `command:` / `url:` 声明 `mcp_servers.<name>`。Hermes 自动发现服务器的工具并与内置工具一同注册。 | [MCP](/user-guide/features/mcp) |
-| **额外 skill 来源**（自定义 GitHub 仓库、私有 skill 索引） | CLI — `hermes skills tap add <repo>` | [Skills Hub](/user-guide/features/skills#skills-hub) · [发布自定义 tap](/user-guide/features/skills#publishing-a-custom-skill-tap) |
+| **通过 MCP 使用外部工具**（文件系统、GitHub、Linear、Notion、任意 MCP 服务器） | 配置驱动 — 在 `config.yaml` 中以 `command:` / `url:` 声明 `mcp_servers.<name>`。Oria 自动发现服务器的工具并与内置工具一同注册。 | [MCP](/user-guide/features/mcp) |
+| **额外 skill 来源**（自定义 GitHub 仓库、私有 skill 索引） | CLI — `oria skills tap add <repo>` | [Skills Hub](/user-guide/features/skills#skills-hub) · [发布自定义 tap](/user-guide/features/skills#publishing-a-custom-skill-tap) |
 | **Gateway 事件 hook**（在 `gateway:startup`、`session:start`、`agent:end`、`command:*` 时触发） | 将 `HOOK.yaml` + `handler.py` 放入 `~/.hermes/hooks/<name>/` | [Event Hooks](/user-guide/features/hooks#gateway-event-hooks) |
 | **Shell hook**（在事件时运行 shell 命令 — 通知、审计日志、桌面提醒） | 配置驱动 — 在 `config.yaml` 的 `hooks:` 下声明 | [Shell Hooks](/user-guide/features/hooks#shell-hooks) |
 
@@ -241,7 +241,7 @@ Memory provider 和 context engine 是 **provider 插件** — 每种类型同�
 
 ## NixOS 声明式插件
 
-在 NixOS 上，插件可通过模块选项声明式安装 — 无需 `hermes plugins install`。完整详情请参见 **[Nix Setup 指南](/getting-started/nix-setup#plugins)**。
+在 NixOS 上，插件可通过模块选项声明式安装 — 无需 `oria plugins install`。完整详情请参见 **[Nix Setup 指南](/getting-started/nix-setup#plugins)**。
 
 ```nix
 services.hermes-agent = {
@@ -259,23 +259,23 @@ services.hermes-agent = {
 ## 管理插件
 
 ```bash
-hermes plugins                                       # 统一交互式 UI
-hermes plugins list                                  # 表格：已启用 / 已禁用 / 未启用
-hermes plugins install user/repo                     # 从 Git 安装，然后提示 Enable? [y/N]
-hermes plugins install user/repo --enable            # 安装并启用（无提示）
-hermes plugins install user/repo --no-enable         # 安装但保持禁用（无提示）
-hermes plugins update my-plugin                      # 拉取最新版本
-hermes plugins remove my-plugin                      # 卸载
-hermes plugins enable my-plugin                      # 添加到允许列表（普通插件）
-hermes plugins enable observability/langfuse         # 添加到允许列表（子分类插件）
-hermes plugins disable my-plugin                     # 从允许列表移除并添加到禁用列表
+oria plugins                                         # 统一交互式 UI
+oria plugins list                                    # 表格：已启用 / 已禁用 / 未启用
+oria plugins install user/repo                       # 从 Git 安装，然后提示 Enable? [y/N]
+oria plugins install user/repo --enable              # 安装并启用（无提示）
+oria plugins install user/repo --no-enable           # 安装但保持禁用（无提示）
+oria plugins update my-plugin                        # 拉取最新版本
+oria plugins remove my-plugin                        # 卸载
+oria plugins enable my-plugin                        # 添加到允许列表（普通插件）
+oria plugins enable observability/langfuse           # 添加到允许列表（子分类插件）
+oria plugins disable my-plugin                       # 从允许列表移除并添加到禁用列表
 ```
 
-对于子分类目录下的插件（例如 `plugins/observability/langfuse/`、`plugins/image_gen/openai/`），使用完整的 `<category>/<plugin>` key — 这正是 `hermes plugins list` 在 **Name** 列中显示的内容。
+对于子分类目录下的插件（例如 `plugins/observability/langfuse/`、`plugins/image_gen/openai/`），使用完整的 `<category>/<plugin>` key — 这正是 `oria plugins list` 在 **Name** 列中显示的内容。
 
 ### 交互式 UI
 
-不带参数运行 `hermes plugins` 会打开一个复合交互界面：
+不带参数运行 `oria plugins` 会打开一个复合交互界面：
 
 ```
 Plugins
@@ -316,7 +316,7 @@ context:
 | `disabled` | 明确关闭 — 即使同时在 `enabled` 中也不会加载 | （无关） | 是 |
 | `not enabled` | 已发现但从未选择加入 | 否 | 否 |
 
-新安装或内置插件的默认状态为 `not enabled`。`hermes plugins list` 显示全部三种状态，便于区分明确关闭的插件和等待启用的插件。
+新安装或内置插件的默认状态为 `not enabled`。`oria plugins list` 显示全部三种状态，便于区分明确关闭的插件和等待启用的插件。
 
 在运行中的会话里，`/plugins` 显示当前已加载的插件。
 

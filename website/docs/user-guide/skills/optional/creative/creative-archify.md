@@ -14,7 +14,7 @@ Validated interactive HTML diagrams, upstream-maintained.
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/creative/archify` |
+| Source | Optional — install with `oria skills install official/creative/archify` |
 | Path | `optional-skills/creative/archify` |
 | Version | `2.17.0` |
 | Author | tt-a1i |
@@ -26,7 +26,7 @@ Validated interactive HTML diagrams, upstream-maintained.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Archify (upstream-maintained)

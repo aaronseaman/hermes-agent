@@ -1,12 +1,12 @@
 ---
 sidebar_position: 13
 title: "Webhooks"
-description: "接收来自 GitHub、GitLab 等服务的事件以触发 Hermes agent 运行"
+description: "接收来自 GitHub、GitLab 等服务的事件以触发 Oria agent 运行"
 ---
 
 # Webhooks
 
-接收来自外部服务（GitHub、GitLab、JIRA、Stripe 等）的事件，并自动触发 Hermes agent 运行。Webhook 适配器运行一个 HTTP 服务器，接受 POST 请求、验证 HMAC 签名、将 payload（载荷）转换为 agent prompt（提示词），并将响应路由回来源或其他已配置的平台。
+接收来自外部服务（GitHub、GitLab、JIRA、Stripe 等）的事件，并自动触发 Oria agent 运行。Webhook 适配器运行一个 HTTP 服务器，接受 POST 请求、验证 HMAC 签名、将 payload（载荷）转换为 agent prompt（提示词），并将响应路由回来源或其他已配置的平台。
 
 agent 处理事件后，可通过在 PR 上发布评论、向 Telegram/Discord 发送消息或记录结果来响应。
 
@@ -15,7 +15,7 @@ agent 处理事件后，可通过在 PR 上发布评论、向 Telegram/Discord �
 <div style={{position: 'relative', width: '100%', aspectRatio: '16 / 9', marginBottom: '1.5rem'}}>
   <iframe
     src="https://www.youtube.com/embed/WNYe5mD4fY8"
-    title="Hermes Agent — Webhooks Tutorial"
+    title="Oria — Webhooks Tutorial"
     style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0}}
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
     allowFullScreen
@@ -26,8 +26,8 @@ agent 处理事件后，可通过在 PR 上发布评论、向 Telegram/Discord �
 
 ## 快速开始
 
-1. 通过 `hermes gateway setup` 或环境变量启用
-2. 在 `config.yaml` 中定义路由，**或**使用 `hermes webhook subscribe` 动态创建
+1. 通过 `oria gateway setup` 或环境变量启用
+2. 在 `config.yaml` 中定义路由，**或**使用 `oria webhook subscribe` 动态创建
 3. 将你的服务指向 `http://your-server:8644/webhooks/<route-name>`
 
 ---
@@ -39,7 +39,7 @@ agent 处理事件后，可通过在 PR 上发布评论、向 Telegram/Discord �
 ### 通过设置向导
 
 ```bash
-hermes gateway setup
+oria gateway setup
 ```
 
 按照提示启用 webhooks、设置端口和全局 HMAC secret。
@@ -255,7 +255,7 @@ gh auth login
 
 ### 4. 测试
 
-在仓库中打开一个 pull request。webhook 触发后，Hermes 处理事件并在 PR 上发布审查评论。
+在仓库中打开一个 pull request。webhook 触发后，Oria 处理事件并在 PR 上发布审查评论。
 
 ---
 
@@ -366,7 +366,7 @@ platforms:
 ### 示例：通过 CLI 动态订阅
 
 ```bash
-hermes webhook subscribe antenna-matches \
+oria webhook subscribe antenna-matches \
   --deliver telegram \
   --deliver-chat-id "123456789" \
   --deliver-only \
@@ -427,7 +427,7 @@ platforms:
 ### 通过 CLI
 
 ```bash
-hermes webhook subscribe pr-feedback \
+oria webhook subscribe pr-feedback \
   --events "pull_request_review" \
   --cron-job "pr-review-sweeper" \
   --prompt "PR #{number} 收到反馈：{review.body}"
@@ -446,12 +446,12 @@ hermes webhook subscribe pr-feedback \
 
 ## 动态订阅（CLI） {#dynamic-subscriptions}
 
-除了 `config.yaml` 中的静态路由，还可以使用 `hermes webhook` CLI 命令动态创建 webhook 订阅。当 agent 本身需要设置事件驱动触发器时，这尤为有用。
+除了 `config.yaml` 中的静态路由，还可以使用 `oria webhook` CLI 命令动态创建 webhook 订阅。当 agent 本身需要设置事件驱动触发器时，这尤为有用。
 
 ### 创建订阅
 
 ```bash
-hermes webhook subscribe github-issues \
+oria webhook subscribe github-issues \
   --events "issues" \
   --prompt "New issue #{issue.number}: {issue.title}\nBy: {issue.user.login}\n\n{issue.body}" \
   --deliver telegram \
@@ -464,20 +464,20 @@ hermes webhook subscribe github-issues \
 ### 列出订阅
 
 ```bash
-hermes webhook list
+oria webhook list
 ```
 
 ### 删除订阅
 
 ```bash
-hermes webhook remove github-issues
+oria webhook remove github-issues
 ```
 
 ### 测试订阅
 
 ```bash
-hermes webhook test github-issues
-hermes webhook test github-issues --payload '{"issue": {"number": 42, "title": "Test"}}'
+oria webhook test github-issues
+oria webhook test github-issues --payload '{"issue": {"number": 42, "title": "Test"}}'
 ```
 
 ### 动态订阅的工作原理
@@ -490,7 +490,7 @@ hermes webhook test github-issues --payload '{"issue": {"number": 42, "title": "
 
 ### agent 驱动的订阅
 
-agent 可通过 terminal 工具在 `webhook-subscriptions` skill 的引导下创建订阅。向 agent 请求"为 GitHub issues 设置 webhook"，它将运行相应的 `hermes webhook subscribe` 命令。
+agent 可通过 terminal 工具在 `webhook-subscriptions` skill 的引导下创建订阅。向 agent 请求"为 GitHub issues 设置 webhook"，它将运行相应的 `oria webhook subscribe` 命令。
 
 ---
 
@@ -575,7 +575,7 @@ Webhook payload 包含攻击者可控的数据——PR 标题、commit 消息、
 
 ### Agent 未响应
 
-- 在前台运行 gateway 以查看日志：`hermes gateway run`
+- 在前台运行 gateway 以查看日志：`oria gateway run`
 - 检查 prompt 模板是否正确渲染
 - 验证投递目标已配置并连接
 

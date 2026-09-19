@@ -17,7 +17,7 @@ YouTube transcripts to summaries, threads, blogs.
 | Source | Bundled (installed by default) |
 | Path | `skills/media\youtube-content` |
 | Version | `1.0.0` |
-| Author | Teknium (teknium1), Hermes Agent |
+| Author | Teknium (teknium1), Oria |
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `YouTube`, `Video`, `Transcripts`, `Media` |
@@ -25,7 +25,7 @@ YouTube transcripts to summaries, threads, blogs.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # YouTube Content Tool

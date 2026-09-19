@@ -4,14 +4,14 @@ sidebar_position: 2
 
 # Profiles: Running Multiple Agents
 
-Run multiple independent Hermes agents on the same machine — each with its own config, API keys, memory, sessions, skills, and gateway state.
+Run multiple independent Oria agents on the same machine — each with its own config, API keys, memory, sessions, skills, and gateway state.
 
 ## What are profiles?
 
-A profile is a separate Hermes home directory. Each profile gets its own directory containing its own `config.yaml`, `.env`, `SOUL.md`, memories, sessions, skills, cron jobs, and state database. Profiles let you run separate agents for different purposes — a coding assistant, a personal bot, a research agent — without mixing up Hermes state.
+A profile is a separate Oria home directory. Each profile gets its own directory containing its own `config.yaml`, `.env`, `SOUL.md`, memories, sessions, skills, cron jobs, and state database. Profiles let you run separate agents for different purposes — a coding assistant, a personal bot, a research agent — without mixing up Oria state.
 
 :::caution Give every agent its own profile
-Never point two agent processes at the same profile (the same Hermes home). Both write memory automatically, and each loads the other's writes into its system prompt at session start — so two writers on one home compound each other's state until it stops being anything you configured. Profiles exist exactly to prevent this; agents that need shared memory should use an [external memory provider](/user-guide/features/memory-providers) instead.
+Never point two agent processes at the same profile (the same Oria home). Both write memory automatically, and each loads the other's writes into its system prompt at session start — so two writers on one home compound each other's state until it stops being anything you configured. Profiles exist exactly to prevent this; agents that need shared memory should use an [external memory provider](/user-guide/features/memory-providers) instead.
 :::
 
 When you create a profile, it automatically becomes its own command. Create a profile called `coder` and you immediately have `coder chat`, `coder setup`, `coder gateway start`, etc.
@@ -19,23 +19,23 @@ When you create a profile, it automatically becomes its own command. Create a pr
 ## Quick start
 
 ```bash
-hermes profile create coder       # creates profile + "coder" command alias
+oria profile create coder         # creates profile + "coder" command alias
 coder setup                       # configure API keys and model
 coder chat                        # start chatting
 ```
 
-That's it. `coder` is now its own Hermes profile with its own config, memory, and state.
+That's it. `coder` is now its own Oria profile with its own config, memory, and state.
 
 ## Creating a profile
 
 :::tip
-Quickest setup: run `hermes setup --portal` inside the new profile to wire up models + tools at once. See [Nous Portal](/integrations/nous-portal).
+Quickest setup: run `oria setup --portal` inside the new profile to wire up models + tools at once. See [Nous Portal](/integrations/nous-portal).
 :::
 
 ### Blank profile
 
 ```bash
-hermes profile create mybot
+oria profile create mybot
 ```
 
 Creates a fresh profile with bundled skills seeded. Run `mybot setup` to configure API keys, model, and gateway tokens.
@@ -43,26 +43,26 @@ Creates a fresh profile with bundled skills seeded. Run `mybot setup` to configu
 If you plan to use this profile as a kanban worker (or want the kanban orchestrator to route work to it), pass `--description "<role>"` at create time so the orchestrator knows what it's good at:
 
 ```bash
-hermes profile create researcher --description "Reads source code and external docs, writes findings."
+oria profile create researcher --description "Reads source code and external docs, writes findings."
 ```
 
-You can also set or auto-generate the description later with `hermes profile describe` — see the [Kanban guide](./features/kanban#auto-vs-manual-orchestration) for the full routing model.
+You can also set or auto-generate the description later with `oria profile describe` — see the [Kanban guide](./features/kanban#auto-vs-manual-orchestration) for the full routing model.
 
 ### Clone config only (`--clone`)
 
 ```bash
-hermes profile create work --clone
+oria profile create work --clone
 ```
 
 Copies your current profile's `config.yaml`, `.env`, `SOUL.md`, skills, and the curated memory files `memories/MEMORY.md` and `memories/USER.md` into the new profile — memory is treated as part of the agent's identity, like `SOUL.md`. Sessions, `state.db`, cron jobs and everything else start empty. For a blank memory as well, create the profile without `--clone` or delete the two files afterwards; the agent never falls back to another profile's memory when they are absent. Edit `~/.hermes/profiles/work/.env` for different API keys, or `~/.hermes/profiles/work/SOUL.md` for a different personality.
 
 #### Keep a clone's imported agent setups synced (`--sync-imports`)
 
-If the source profile has run [`hermes import-agent`](./import-from-other-agents.md), its `import-sync.json` records which external Claude Code / Codex trees it imported. `--clone` leaves that manifest behind, so the clone gets a one-off copy of those skills and memories and stops there. Add `--sync-imports` to carry the manifest over:
+If the source profile has run [`oria import-agent`](./import-from-other-agents.md), its `import-sync.json` records which external Claude Code / Codex trees it imported. `--clone` leaves that manifest behind, so the clone gets a one-off copy of those skills and memories and stops there. Add `--sync-imports` to carry the manifest over:
 
 ```bash
-hermes profile create work --clone --sync-imports
-hermes -p work import-agent --sync        # pulls changes from the same ~/.claude / ~/.codex
+oria profile create work --clone --sync-imports
+oria -p work import-agent --sync          # pulls changes from the same ~/.claude / ~/.codex
 ```
 
 This is explicit, opt-in and one-directional, and it links the clone to the **external agent trees only** — never to the source profile. Both profiles stay independent islands: editing the source's `config.yaml`, `SOUL.md` or skills afterwards never reaches the clone. `--clone-all` copies the manifest as part of the full copy.
@@ -70,25 +70,25 @@ This is explicit, opt-in and one-directional, and it links the clone to the **ex
 ### Clone everything (`--clone-all`)
 
 ```bash
-hermes profile create backup --clone-all
+oria profile create backup --clone-all
 ```
 
-Copies **everything** — config, API keys, personality, all memories, skills, plugins. A complete working snapshot. Per-profile history is excluded (session history, `state.db`, `backups/`, `state-snapshots/`, `checkpoints/`) — these belong to the source profile and can reach tens of GB. When cloning from the default profile, the local-model runtime trees (`models/`, `runtimes/`, `node/` — downloaded weights and managed binaries, re-fetched on demand) are skipped too, as `hermes backup` already does. **Cron jobs are not cloned** either: they are scheduled work bound to the source profile and its delivery channel, and a clone that inherited them would run every job twice (two gateways, same job ids). The new profile starts with an empty `cron/`. For a full backup including history and cron jobs, use `hermes profile export` or `hermes backup` instead.
+Copies **everything** — config, API keys, personality, all memories, skills, plugins. A complete working snapshot. Per-profile history is excluded (session history, `state.db`, `backups/`, `state-snapshots/`, `checkpoints/`) — these belong to the source profile and can reach tens of GB. When cloning from the default profile, the local-model runtime trees (`models/`, `runtimes/`, `node/` — downloaded weights and managed binaries, re-fetched on demand) are skipped too, as `oria backup` already does. **Cron jobs are not cloned** either: they are scheduled work bound to the source profile and its delivery channel, and a clone that inherited them would run every job twice (two gateways, same job ids). The new profile starts with an empty `cron/`. For a full backup including history and cron jobs, use `oria profile export` or `oria backup` instead.
 
 :::note OAuth logins are shared, not copied
-Anthropic (Claude Pro/Max), OpenAI Codex, and xAI OAuth logins use **single-use refresh tokens** — a copy of one is not a second credential, it is the same credential with two owners, and the first profile to refresh it revokes it for every other copy. `--clone-all` (and the dashboard's credential mirroring) therefore drops those OAuth rows from the clone. The new profile keeps reading the login from the root `~/.hermes/auth.json`, and a token refresh performed inside any profile is written back to root, so all profiles stay signed in. Static API keys are copied as usual. To give a profile its own separate OAuth login, run `hermes -p <name> auth add <provider>` inside it.
+Anthropic (Claude Pro/Max), OpenAI Codex, and xAI OAuth logins use **single-use refresh tokens** — a copy of one is not a second credential, it is the same credential with two owners, and the first profile to refresh it revokes it for every other copy. `--clone-all` (and the dashboard's credential mirroring) therefore drops those OAuth rows from the clone. The new profile keeps reading the login from the root `~/.hermes/auth.json`, and a token refresh performed inside any profile is written back to root, so all profiles stay signed in. Static API keys are copied as usual. To give a profile its own separate OAuth login, run `oria -p <name> auth add <provider>` inside it.
 :::
 
 ### Clone from a specific profile
 
 ```bash
-hermes profile create work --clone-from coder
+oria profile create work --clone-from coder
 ```
 
 `--clone-from <source>` selects the source profile directly and implies a config/skills/SOUL clone. Combine it with `--clone-all` when you want a full copy of that source profile:
 
 ```bash
-hermes profile create work-backup --clone-from coder --clone-all
+oria profile create work-backup --clone-from coder --clone-all
 ```
 
 ### Messaging channels are never cloned (`--clone-channels` to opt in)
@@ -104,18 +104,18 @@ platforms were left behind.
 
 The reason is that a bot can only belong to one profile: two standalone gateways holding the
 same token fight over its long-poll, and a [multiplexed gateway](./multi-profile-gateways.md)
-parks the duplicate adapter (and `hermes gateway migrate --multiplex` refuses with one
+parks the duplicate adapter (and `oria gateway migrate --multiplex` refuses with one
 duplicate-credential blocker per platform). Configure the new profile's own bots with
-`hermes -p <name> setup` or the dashboard Messaging page.
+`oria -p <name> setup` or the dashboard Messaging page.
 
 ```bash
-hermes profile create twin --clone --clone-channels   # keep the source's bots anyway
+oria profile create twin --clone --clone-channels     # keep the source's bots anyway
 ```
 
 `--clone-channels` is refused when a running multiplexed gateway already serves the source
 (the copy would be parked immediately) — from the CLI, the dashboard and the TUI alike — and
 otherwise prints a warning naming the platforms now shared with the source. It is an error
-without a clone flag. `hermes profile list` prints the same warning for any existing
+without a clone flag. `oria profile list` prints the same warning for any existing
 profile whose bot credential is byte-identical to the default's, so older clones surface
 before they bite.
 
@@ -162,28 +162,28 @@ coder skills list             # list coder's skills
 coder config set model.default anthropic/claude-sonnet-4
 ```
 
-The alias works with every hermes subcommand — it's just `hermes -p <name>` under the hood.
+The alias works with every hermes subcommand — it's just `oria -p <name>` under the hood.
 
 ### The `-p` flag
 
 You can also target a profile explicitly with any command:
 
 ```bash
-hermes -p coder chat
-hermes --profile=coder doctor
-hermes chat -p coder -q "hello"    # works in any position
+oria -p coder chat
+oria --profile=coder doctor
+oria chat -p coder -q "hello"      # works in any position
 ```
 
-### Sticky default (`hermes profile use`)
+### Sticky default (`oria profile use`)
 
 ```bash
-hermes profile use coder
-hermes chat                   # now targets coder
-hermes tools                  # configures coder's tools
-hermes profile use default    # switch back
+oria profile use coder
+oria chat                     # now targets coder
+oria tools                    # configures coder's tools
+oria profile use default      # switch back
 ```
 
-Sets a default so plain `hermes` commands target that profile. Like `kubectl config use-context`.
+Sets a default so plain `oria` commands target that profile. Like `kubectl config use-context`.
 
 ### Knowing where you are
 
@@ -191,13 +191,13 @@ The CLI always shows which profile is active:
 
 - **Prompt**: `coder ❯` instead of `❯`
 - **Banner**: Shows `Profile: coder` on startup
-- **`hermes profile`**: Shows current profile name, path, model, gateway status
+- **`oria profile`**: Shows current profile name, path, model, gateway status
 
 ## Profiles vs workspaces vs sandboxing
 
 Profiles are often confused with workspaces or sandboxes, but they are different things:
 
-- A **profile** gives Hermes its own state directory: `config.yaml`, `.env`, `SOUL.md`, sessions, memory, logs, cron jobs, and gateway state.
+- A **profile** gives Oria its own state directory: `config.yaml`, `.env`, `SOUL.md`, sessions, memory, logs, cron jobs, and gateway state.
 - A **workspace** or **working directory** is where terminal commands start. That is controlled separately by `terminal.cwd`.
 - A **sandbox** is what limits filesystem access. Profiles do **not** sandbox the agent.
 
@@ -211,7 +211,7 @@ terminal:
   cwd: /absolute/path/to/project
 ```
 
-Using `cwd: "."` on the local backend means "the directory Hermes was launched from", not "the profile directory".
+Using `cwd: "."` on the local backend means "the directory Oria was launched from", not "the profile directory".
 
 Also note:
 
@@ -254,7 +254,7 @@ assistant gateway install     # creates hermes-gateway-assistant service
 Each profile gets its own service name. They run independently.
 
 :::note Inside the official Docker image
-Per-profile gateways are supervised by [s6-overlay](https://github.com/just-containers/s6-overlay) (PID 1 in the container), so `hermes profile create <name>` automatically registers an s6 service slot at `/run/service/gateway-<name>/`. `hermes -p <name> gateway start/stop/restart` dispatches to `s6-svc` instead of spawning a bare process — crashes are auto-restarted and `docker restart` preserves the previously-running set of gateways. See [Per-profile gateway supervision](/user-guide/docker#per-profile-gateway-supervision) for details.
+Per-profile gateways are supervised by [s6-overlay](https://github.com/just-containers/s6-overlay) (PID 1 in the container), so `oria profile create <name>` automatically registers an s6 service slot at `/run/service/gateway-<name>/`. `oria -p <name> gateway start/stop/restart` dispatches to `s6-svc` instead of spawning a bare process — crashes are auto-restarted and `docker restart` preserves the previously-running set of gateways. See [Per-profile gateway supervision](/user-guide/docker#per-profile-gateway-supervision) for details.
 :::
 
 ## Configuring profiles
@@ -287,15 +287,15 @@ also follows the switcher, spawning a conversation under the selected
 profile's home.
 
 Note: "Set as active" on the dashboard's Profiles page is the sticky
-default for **future CLI/gateway runs** (same as `hermes profile use`) —
+default for **future CLI/gateway runs** (same as `oria profile use`) —
 to edit a profile from the dashboard, use the switcher instead.
 
 ## Updating
 
-`hermes update` pulls code once (shared) and syncs new bundled skills to **all** profiles automatically:
+`oria update` pulls code once (shared) and syncs new bundled skills to **all** profiles automatically:
 
 ```bash
-hermes update
+oria update
 # → Code updated (12 commits)
 # → Skills synced: default (up to date), coder (+2 new), assistant (+2 new)
 ```
@@ -305,11 +305,11 @@ User-modified skills are never overwritten.
 ## Managing profiles
 
 ```bash
-hermes profile list           # show all profiles with status
-hermes profile show coder     # detailed info for one profile
-hermes profile rename coder dev-bot   # rename (updates alias + service)
-hermes profile export coder   # pack into coder.tar.gz (shareable; keys stripped)
-hermes profile import coder.tar.gz   # install an archive as a new profile
+oria profile list             # show all profiles with status
+oria profile show coder       # detailed info for one profile
+oria profile rename coder dev-bot     # rename (updates alias + service)
+oria profile export coder     # pack into coder.tar.gz (shareable; keys stripped)
+oria profile import coder.tar.gz     # install an archive as a new profile
 ```
 
 In chat, the same two live as `/export` and `/import` — and in the desktop app as **⌘K → Export/Import profile…**. See [Sharing a profile](#sharing-a-profile).
@@ -321,10 +321,10 @@ renamed because `~/.hermes` is the installation root. Renaming it instead
 sets a **display name**, which UI surfaces show in place of the bare ID:
 
 ```bash
-hermes profile rename default Harumesu   # Unicode fine: 小助手
+oria profile rename default Harumesu     # Unicode fine: 小助手
 ```
 
-The display name appears in `hermes profile list`/`show`, the `/profile`
+The display name appears in `oria profile list`/`show`, the `/profile`
 chat command, the dashboard, and the desktop app (including the Bot Mode
 roster). It is presentation-only: `-p default`, service names, cron jobs,
 and every other reference keep using the canonical `default` ID. It is
@@ -335,32 +335,32 @@ rename), but `rename` for them still renames the profile itself.
 ## Deleting a profile
 
 ```bash
-hermes profile delete coder
+oria profile delete coder
 ```
 
 This stops the gateway, removes the systemd/launchd service, removes the command alias, and deletes all profile data. You'll be asked to type the profile name to confirm.
 
-Use `--yes` to skip confirmation: `hermes profile delete coder --yes`
+Use `--yes` to skip confirmation: `oria profile delete coder --yes`
 
 :::note
-You cannot delete the default profile (`~/.hermes`). To remove everything, use `hermes uninstall`.
+You cannot delete the default profile (`~/.hermes`). To remove everything, use `oria uninstall`.
 :::
 
 ## Tab completion
 
 ```bash
 # Bash
-eval "$(hermes completion bash)"
+eval "$(oria completion bash)"
 
 # Zsh
-eval "$(hermes completion zsh)"
+eval "$(oria completion zsh)"
 ```
 
 Add the line to your `~/.bashrc` or `~/.zshrc` for persistent completion. Completes profile names after `-p`, profile subcommands, and top-level commands.
 
 ## How it works
 
-Profiles use the `HERMES_HOME` environment variable. When you run `coder chat`, the wrapper script sets `HERMES_HOME=~/.hermes/profiles/coder` before launching hermes. Since 119+ files in the codebase resolve paths via `get_hermes_home()`, Hermes state automatically scopes to the profile's directory — config, sessions, memory, skills, state database, gateway PID, logs, and cron jobs.
+Profiles use the `HERMES_HOME` environment variable. When you run `coder chat`, the wrapper script sets `HERMES_HOME=~/.hermes/profiles/coder` before launching hermes. Since 119+ files in the codebase resolve paths via `get_hermes_home()`, Oria state automatically scopes to the profile's directory — config, sessions, memory, skills, state database, gateway PID, logs, and cron jobs.
 
 This is separate from terminal working directory. Tool execution starts from `terminal.cwd` (or the launch directory when `cwd: "."` on the local backend), not automatically from `HERMES_HOME`.
 
@@ -372,22 +372,22 @@ per-profile tool config can opt in with `terminal.home_mode: profile`.
 
 This means two things that are easy to mix up:
 
-- `HERMES_HOME` is the profile boundary. It controls Hermes config, `.env`,
-  memory, sessions, skills, logs, cron jobs, gateway state, and other Hermes
+- `HERMES_HOME` is the profile boundary. It controls Oria config, `.env`,
+  memory, sessions, skills, logs, cron jobs, gateway state, and other Oria
   data.
 - `HOME` is the operating-system/user home that external CLIs expect. On host
-  installs, Hermes keeps it as the real user home by default so tools like
+  installs, Oria keeps it as the real user home by default so tools like
   `git`, `ssh`, `gh`, `az`, `npm`, Claude Code, and Codex find the same
   credentials they use in your normal shell.
 
 The tradeoff is that host profiles share normal user-level CLI state by default.
 If you need separate CLI identities per profile, set `terminal.home_mode:
-profile` in that profile's `config.yaml`. In that mode Hermes launches tool
+profile` in that profile's `config.yaml`. In that mode Oria launches tool
 subprocesses with `HOME={HERMES_HOME}/home`; you then need to initialize or link
 the profile-specific `~/.ssh`, `~/.gitconfig`, `~/.config/gh`, cloud CLI auth,
 Claude/Codex auth, npm state, and similar files inside that profile home.
 
-Hermes also exposes `HERMES_REAL_HOME` to subprocesses so scripts can still find
+Oria also exposes `HERMES_REAL_HOME` to subprocesses so scripts can still find
 the actual account home when `home_mode: profile` is active.
 
 The default profile is simply `~/.hermes` itself. No migration needed — existing installs work identically.
@@ -400,18 +400,18 @@ A profile you built on one machine can go to another — your own workstation, a
 
 ```bash
 # In chat, run /export, hand over the file, and they run /import on it
-hermes profile export coder
-hermes profile import ./coder.tar.gz --name coder
+oria profile export coder
+oria profile import ./coder.tar.gz --name coder
 ```
 
 **Publish a distribution.** Package the profile as a **git repository** so recipients install it with one command and pull versioned updates later. Carries the SOUL, config, skills, cron jobs, and MCP connections; credentials, memories, and sessions stay per-machine.
 
 ```bash
 # Install a whole agent from a git repo
-hermes profile install github.com/you/research-bot --alias
+oria profile install github.com/you/research-bot --alias
 
 # Update later when the author ships a new version (keeps your memories + .env)
-hermes profile update research-bot
+oria profile update research-bot
 ```
 
 Use an export file for a one-time handoff or a move; use a distribution for an agent you'll keep shipping. See **[Profile Distributions: Share a Whole Agent](./profile-distributions.md)** for both — the comparison table, authoring, publishing, update semantics, and the security model.

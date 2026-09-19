@@ -6,7 +6,7 @@ description: "Schedule automated tasks with natural language, manage them with o
 
 # Scheduled Tasks (Cron)
 
-Schedule tasks to run automatically with natural language or cron expressions. Hermes exposes cron management through a single `cronjob` tool with action-style operations instead of separate schedule/list/remove tools.
+Schedule tasks to run automatically with natural language or cron expressions. Oria exposes cron management through a single `cronjob` tool with action-style operations instead of separate schedule/list/remove tools.
 
 ## What cron can do now
 
@@ -20,26 +20,26 @@ Cron jobs can:
 - run in **no-agent mode** — a script on a schedule, its stdout delivered verbatim, zero LLM involvement (see the [no-agent mode](#no-agent-mode-script-only-jobs) section below)
 - fire on **external events** — a webhook route with `cron_job` set fires the job the moment something happens (a PR gets feedback, a service posts an alert) instead of waiting for the next scheduled tick. See [Event-Triggered Cron Jobs](/user-guide/messaging/webhooks#event-triggered-cron-jobs).
 
-All of this is available to Hermes itself through the `cronjob` tool, so you can create, pause, edit, and remove jobs by asking in plain language — no CLI required.
+All of this is available to Oria itself through the `cronjob` tool, so you can create, pause, edit, and remove jobs by asking in plain language — no CLI required.
 
 :::tip
-**Which model does a cron job run on?** Resolution at fire time is: per-job pin → `cron.model` in `config.yaml` → the global default from `hermes model`.
+**Which model does a cron job run on?** Resolution at fire time is: per-job pin → `cron.model` in `config.yaml` → the global default from `oria model`.
 
-- **Per-job pin** — set by *you* via the dashboard, `hermes cron create/edit --model … --provider …`, or by editing `~/.hermes/cron/jobs.json`. Once set, it sticks until you change it. The agent's `cronjob` tool cannot set or change per-job models — inference pins are user-owned.
-- **`cron.model` / `cron.model_provider`** — a cron-fleet default: every unpinned job runs on this model, independent of your chat model. Set it once (`hermes config set cron.model <name>`) and switching your chat model with `hermes model` or `/model` never touches your cron fleet.
-- **Global default** — only when neither of the above is set does a job follow `hermes model`. Hermes **snapshots** the provider and model at creation, and that snapshot is the job's effective pin: if you later switch the global default (`hermes model`, `/model`, `hermes config set model.default …`), the job **keeps running on the model and provider it was created under** and logs one INFO line per run noting the difference. A global model change never stops a scheduled job, and an unattended job never silently inherits a switch to a paid provider/model (#44585). To move a job to the new default, **resnap** it (`hermes cron resnap <job_id>`, or `--all` for every unpinned job) so it adopts the current default while staying unpinned, pin it (`hermes cron edit <job_id> --provider <provider> --model <model>`), or set `cron.model` to move the whole fleet at once. Jobs created before snapshots existed keep following the live global default.
+- **Per-job pin** — set by *you* via the dashboard, `oria cron create/edit --model … --provider …`, or by editing `~/.hermes/cron/jobs.json`. Once set, it sticks until you change it. The agent's `cronjob` tool cannot set or change per-job models — inference pins are user-owned.
+- **`cron.model` / `cron.model_provider`** — a cron-fleet default: every unpinned job runs on this model, independent of your chat model. Set it once (`oria config set cron.model <name>`) and switching your chat model with `oria model` or `/model` never touches your cron fleet.
+- **Global default** — only when neither of the above is set does a job follow `oria model`. Oria **snapshots** the provider and model at creation, and that snapshot is the job's effective pin: if you later switch the global default (`oria model`, `/model`, `oria config set model.default …`), the job **keeps running on the model and provider it was created under** and logs one INFO line per run noting the difference. A global model change never stops a scheduled job, and an unattended job never silently inherits a switch to a paid provider/model (#44585). To move a job to the new default, **resnap** it (`oria cron resnap <job_id>`, or `--all` for every unpinned job) so it adopts the current default while staying unpinned, pin it (`oria cron edit <job_id> --provider <provider> --model <model>`), or set `cron.model` to move the whole fleet at once. Jobs created before snapshots existed keep following the live global default.
 
 Whichever provider a job resolves to, its provider-specific request settings (e.g. `request_overrides` such as `extra_body`/`extra_headers` for custom providers) carry into the scheduled run just like an interactive session.
 
-`hermes setup --portal` is the lowest-friction option for unattended runs since OAuth refresh is automatic. See [Nous Portal](/integrations/nous-portal).
+`oria setup --portal` is the lowest-friction option for unattended runs since OAuth refresh is automatic. See [Nous Portal](/integrations/nous-portal).
 :::
 
 :::tip
-**Per-job reasoning effort.** A job can pin its own thinking level, independent of the model pin: one of `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`, `ultra`. When set, it overrides both the global `agent.reasoning_effort` and per-model `agent.reasoning_overrides` for that job's runs (`none` disables thinking). Set it via `hermes cron create/edit --reasoning-effort high`; pass an empty string on edit to clear the pin and follow config again. (It is deliberately not exposed on the agent's `cronjob` tool — model configuration stays a user decision.) Levels a model doesn't support are clamped or omitted by the provider at request time — pinning `xhigh` on a model that caps at `high` runs at `high`. The pin has no effect on `no_agent` jobs (there is no LLM call to tune). Use it to run heavy scheduled analyses at `high` while cheap recurring jobs run at `minimal`, without touching your global default.
+**Per-job reasoning effort.** A job can pin its own thinking level, independent of the model pin: one of `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`, `ultra`. When set, it overrides both the global `agent.reasoning_effort` and per-model `agent.reasoning_overrides` for that job's runs (`none` disables thinking). Set it via `oria cron create/edit --reasoning-effort high`; pass an empty string on edit to clear the pin and follow config again. (It is deliberately not exposed on the agent's `cronjob` tool — model configuration stays a user decision.) Levels a model doesn't support are clamped or omitted by the provider at request time — pinning `xhigh` on a model that caps at `high` runs at `high`. The pin has no effect on `no_agent` jobs (there is no LLM call to tune). Use it to run heavy scheduled analyses at `high` while cheap recurring jobs run at `minimal`, without touching your global default.
 :::
 
 :::warning
-Cron-run sessions cannot recursively create more cron jobs. Hermes disables cron management tools inside cron executions to prevent runaway scheduling loops.
+Cron-run sessions cannot recursively create more cron jobs. Oria disables cron management tools inside cron executions to prevent runaway scheduling loops.
 :::
 
 ## Creating scheduled tasks
@@ -56,9 +56,9 @@ Cron-run sessions cannot recursively create more cron jobs. Hermes disables cron
 ### From the standalone CLI
 
 ```bash
-hermes cron create "every 2h" "Check server status"
-hermes cron create "every 1h" "Summarize new feed items" --skill blogwatcher
-hermes cron create "every 1h" "Use both skills and combine the result" \
+oria cron create "every 2h" "Check server status"
+oria cron create "every 1h" "Summarize new feed items" --skill blogwatcher
+oria cron create "every 1h" "Use both skills and combine the result" \
   --skill blogwatcher \
   --skill maps \
   --name "Skill combo"
@@ -66,13 +66,13 @@ hermes cron create "every 1h" "Use both skills and combine the result" \
 
 ### Through natural conversation
 
-Ask Hermes normally:
+Ask Oria normally:
 
 ```text
 Every morning at 9am, check Hacker News for AI news and send me a summary on Telegram.
 ```
 
-Hermes will use the unified `cronjob` tool internally.
+Oria will use the unified `cronjob` tool internally.
 
 ## Pre-dispatch configuration validation
 
@@ -99,7 +99,7 @@ cron:
   preflight: false
 ```
 
-Or: `hermes config set cron.preflight false`
+Or: `oria config set cron.preflight false`
 
 ## Moving unpinned jobs to a new global default
 
@@ -107,11 +107,11 @@ An unpinned job stays on the provider/model it was created under, so changing yo
 never changes (or stops) your cron fleet. When you *do* want scheduled jobs to move:
 
 ```bash
-hermes cron edit <job_id> --provider <provider> --model <model>   # one job
-hermes config set cron.model <model>                               # every unpinned job
+oria cron edit <job_id> --provider <provider> --model <model>     # one job
+oria config set cron.model <model>                                 # every unpinned job
 ```
 
-`hermes config set model.default …` and the Desktop model picker list the unpinned jobs that will
+`oria config set model.default …` and the Desktop model picker list the unpinned jobs that will
 keep their original model so you can decide deliberately. Stored snapshots are refreshed whenever
 you edit a job's provider, model, or base URL.
 
@@ -119,8 +119,8 @@ Resnapping refreshes an unpinned job's stored snapshot to the current global res
 pinning it, so it keeps tracking future changes:
 
 ```bash
-hermes cron resnap <job_id>   # one job
-hermes cron resnap --all      # every unpinned agent job
+oria cron resnap <job_id>     # one job
+oria cron resnap --all        # every unpinned agent job
 ```
 
 The agent-facing `cronjob` tool accepts the same action (`action=resnap job_id=<id>` or
@@ -164,7 +164,7 @@ Cron jobs default to running detached from any repo — no `AGENTS.md`, `CLAUDE.
 
 ```bash
 # Standalone CLI (schedule and prompt are positional)
-hermes cron create "every 1d at 09:00" \
+oria cron create "every 1d at 09:00" \
   "Audit open PRs, summarize CI health, and post to #eng" \
   --workdir /home/me/projects/acme
 ```
@@ -211,12 +211,12 @@ The `<job_id>` placeholder below (and in [Lifecycle actions](#lifecycle-actions)
 ### Standalone CLI
 
 ```bash
-hermes cron edit <job_id> --schedule "every 4h"
-hermes cron edit <job_id> --prompt "Use the revised task"
-hermes cron edit <job_id> --skill blogwatcher --skill maps
-hermes cron edit <job_id> --add-skill maps
-hermes cron edit <job_id> --remove-skill blogwatcher
-hermes cron edit <job_id> --clear-skills
+oria cron edit <job_id> --schedule "every 4h"
+oria cron edit <job_id> --prompt "Use the revised task"
+oria cron edit <job_id> --skill blogwatcher --skill maps
+oria cron edit <job_id> --add-skill maps
+oria cron edit <job_id> --remove-skill blogwatcher
+oria cron edit <job_id> --clear-skills
 ```
 
 Notes:
@@ -243,14 +243,14 @@ Cron jobs now have a fuller lifecycle than just create/remove.
 ### Standalone CLI
 
 ```bash
-hermes cron list
-hermes cron pause <job_id_or_name>
-hermes cron resume <job_id_or_name>
-hermes cron run <job_id_or_name>
-hermes cron remove <job_id_or_name>
-hermes cron edit <job_id_or_name> [...flags]
-hermes cron status
-hermes cron tick
+oria cron list
+oria cron pause <job_id_or_name>
+oria cron resume <job_id_or_name>
+oria cron run <job_id_or_name>
+oria cron remove <job_id_or_name>
+oria cron edit <job_id_or_name> [...flags]
+oria cron status
+oria cron tick
 ```
 
 What they do:
@@ -263,17 +263,17 @@ What they do:
 
 **Name-based lookup.** All four mutating verbs (`pause`, `resume`, `run`, `remove`, `edit`) plus the agent's `cronjob` tool now accept a job **name** (case-insensitive) in place of the hex ID. The agent and CLI both prefer an exact ID match if one exists; ambiguous name matches (multiple jobs sharing the same name) are refused with the full list of candidate IDs so you can pick one explicitly. Names are not unique, so this guard is load-bearing — it prevents silently mutating the wrong job when two share a name.
 
-### Pausing everything: `hermes pause`
+### Pausing everything: `oria pause`
 
-`hermes pause [--reason ...]` is the global emergency stop (`hermes resume` lifts it). While it is engaged no scheduled cron fire starts, whichever door it arrives through: the built-in ticker skips its dispatch, the managed-cron (hosted scheduler) fire webhook answers `503` with `Retry-After: 60` so the scheduler redelivers the fire after you resume, and the [misfire catch-up](#misfire-catch-up) sweep stays idle instead of force-firing everything that was held back. Runs already in flight are never killed, and nothing is lost: due work catches up on the first tick or sweep after `hermes resume`. Explicit manual runs (`hermes cron run`, the dashboard's Trigger button) are an operator override and still execute while paused.
+`oria pause [--reason ...]` is the global emergency stop (`oria resume` lifts it). While it is engaged no scheduled cron fire starts, whichever door it arrives through: the built-in ticker skips its dispatch, the managed-cron (hosted scheduler) fire webhook answers `503` with `Retry-After: 60` so the scheduler redelivers the fire after you resume, and the [misfire catch-up](#misfire-catch-up) sweep stays idle instead of force-firing everything that was held back. Runs already in flight are never killed, and nothing is lost: due work catches up on the first tick or sweep after `oria resume`. Explicit manual runs (`oria cron run`, the dashboard's Trigger button) are an operator override and still execute while paused.
 
 ### Creating a job paused (safe canary)
 
 Create a canary without a create-then-pause scheduling race:
 
 ```bash
-hermes cron create "every 1h" "Post the digest" --paused --paused-reason "Awaiting review"
-hermes cron resume <job_id>
+oria cron create "every 1h" "Post the digest" --paused --paused-reason "Awaiting review"
+oria cron resume <job_id>
 ```
 
 `--paused` stores `enabled: false`, `state: paused`, `next_run_at: null`, a pause
@@ -331,17 +331,17 @@ over ones that create new jobs each run.
 **Cron execution is handled by the gateway daemon.** The gateway ticks the scheduler every 60 seconds, running any due jobs in isolated agent sessions.
 
 ```bash
-hermes gateway install     # Install as a user service
-sudo hermes gateway install --system   # Linux: boot-time system service for servers
-hermes gateway             # Or run in foreground
+oria gateway install       # Install as a user service
+sudo oria gateway install --system     # Linux: boot-time system service for servers
+oria gateway               # Or run in foreground
 
-hermes cron list
-hermes cron status
+oria cron list
+oria cron status
 ```
 
 ### Gateway scheduler behavior
 
-On each tick Hermes:
+On each tick Oria:
 
 1. loads jobs from `~/.hermes/cron/jobs.json`
 2. checks `next_run_at` against the current time
@@ -368,21 +368,21 @@ The lasting fix is a user session for the gateway user: `sudo loginctl enable-li
 
 ### Execution history
 
-Hermes records each claimed cron attempt in the profile-local
+Oria records each claimed cron attempt in the profile-local
 `~/.hermes/cron/executions.db` before executor or provider dispatch. Attempts
 move through `claimed`, `running`, and one immutable terminal state:
-`completed`, `failed`, or `unknown`. After restart, Hermes marks an abandoned
+`completed`, `failed`, or `unknown`. After restart, Oria marks an abandoned
 attempt `unknown` only when the original PID and process-start fingerprint prove
 that its owner is gone. Unknown attempts are audit records and are never
 automatically rerun.
 
-Inspect recent attempts with `hermes cron runs [job-id] --limit 20` (alias:
+Inspect recent attempts with `oria cron runs [job-id] --limit 20` (alias:
 `history`). Terminal history is bounded; active attempts are never pruned. The
 ledger is included in quick backups.
 
 Scheduled attempts also record their exact scheduled instant, separately from
 the time they were claimed. If an old `jobs.json` snapshot re-arms an occurrence
-that the retained ledger records as completed, Hermes skips that replay and
+that the retained ledger records as completed, Oria skips that replay and
 re-anchors recurring jobs. This works even when the snapshot predates the
 dispatch stamp or the original run started late. Explicit manual runs do not
 consume a scheduled occurrence's identity.
@@ -401,8 +401,8 @@ a bad import after a half-applied update, a provider client that cannot be
 constructed — counts and alerts the same as one the agent itself failed. When
 a *recurring* job's streak reaches the threshold, the failure message
 delivered to chat gains a review nudge telling you the job has failed N runs
-in a row and suggesting you fix, pause (`hermes cron pause <job>`), or remove
-it. Any successful run resets the streak, and `hermes cron list` shows the
+in a row and suggesting you fix, pause (`oria cron pause <job>`), or remove
+it. Any successful run resets the streak, and `oria cron list` shows the
 streak alongside a failing job's last run. One-shot jobs never nudge.
 
 ```yaml
@@ -440,9 +440,9 @@ job plus a normalized signature of the error text, in the same per-profile
 ledger database as the execution history.
 
 ```bash
-hermes cron incidents                 # list incidents (newest activity first)
-hermes cron incidents --state alerted # filter: detected | alerted | resolved | closed
-hermes cron incidents ack <id>        # acknowledge — stop re-pinging
+oria cron incidents                   # list incidents (newest activity first)
+oria cron incidents --state alerted # filter: detected | alerted | resolved | closed
+oria cron incidents ack <id>          # acknowledge — stop re-pinging
 ```
 
 Acknowledging an incident silences the per-run failure ping for that exact
@@ -466,15 +466,15 @@ written.
 Recording is always on and costs nothing to ignore — no ping is ever
 suppressed until you explicitly `ack`.
 
-### Fleet health check: `hermes cron doctor`
+### Fleet health check: `oria cron doctor`
 
-`hermes cron doctor` is a read-only health check over every active job. It
+`oria cron doctor` is a read-only health check over every active job. It
 prints grouped, per-job issues and exits `1` when anything actionable is
 found (`0` when healthy), so it works from a terminal, a watchdog script, or
 a CI-style smoke check:
 
 ```bash
-hermes cron doctor
+oria cron doctor
 ```
 
 Checks per active job:
@@ -489,7 +489,7 @@ Checks per active job:
 - configured `workdir` that no longer exists.
 
 Doctor never mutates jobs or state — it only reports. Pair it with
-`hermes cron incidents` (durable failure records) and `hermes cron runs`
+`oria cron incidents` (durable failure records) and `oria cron runs`
 (attempt ledger) when digging into a flagged job.
 
 ## Delivery options
@@ -533,8 +533,8 @@ Execution and delivery are tracked separately. When the agent run succeeds but
 the output never reaches the target (platform 5xx, rate limit, stale session,
 adapter returned no positive evidence of a send), the job records
 `last_status: delivery_failed` — never a plain `ok` — with the reason in
-`last_delivery_error`. `hermes cron list` shows it in yellow as
-`delivery_failed: <reason>`, `hermes cron doctor` reports it as a delivery
+`last_delivery_error`. `oria cron list` shows it in yellow as
+`delivery_failed: <reason>`, `oria cron doctor` reports it as a delivery
 issue, and a manual `cronjob run` reports `success: false` with the delivery
 error. A delivery failure does not count toward the job's `failure_streak`
 (the agent did its job); the next fully successful run returns the status to
@@ -545,10 +545,10 @@ error. A delivery failure does not count toward the job's `failure_streak`
 `bot-chat` delivers the output **into a profile's canonical "Bot Chat" session as a real message**. Unlike every other target — where the recipient is a human reading a channel — the recipient here is the bot itself: it receives the output as an incoming message, acts on anything that needs action, and responds in its chat. Use it when scheduled output should be *processed*, not just posted.
 
 - `bot-chat` (bare) targets the job's own profile.
-- `bot-chat:<profile>` targets another profile **on the same machine**. Names are validated against `hermes profile list` when the job is created; profiles on other gateways or machines can never be targeted, so same-named profiles across machines are unambiguous.
+- `bot-chat:<profile>` targets another profile **on the same machine**. Names are validated against `oria profile list` when the job is created; profiles on other gateways or machines can never be targeted, so same-named profiles across machines are unambiguous.
 - Each delivery costs the target bot one full agent turn — mind the schedule frequency.
 - Composes with other targets (`bot-chat,telegram`) but is never included in `all`.
-- If the canonical chat is open in a mailbox-capable Desktop/TUI backend, delivery is **durably queued immediately**, whether the bot is idle or busy. Only that live owner runs the incoming turn; cron does not start a competing CLI writer. If a CLI-only or older unsupported owner holds the chat, cron retains the never-started output under the sending profile's `cron/bot_chat_pending/<receipt-id>.json`. Later scheduler ticks deliver after that owner releases the chat, in admission order. Deferred work retains its admitted destination home and receipt ID even if the scheduler's launch root changes; a missing/renamed destination is not recreated or resolved to another profile. A `transferred` pending record points to the live-owner receipt, not a failed turn. Malformed JSON records are retained and logged without blocking other queued outputs. With no owner, the existing `hermes chat -c "Bot Chat" --create-if-missing` lane remains available (normal session ownership checks still apply). That child uses the exact destination home already checked by cron, including custom roots; inherited `HOME` or a changed active profile cannot redirect it. A missing destination directory is refused before launch, not recreated. A deferred request is claimed before launching that lane; interruption or an uncertain subprocess result never causes an automatic resend.
+- If the canonical chat is open in a mailbox-capable Desktop/TUI backend, delivery is **durably queued immediately**, whether the bot is idle or busy. Only that live owner runs the incoming turn; cron does not start a competing CLI writer. If a CLI-only or older unsupported owner holds the chat, cron retains the never-started output under the sending profile's `cron/bot_chat_pending/<receipt-id>.json`. Later scheduler ticks deliver after that owner releases the chat, in admission order. Deferred work retains its admitted destination home and receipt ID even if the scheduler's launch root changes; a missing/renamed destination is not recreated or resolved to another profile. A `transferred` pending record points to the live-owner receipt, not a failed turn. Malformed JSON records are retained and logged without blocking other queued outputs. With no owner, the existing `oria chat -c "Bot Chat" --create-if-missing` lane remains available (normal session ownership checks still apply). That child uses the exact destination home already checked by cron, including custom roots; inherited `HOME` or a changed active profile cannot redirect it. A missing destination directory is refused before launch, not recreated. A deferred request is claimed before launching that lane; interruption or an uncertain subprocess result never causes an automatic resend.
 - Never-started outputs have no TTL: if an unsupported owner never releases, they remain queued rather than being silently dropped. Receipts retain their payloads indefinitely. An unexpected delivery exception is logged and retained as `ambiguous`, without stopping sibling deliveries in that drain; claimed/ambiguous attempts are never automatically replayed.
 - **Queued is not completed.** Cron records receipt IDs and `queued`/`claimed` statuses in `last_delivery_queued`, with delivery outcome `queued` (neither delivered nor failed). A successful job shows `delivery_queued`; genuine errors on other targets still take precedence as delivery failures. The bot may complete later. The durable receipt in the target profile's `runtime/bot_live_delivery/<receipt-id>.json` is authoritative; cron's historical status is not automatically refreshed.
 - Rechecking the same execution inspects its existing receipt, even if the owner has disappeared. It never falls back to another writer after acceptance. `failed`, `cancelled`, or `ambiguous` receipts are not automatically replayed; inspect the chat and receipt before intentionally starting new work. Each new cron execution has a distinct delivery ID.
@@ -619,13 +619,13 @@ the adapter: an explicit `success` that is not a filtered drop
 `success` but neither piece of evidence — the shape Slack, Matrix and
 Mattermost adapters return — is still accepted (it is not proof of failure),
 but the run is recorded on the job as `last_delivery_unverified` and surfaces
-in `hermes cron list`:
+in `oria cron list`:
 
 ```
 ⚠ Delivery UNVERIFIED: adapter acked slack:C0123456 without message_id/raw_response
 ```
 
-and in `hermes cron doctor` as `last delivery unverified (...)`. The marker is
+and in `oria cron doctor` as `last delivery unverified (...)`. The marker is
 cleared by the next run that delivers with evidence. An empty payload (no text
 and no media) is never handed to an adapter; it fails closed and is reported in
 `last_delivery_error` instead of being logged as delivered.
@@ -800,7 +800,7 @@ A timed-out delivery is recorded in `last_delivery_error`; the bot's turn may st
 For recurring jobs that don't need LLM reasoning — classic watchdogs, disk/memory alerts, heartbeats, CI pings — pass `no_agent=True` at creation time. The scheduler runs your script on schedule and delivers its stdout directly, skipping the agent entirely:
 
 ```bash
-hermes cron create "every 5m" \
+oria cron create "every 5m" \
   --no-agent \
   --script memory-watchdog.sh \
   --deliver telegram \
@@ -819,13 +819,13 @@ Semantics:
 
 ### The agent sets these up for you
 
-The `cronjob` tool's schema exposes `no_agent` to Hermes directly, so you can describe a watchdog in chat and let the agent wire it up:
+The `cronjob` tool's schema exposes `no_agent` to Oria directly, so you can describe a watchdog in chat and let the agent wire it up:
 
 ```text
 Ping me on Telegram if RAM is over 85%, every 5 minutes.
 ```
 
-Hermes will write the check script to `~/.hermes/scripts/` via `write_file`, then call:
+Oria will write the check script to `~/.hermes/scripts/` via `write_file`, then call:
 
 ```python
 cronjob(action="create", schedule="every 5m",
@@ -872,7 +872,7 @@ cronjob(
 
 **How it works:**
 
-- When Job 2 fires, Hermes reads Job 1's most recent output from `~/.hermes/cron/output/{job1_id}/*.md`
+- When Job 2 fires, Oria reads Job 1's most recent output from `~/.hermes/cron/output/{job1_id}/*.md`
 - That output is prepended to Job 2's prompt automatically
 - Job 2 doesn't need to hardcode "read this file" — it receives the content as context
 - The chain can be any length: Job 1 → Job 2 → Job 3 → ...
@@ -902,7 +902,7 @@ cronjob(
 
 The first run has no previous output, so the prompt runs as-is. Silent monitor ticks (`no_change`), empty output, and `wakeAgent=false` audit records are skipped when selecting context, so a quiet period preserves the latest substantive output. Audit files remain on disk. Error documents remain eligible to give the next run recovery context; this is not a success-only history filter. On later runs the previous output is prepended with continuity framing ("avoid repeating what was already reported"). It combines freely with upstream jobs (`context_from=["<other_job_id>"]` plus `continuity=true`), and `continuity=false` on update turns it off while preserving other `context_from` entries. Internally the flag is stored as the reserved `self` entry in `context_from`.
 
-From the CLI: `hermes cron create "every 6h" "Scan for news" --continuity`, and `hermes cron edit <job_id> --continuity` / `--no-continuity` to toggle it on an existing job. The same toggle appears in the dashboard's cron editor and the desktop Bot Mode routine dialog.
+From the CLI: `oria cron create "every 6h" "Scan for news" --continuity`, and `oria cron edit <job_id> --continuity` / `--no-continuity` to toggle it on an existing job. The same toggle appears in the dashboard's cron editor and the desktop Bot Mode routine dialog.
 
 **When to use it:**
 
@@ -928,7 +928,7 @@ This is separate from `last_fire_error` (scheduler handoff) and `last_delivery_e
 Those fields can correctly be empty when the agent itself failed.
 
 For a connection failure, inspect the run document under `cron/output/<job_id>/` in the active
-Hermes home. Its `## Error` section includes the chained traceback, with credential patterns
+Oria home. Its `## Error` section includes the chained traceback, with credential patterns
 and URL credentials redacted. The file uses the existing private output-file permissions;
 traceback locals are not captured. Delivery notices and `last_error` retain the concise error,
 not the full traceback. Review diagnostics before sharing: redaction is not a guarantee that
@@ -941,10 +941,10 @@ On hosted (managed-cron) deployments, a scheduled fire travels from the platform
 These misses are stamped on the job record as `last_fire_error` (timestamp + reason) and surfaced by:
 
 - `cronjob` tool → `action: "list"` — the `last_fire_error` field
-- `hermes cron list` — a red `⚠ Missed scheduled fire:` line under the job
+- `oria cron list` — a red `⚠ Missed scheduled fire:` line under the job
 - The dashboard job view
 
-The stamp always reflects **current** auto-fire health: it is overwritten by newer misses and cleared automatically by the next successful run. If you see it, the job and its schedule are fine — the gateway side of the fire path needs attention (most commonly, restart the gateway through its supervisor so it loads the full profile environment: `hermes gateway restart`).
+The stamp always reflects **current** auto-fire health: it is overwritten by newer misses and cleared automatically by the next successful run. If you see it, the job and its schedule are fine — the gateway side of the fire path needs attention (most commonly, restart the gateway through its supervisor so it loads the full profile environment: `oria gateway restart`).
 
 ### Local missed-run policy
 
@@ -953,7 +953,7 @@ passed, the job **catches up once** when the scheduler is back: a slot missed
 inside a restart gap fires exactly one time, a slot that already ran before the
 restart is never run again, and a long outage collapses into a single run rather
 than one run per missed slot. Paused jobs never catch up. Each catch-up shows in
-`hermes cron list` as `⚠ late` / `⚠ catch-up after missed fire`.
+`oria cron list` as `⚠ late` / `⚠ catch-up after missed fire`.
 
 To avoid that catch-up load after a planned gateway stop, set:
 
@@ -962,7 +962,7 @@ cron:
   catch_up_missed: false   # default: true
 ```
 
-Or run `hermes config set cron.catch_up_missed false`. With this opt-out, a recurring
+Or run `oria config set cron.catch_up_missed false`. With this opt-out, a recurring
 job later than its existing grace window (half its period, clamped to 120 seconds–2
 hours) is re-anchored to its next future occurrence without firing now. The skip is
 logged. Jobs inside grace and explicit manual triggers still run normally; if the
@@ -1089,16 +1089,16 @@ The context is appended to the job's stored prompt under a `## Run Context`
 header for that single fire only — it is never persisted to the job
 definition, and it passes the same prompt-injection scan as stored prompts.
 
-Runtimes that can't receive detached results (one-shot `hermes -z`, `hermes
+Runtimes that can't receive detached results (one-shot `oria -z`, `hermes
 cron run` from the CLI, cron child sessions, Kanban workers) fall back to
 synchronous execution automatically.
 
 ## Toolsets available to cron jobs
 
-Cron runs each job in a fresh agent session with no chat platform attached. By default the cron agent gets **the toolset you configured for the `cron` platform in `hermes tools`** — not the CLI default, not everything under the sun.
+Cron runs each job in a fresh agent session with no chat platform attached. By default the cron agent gets **the toolset you configured for the `cron` platform in `oria tools`** — not the CLI default, not everything under the sun.
 
 ```bash
-hermes tools
+oria tools
 # → pick the "cron" platform in the curses UI
 # → toggle toolsets on/off just like you would for Telegram/Discord/etc.
 ```
@@ -1112,13 +1112,13 @@ cronjob(action="create", name="weekly-news-summary",
         prompt="Summarize this week's AI news: ...")
 ```
 
-When `enabled_toolsets` is set on a job it wins; otherwise the `hermes tools` cron-platform config wins; otherwise Hermes falls back to the built-in defaults. If the cron-platform toolset config cannot be read at all (for example a malformed `platform_toolsets` block in `config.yaml`), the run fails with a recorded error instead of quietly running with every tool — check `hermes cron list` / `hermes cron doctor`. This matters for cost control: carrying `browser`, `delegation` into every tiny "fetch news" job bloats the tool-schema prompt on every LLM call.
+When `enabled_toolsets` is set on a job it wins; otherwise the `oria tools` cron-platform config wins; otherwise Oria falls back to the built-in defaults. If the cron-platform toolset config cannot be read at all (for example a malformed `platform_toolsets` block in `config.yaml`), the run fails with a recorded error instead of quietly running with every tool — check `oria cron list` / `oria cron doctor`. This matters for cost control: carrying `browser`, `delegation` into every tiny "fetch news" job bloats the tool-schema prompt on every LLM call.
 
 If the job drives a site you're logged into, the login has to be in place before the run — a scheduled tick has nobody to answer a prompt. [Scheduled and unattended runs](./browser.md#scheduled-and-unattended-runs) covers that setup.
 
 ### Skipping the agent entirely: `wakeAgent`
 
-If your cron job attaches a pre-check script (via `script=`), the script can decide at runtime whether Hermes should even invoke the agent. Emit a final stdout line of the form:
+If your cron job attaches a pre-check script (via `script=`), the script can decide at runtime whether Oria should even invoke the agent. Emit a final stdout line of the form:
 
 ```text
 {"wakeAgent": false}
@@ -1215,7 +1215,7 @@ cronjob(action="create", name="summarize-new-msgs",
 The same pattern works for any data source you can query from a script — Postgres, an HTTP API, your own state store — without baking a SQL evaluator into the cron subsystem.
 
 :::tip
-Hermes's own `~/.hermes/state.db` is an internal schema that changes between releases. Don't query it from a pre-run gate — point at your own database or feed instead.
+Oria's own `~/.hermes/state.db` is an internal schema that changes between releases. Don't query it from a pre-run gate — point at your own database or feed instead.
 :::
 
 Credit: this recipe set was prompted by @iankar8's exploration in [#2654](https://github.com/NousResearch/hermes-agent/pull/2654), which proposed adding sql/file/command triggers as a parallel mechanism. The `script` + `wakeAgent` gate already covers all three cases at $0, so the work landed as documentation instead.
@@ -1237,13 +1237,13 @@ The referenced jobs' most recent completed outputs are injected above the prompt
 
 Jobs are stored in `~/.hermes/cron/jobs.json`. Output from job runs is saved to `~/.hermes/cron/output/{job_id}/{timestamp}.md`.
 
-Job definitions are plain JSON on disk: they survive `hermes update`, gateway restarts, and machine reboots. A job that was mid-run during a restart is marked `unknown` in the execution ledger — it is not automatically retried, but the job's next scheduled tick fires normally. See [Execution history](#execution-history) for details.
+Job definitions are plain JSON on disk: they survive `oria update`, gateway restarts, and machine reboots. A job that was mid-run during a restart is marked `unknown` in the execution ledger — it is not automatically retried, but the job's next scheduled tick fires normally. See [Execution history](#execution-history) for details.
 
 :::tip
-Ask the agent to manage jobs through the `cronjob` tool, `hermes cron edit`, or `/cron` — not by patching `jobs.json` directly. Direct edits can fail silently when [file write safety](../security.md#file-write-safety) blocks the path (for example when `HERMES_WRITE_SAFE_ROOT` is set), and the [file-mutation verifier](../configuration.md#file-mutation-verifier) footer is the authoritative signal that nothing was saved.
+Ask the agent to manage jobs through the `cronjob` tool, `oria cron edit`, or `/cron` — not by patching `jobs.json` directly. Direct edits can fail silently when [file write safety](../security.md#file-write-safety) blocks the path (for example when `HERMES_WRITE_SAFE_ROOT` is set), and the [file-mutation verifier](../configuration.md#file-mutation-verifier) footer is the authoritative signal that nothing was saved.
 :::
 
-Jobs may store `model` and `provider` as `null`. When those fields are omitted, Hermes resolves them at execution time from the global configuration. They only appear in the job record when a per-job override is set.
+Jobs may store `model` and `provider` as `null`. When those fields are omitted, Oria resolves them at execution time from the global configuration. They only appear in the job record when a per-job override is set.
 
 The storage uses atomic file writes so interrupted writes do not leave a partially written job file behind.
 

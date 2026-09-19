@@ -1,21 +1,21 @@
 ---
 sidebar_position: 12
 title: "Kanban（多 Agent 看板）"
-description: "基于 SQLite 的持久化任务看板，用于协调多个 Hermes 配置文件"
+description: "基于 SQLite 的持久化任务看板，用于协调多个 Oria 配置文件"
 ---
 
 # Kanban — 多 Agent 配置文件协作
 
 > **想要详细教程？** 请阅读 [Kanban 教程](./kanban-tutorial) —— 包含四个用户故事（独立开发者、批量任务、带重试的角色流水线、熔断器），并附有各场景的仪表盘截图。本页是参考文档，教程是叙述性说明。
 
-Hermes Kanban 是一个持久化任务看板，在所有 Hermes 配置文件之间共享，允许多个具名 agent 协作完成工作，而无需脆弱的进程内子 agent 集群。每个任务都是 `~/.hermes/kanban.db` 中的一行记录；每次交接都是任何人都可以读写的一行记录；每个 worker 都是拥有独立身份的完整 OS 进程。
+Oria Kanban 是一个持久化任务看板，在所有 Oria 配置文件之间共享，允许多个具名 agent 协作完成工作，而无需脆弱的进程内子 agent 集群。每个任务都是 `~/.hermes/kanban.db` 中的一行记录；每次交接都是任何人都可以读写的一行记录；每个 worker 都是拥有独立身份的完整 OS 进程。
 
 ### 两个操作界面：模型通过工具交互，你通过 CLI 交互
 
 看板有两个入口，均由同一个 `~/.hermes/kanban.db` 支撑：
 
-- **Agent 通过专用 `kanban_*` 工具集驱动看板** —— `kanban_show`、`kanban_list`、`kanban_complete`、`kanban_block`、`kanban_request_review`、`kanban_request_changes`、`kanban_heartbeat`、`kanban_comment`、`kanban_create`、`kanban_link`、`kanban_unblock`。调度器在 schema 中已内置这些工具来启动每个 worker；编排器（orchestrator）配置文件也可以通过 `kanban` 工具集显式启用。模型通过直接调用工具来读取和路由任务，*而不是*通过 shell 执行 `hermes kanban`。详见下方[Worker 如何与看板交互](#how-workers-interact-with-the-board)。
-- **你（以及脚本和 cron）通过 CLI 上的 `hermes kanban …`、斜杠命令 `/kanban …` 或仪表盘驱动看板。** 这些界面面向人类和自动化场景——即没有工具调用模型的场合。
+- **Agent 通过专用 `kanban_*` 工具集驱动看板** —— `kanban_show`、`kanban_list`、`kanban_complete`、`kanban_block`、`kanban_request_review`、`kanban_request_changes`、`kanban_heartbeat`、`kanban_comment`、`kanban_create`、`kanban_link`、`kanban_unblock`。调度器在 schema 中已内置这些工具来启动每个 worker；编排器（orchestrator）配置文件也可以通过 `kanban` 工具集显式启用。模型通过直接调用工具来读取和路由任务，*而不是*通过 shell 执行 `oria kanban`。详见下方[Worker 如何与看板交互](#how-workers-interact-with-the-board)。
+- **你（以及脚本和 cron）通过 CLI 上的 `oria kanban …`、斜杠命令 `/kanban …` 或仪表盘驱动看板。** 这些界面面向人类和自动化场景——即没有工具调用模型的场合。
 
 两个界面都通过同一个 `kanban_db` 层路由，因此读取视图一致，写入不会产生偏差。本页其余部分展示 CLI 示例，因为它们便于复制粘贴，但每个 CLI 动词都有模型使用的等效工具调用。
 
@@ -59,7 +59,7 @@ Hermes Kanban 是一个持久化任务看板，在所有 Hermes 配置文件之�
 - **Link（链接）** —— `task_links` 行，记录父 → 子依赖关系。当所有父任务变为 `done` 时，调度器将 `todo → ready`。
 - **Comment（评论）** —— agent 间协议。Agent 和人类追加评论；当 worker 被（重新）启动时，它将完整的评论线程作为上下文的一部分读取。
 - **Workspace（工作区）** —— worker 操作的目录。三种类型：
-  - `scratch`（默认）—— 在 `~/.hermes/kanban/workspaces/<id>/` 下（非默认看板为 `~/.hermes/kanban/boards/<slug>/workspaces/<id>/`）创建的临时目录。**任务完成时删除** —— scratch 按设计是临时性的。通过 `kanban_complete(artifacts=[...])` 明确声明的文件会在清理前复制到持久的任务附件存储；旧版完成摘要中已存在的交付文件路径也会得到同样处理。其他 scratch 文件仍会被删除。如果声明的 scratch 交付文件不存在，任务会保持进行中，worker 可修正路径后重试。需要保留整个工作区时，请使用 `worktree:` 或 `dir:<path>`。在某次安装中首次创建 scratch 工作区时，调度器会记录警告并在任务上发出 `tip_scratch_workspace` 事件（可通过 `hermes kanban show <id>` 查看）。
+  - `scratch`（默认）—— 在 `~/.hermes/kanban/workspaces/<id>/` 下（非默认看板为 `~/.hermes/kanban/boards/<slug>/workspaces/<id>/`）创建的临时目录。**任务完成时删除** —— scratch 按设计是临时性的。通过 `kanban_complete(artifacts=[...])` 明确声明的文件会在清理前复制到持久的任务附件存储；旧版完成摘要中已存在的交付文件路径也会得到同样处理。其他 scratch 文件仍会被删除。如果声明的 scratch 交付文件不存在，任务会保持进行中，worker 可修正路径后重试。需要保留整个工作区时，请使用 `worktree:` 或 `dir:<path>`。在某次安装中首次创建 scratch 工作区时，调度器会记录警告并在任务上发出 `tip_scratch_workspace` 事件（可通过 `oria kanban show <id>` 查看）。
   - `dir:<path>` —— 现有的共享目录（Obsidian vault、邮件运维目录、每账号文件夹）。**必须是绝对路径。** 像 `dir:../tenants/foo/` 这样的相对路径在调度时会被拒绝，因为它们会相对于调度器碰巧所在的 CWD 解析，这是模糊的，也是混淆代理（confused-deputy）逃逸向量。路径本身是受信任的 —— 这是你的机器、你的文件系统，worker 以你的 uid 运行。这是受信任本地用户的威胁模型；kanban 设计为单主机。**完成时保留。**
   - `worktree` —— 用于编码任务的 git worktree，位于 `.worktrees/<id>/` 下。使用 `worktree:<path>` 固定确切的目标路径。Worker 端的 `git worktree add` 创建它，提供 `--branch` 时使用该分支。**完成时保留。**
 - **Dispatcher（调度器）** —— 一个长期运行的循环，每 N 秒（默认 60 秒）执行一次：回收过期的认领、回收崩溃的 worker（PID 消失但 TTL 尚未过期）、推进就绪任务、原子性认领、启动已分配的配置文件。默认**在 gateway 内部运行**（`kanban.dispatch_in_gateway: true`）。每次 tick 一个调度器扫描所有看板；worker 启动时固定了 `HERMES_KANBAN_BOARD`，因此无法看到其他看板。在同一任务上连续启动失败 `kanban.failure_limit` 次（默认：2）后，调度器会以最后一个错误为原因自动阻塞该任务 —— 防止因配置文件不存在、工作区无法挂载等原因导致的反复抖动。
@@ -80,46 +80,46 @@ Hermes Kanban 是一个持久化任务看板，在所有 Hermes 配置文件之�
 
 ```bash
 # 查看磁盘上的内容。全新安装只显示 "default"。
-hermes kanban boards list
+oria kanban boards list
 
 # 创建新看板。
-hermes kanban boards create atm10-server \
+oria kanban boards create atm10-server \
     --name "ATM10 Server" \
     --description "Minecraft modded server ops" \
     --icon 🎮 \
     --switch                   # 可选：将其设为活动看板
 
 # 在不切换的情况下操作特定看板。
-hermes kanban --board atm10-server list
-hermes kanban --board atm10-server create "Restart ATM server" --assignee ops
+oria kanban --board atm10-server list
+oria kanban --board atm10-server create "Restart ATM server" --assignee ops
 
 # 更改后续调用的"当前"看板。
-hermes kanban boards switch atm10-server
-hermes kanban boards show             # 当前活动的是哪个？
+oria kanban boards switch atm10-server
+oria kanban boards show               # 当前活动的是哪个？
 
 # 重命名显示名称（slug 是不可变的 —— 它是目录名）。
-hermes kanban boards rename atm10-server "ATM10 (Prod)"
+oria kanban boards rename atm10-server "ATM10 (Prod)"
 
 # 归档（默认）—— 将看板目录移动到 boards/_archived/<slug>-<ts>/。
 # 可通过将目录移回来恢复。
-hermes kanban boards rm atm10-server
+oria kanban boards rm atm10-server
 
 # 硬删除 —— 对看板目录执行 `rm -rf`。无法恢复。
-hermes kanban boards rm atm10-server --delete
+oria kanban boards rm atm10-server --delete
 ```
 
 看板解析顺序（优先级从高到低）：
 
 1. CLI 调用中的显式 `--board <slug>`。
 2. `HERMES_KANBAN_BOARD` 环境变量（调度器在启动 worker 时设置，因此 worker 无法看到其他看板）。
-3. `~/.hermes/kanban/current` —— 由 `hermes kanban boards switch` 持久化的 slug。
+3. `~/.hermes/kanban/current` —— 由 `oria kanban boards switch` 持久化的 slug。
 4. `default`。
 
 Slug 经过验证：小写字母数字 + 连字符 + 下划线，1-64 个字符，必须以字母数字开头。大写输入会自动转为小写。其他任何内容（斜杠、空格、点、`..`）在 CLI 层被拒绝，以防止路径遍历技巧命名看板。
 
 ### 通过仪表盘管理看板
 
-`hermes dashboard` → Kanban 标签页在存在多个看板（或任何看板有任务）时，顶部会显示看板切换器。单看板用户只看到一个小的 `+ New board` 按钮；切换器在需要时才显示。
+`oria dashboard` → Kanban 标签页在存在多个看板（或任何看板有任务）时，顶部会显示看板切换器。单看板用户只看到一个小的 `+ New board` 按钮；切换器在需要时才显示。
 
 - **看板下拉菜单** —— 选择活动看板。你的选择保存在浏览器的 `localStorage` 中，因此在重新加载后仍然有效，不会影响你打开的终端中 CLI 的 `current` 指针。
 - **+ New board** —— 打开一个模态框，询问 slug、显示名称、描述和图标。可选择自动切换到新看板。
@@ -134,23 +134,23 @@ Slug 经过验证：小写字母数字 + 连字符 + 下划线，1-64 个字符�
 
 ```bash
 # 1. 创建看板（你）
-hermes kanban init
+oria kanban init
 
 # 2. 启动 gateway（托管内嵌调度器）
-hermes gateway start
+oria gateway start
 
 # 3. 创建任务（你 —— 或编排器 agent 通过 kanban_create）
-hermes kanban create "research AI funding landscape" --assignee researcher
+oria kanban create "research AI funding landscape" --assignee researcher
 
 # 4. 实时查看活动（你）
-hermes kanban watch
+oria kanban watch
 
 # 5. 查看看板（你）
-hermes kanban list
-hermes kanban stats
+oria kanban list
+oria kanban stats
 ```
 
-当调度器接管 `t_abcd` 并启动 `researcher` 配置文件时，该 worker 的模型做的第一件事是调用 `kanban_show()` 读取其任务。它不会运行 `hermes kanban show t_abcd`。
+当调度器接管 `t_abcd` 并启动 `researcher` 配置文件时，该 worker 的模型做的第一件事是调用 `kanban_show()` 读取其任务。它不会运行 `oria kanban show t_abcd`。
 
 ### Gateway 内嵌调度器（默认）
 
@@ -165,16 +165,16 @@ kanban:
                                    # 纯人工审查看板可设为 false。
 ```
 
-通过 `HERMES_KANBAN_DISPATCH_IN_GATEWAY=0` 在运行时覆盖配置标志以进行调试。标准 gateway 监督适用：直接运行 `hermes gateway start`，或将 gateway 配置为 systemd 用户单元（参见 gateway 文档）。没有运行中的 gateway，`ready` 任务会保持原状，直到 gateway 启动 —— `hermes kanban create` 在创建时会对此发出警告。
+通过 `HERMES_KANBAN_DISPATCH_IN_GATEWAY=0` 在运行时覆盖配置标志以进行调试。标准 gateway 监督适用：直接运行 `oria gateway start`，或将 gateway 配置为 systemd 用户单元（参见 gateway 文档）。没有运行中的 gateway，`ready` 任务会保持原状，直到 gateway 启动 —— `oria kanban create` 在创建时会对此发出警告。
 
-将 `hermes kanban daemon` 作为单独进程运行已**弃用**；请使用 gateway。如果你确实无法运行 gateway（无头主机策略禁止长期运行的服务等），`--force` 逃生舱口在一个发布周期内保持旧的独立守护进程可用，但同时运行 gateway 内嵌调度器和针对同一 `kanban.db` 的独立守护进程会导致认领竞争，不受支持。
+将 `oria kanban daemon` 作为单独进程运行已**弃用**；请使用 gateway。如果你确实无法运行 gateway（无头主机策略禁止长期运行的服务等），`--force` 逃生舱口在一个发布周期内保持旧的独立守护进程可用，但同时运行 gateway 内嵌调度器和针对同一 `kanban.db` 的独立守护进程会导致认领竞争，不受支持。
 
 ### 幂等创建（用于自动化 / webhook）
 
 ```bash
 # 第一次调用创建任务。使用相同键的任何后续调用
 # 返回现有任务 id 而不是重复创建。
-hermes kanban create "nightly ops review" \
+oria kanban create "nightly ops review" \
     --assignee ops \
     --idempotency-key "nightly-ops-$(date -u +%Y-%m-%d)" \
     --json
@@ -185,15 +185,15 @@ hermes kanban create "nightly ops review" \
 所有生命周期动词都接受多个 id，因此你可以在一个命令中清理一批任务：
 
 ```bash
-hermes kanban complete t_abc t_def t_hij --result "batch wrap"
-hermes kanban archive  t_abc t_def t_hij
-hermes kanban unblock  t_abc t_def
-hermes kanban block    t_abc "need input" --ids t_def t_hij
+oria kanban complete t_abc t_def t_hij --result "batch wrap"
+oria kanban archive    t_abc t_def t_hij
+oria kanban unblock    t_abc t_def
+oria kanban block      t_abc "need input" --ids t_def t_hij
 ```
 
 ## Worker 如何与看板交互 {#how-workers-interact-with-the-board}
 
-**Worker 不会 shell 执行 `hermes kanban`。** 当调度器启动 worker 时，它在子进程环境中设置 `HERMES_KANBAN_TASK=t_abcd`，该环境变量在模型的 schema 中启用专用的 **kanban 工具集**。同一工具集也可供在工具集配置中启用 `kanban` 的编排器配置文件使用。这些工具通过 Python `kanban_db` 层直接读取和修改看板，与 CLI 的做法相同。运行中的 worker 像调用任何其他工具一样调用这些工具；它从不看到或需要 `hermes kanban` CLI。
+**Worker 不会 shell 执行 `oria kanban`。** 当调度器启动 worker 时，它在子进程环境中设置 `HERMES_KANBAN_TASK=t_abcd`，该环境变量在模型的 schema 中启用专用的 **kanban 工具集**。同一工具集也可供在工具集配置中启用 `kanban` 的编排器配置文件使用。这些工具通过 Python `kanban_db` 层直接读取和修改看板，与 CLI 的做法相同。运行中的 worker 像调用任何其他工具一样调用这些工具；它从不看到或需要 `oria kanban` CLI。
 
 | 工具 | 用途 | 必需参数 |
 |---|---|---|
@@ -246,15 +246,15 @@ kanban_complete(summary="decomposed into 2 research tasks + 1 writer; linked dep
 
 "（编排器）"工具 —— `kanban_list`、`kanban_create`、`kanban_link`、`kanban_unblock`，以及对外部任务的 `kanban_comment` —— 通过同一工具集提供；约定（编码在自动注入的 kanban 指引中）是 worker 配置文件不进行扇出或路由无关工作，编排器配置文件不执行实现工作。调度器启动的 worker 仍然针对破坏性生命周期操作限定在任务范围内，无法修改无关任务。
 
-### 为什么使用工具而不是 shell 执行 `hermes kanban`
+### 为什么使用工具而不是 shell 执行 `oria kanban`
 
 三个原因：
 
-1. **后端可移植性。** 终端工具指向远程后端（Docker / Modal / Singularity / SSH）的 worker 会在容器*内部*运行 `hermes kanban complete`，而容器中没有安装 `hermes`，也没有挂载 `~/.hermes/kanban.db`。kanban 工具在 agent 自己的 Python 进程中运行，无论终端后端如何，始终能访问 `~/.hermes/kanban.db`。
+1. **后端可移植性。** 终端工具指向远程后端（Docker / Modal / Singularity / SSH）的 worker 会在容器*内部*运行 `oria kanban complete`，而容器中没有安装 `oria`，也没有挂载 `~/.hermes/kanban.db`。kanban 工具在 agent 自己的 Python 进程中运行，无论终端后端如何，始终能访问 `~/.hermes/kanban.db`。
 2. **无 shell 引用脆弱性。** 通过 shlex + argparse 传递 `--metadata '{"files": [...]}'` 是潜在的隐患。结构化工具参数完全绕过了这个问题。
 3. **更好的错误处理。** 工具结果是模型可以推理的结构化 JSON，而不是需要解析的 stderr 字符串。
 
-**对普通会话零 schema 占用。** 普通的 `hermes chat` 会话在其 schema 中没有任何 `kanban_*` 工具，除非活动配置文件为编排器工作显式启用了 `kanban` 工具集。调度器启动的任务 worker 因为设置了 `HERMES_KANBAN_TASK` 而获得任务范围的工具；编排器配置文件通过配置获得更广泛的路由界面。对于从不使用 kanban 的用户，没有工具膨胀。
+**对普通会话零 schema 占用。** 普通的 `oria chat` 会话在其 schema 中没有任何 `kanban_*` 工具，除非活动配置文件为编排器工作显式启用了 `kanban` 工具集。调度器启动的任务 worker 因为设置了 `HERMES_KANBAN_TASK` 而获得任务范围的工具；编排器配置文件通过配置获得更广泛的路由界面。对于从不使用 kanban 的用户，没有工具膨胀。
 
 自动注入的 kanban 指引教导模型何时调用哪个工具以及调用顺序。
 
@@ -318,11 +318,11 @@ kanban_create(
 **从人类（CLI / 斜杠命令）**，为每个 skill 重复 `--skill`：
 
 ```bash
-hermes kanban create "translate README to Japanese" \
+oria kanban create "translate README to Japanese" \
     --assignee linguist \
     --skill translation
 
-hermes kanban create "audit auth flow" \
+oria kanban create "audit auth flow" \
     --assignee reviewer \
     --skill security-pr-audit \
     --skill github-code-review
@@ -330,11 +330,11 @@ hermes kanban create "audit auth flow" \
 
 **从仪表盘**，在内联创建表单的 **skills** 字段中以逗号分隔输入 skill 名称。
 
-调度器为列出的每个 skill 发出一个 `--skills <name>` 标志，因此 worker 在自动注入的 kanban 指引之上加载了所有这些 skill。skill 名称必须与受让人配置文件上实际安装的 skill 匹配（运行 `hermes skills list` 查看可用内容）；没有运行时安装。
+调度器为列出的每个 skill 发出一个 `--skills <name>` 标志，因此 worker 在自动注入的 kanban 指引之上加载了所有这些 skill。skill 名称必须与受让人配置文件上实际安装的 skill 匹配（运行 `oria skills list` 查看可用内容）；没有运行时安装。
 
 ### 成本策略：前沿模型编排，低价模型执行
 
-Kanban 的按 profile 配置让规划者/执行者的成本分层水到渠成。将项目分解为范围清晰的卡片需要前沿模型级别的判断力；而执行一张已经带有明确目标、上下文和交接证据的卡片通常不需要——并且绝大多数 token 消耗发生在 worker 身上，因此成本真正落在 worker 模型上。让编排器/调度器 profile 运行前沿模型，让 worker profile 指向低价模型。每个 profile 在 `~/.hermes/profiles/<name>/` 下有自己的 `config.yaml`，调度器在生成 `hermes -p <assignee>` 时注入 profile 范围的 `HERMES_HOME`，因此每个 worker 读取自己 profile 的模型设置：
+Kanban 的按 profile 配置让规划者/执行者的成本分层水到渠成。将项目分解为范围清晰的卡片需要前沿模型级别的判断力；而执行一张已经带有明确目标、上下文和交接证据的卡片通常不需要——并且绝大多数 token 消耗发生在 worker 身上，因此成本真正落在 worker 模型上。让编排器/调度器 profile 运行前沿模型，让 worker profile 指向低价模型。每个 profile 在 `~/.hermes/profiles/<name>/` 下有自己的 `config.yaml`，调度器在生成 `oria -p <assignee>` 时注入 profile 范围的 `HERMES_HOME`，因此每个 worker 读取自己 profile 的模型设置：
 
 ```yaml
 # ~/.hermes/config.yaml（编排器 / 调度器 profile）
@@ -350,7 +350,7 @@ model:
   default: "your-inexpensive-model"
 ```
 
-对于偶尔出现的质量敏感型卡片，可以只为该任务固定更强的模型（按任务模型覆盖）：创建时用 `--model`/`--provider`，之后用 `hermes kanban set-model <task-id> <model> --provider <name>`（`set-model ... none` 清除覆盖），或使用仪表盘的按任务模型下拉框——无需修改 profile 配置。未设置覆盖时，worker 使用其 profile 配置的模型。
+对于偶尔出现的质量敏感型卡片，可以只为该任务固定更强的模型（按任务模型覆盖）：创建时用 `--model`/`--provider`，之后用 `oria kanban set-model <task-id> <model> --provider <name>`（`set-model ... none` 清除覆盖），或使用仪表盘的按任务模型下拉框——无需修改 profile 配置。未设置覆盖时，worker 使用其 profile 配置的模型。
 
 ### 编排器的行为方式
 
@@ -383,19 +383,19 @@ kanban_complete(
 
 ## 仪表盘（GUI）
 
-`/kanban` CLI 和斜杠命令足以无头运行看板，但可视化看板通常是人工介入的正确界面：分诊、跨配置文件监督、阅读评论线程以及在列之间拖动卡片。Hermes 将此作为**内置仪表盘插件**在 `plugins/kanban/` 中提供 —— 不是核心功能，不是单独的服务 —— 遵循[扩展仪表盘](./extending-the-dashboard)中描述的模型。
+`/kanban` CLI 和斜杠命令足以无头运行看板，但可视化看板通常是人工介入的正确界面：分诊、跨配置文件监督、阅读评论线程以及在列之间拖动卡片。Oria 将此作为**内置仪表盘插件**在 `plugins/kanban/` 中提供 —— 不是核心功能，不是单独的服务 —— 遵循[扩展仪表盘](./extending-the-dashboard)中描述的模型。
 
 使用以下命令打开：
 
 ```bash
-hermes kanban init      # 一次性：如果尚未创建 kanban.db
-hermes dashboard        # 导航栏中出现 "Kanban" 标签页，位于 "Skills" 之后
+oria kanban init        # 一次性：如果尚未创建 kanban.db
+oria dashboard          # 导航栏中出现 "Kanban" 标签页，位于 "Skills" 之后
 ```
 
 ### 插件提供的功能
 
 - 一个 **Kanban** 标签页，每个状态显示一列：`triage`、`todo`、`ready`、`running`、`blocked`、`done`（开启切换时还有 `archived`）。
-  - `triage` 是粗略想法的停车列。默认情况下（`kanban.auto_decompose: true`），调度器会自动对落在这里的任务运行**分解器** —— 编排器配置文件读取粗略想法，查看你的配置文件名册（含描述），并将任务扇出为路由到最合适专家的小型子任务图。原始任务作为每个子任务的父级保持存活，因此当所有子任务完成时，编排器会重新唤醒以判断完成情况，并在工作未完成时添加更多任务。点击页面顶部的 **Orchestration: Auto/Manual** 切换按钮（或设置 `kanban.auto_decompose: false`）切换到手动模式，在手动模式下分诊任务保持原位，直到你点击卡片上的 **⚗ Decompose** 或运行 `hermes kanban decompose <id>`。对于不需要扇出的任务（或没有编排器配置文件的设置），**✨ Specify** 按钮通过相同的 LLM 机制进行单任务规格重写（标题 + 正文，包含目标、方法、验收标准）。详见下方[自动与手动编排](#auto-vs-manual-orchestration)。
+  - `triage` 是粗略想法的停车列。默认情况下（`kanban.auto_decompose: true`），调度器会自动对落在这里的任务运行**分解器** —— 编排器配置文件读取粗略想法，查看你的配置文件名册（含描述），并将任务扇出为路由到最合适专家的小型子任务图。原始任务作为每个子任务的父级保持存活，因此当所有子任务完成时，编排器会重新唤醒以判断完成情况，并在工作未完成时添加更多任务。点击页面顶部的 **Orchestration: Auto/Manual** 切换按钮（或设置 `kanban.auto_decompose: false`）切换到手动模式，在手动模式下分诊任务保持原位，直到你点击卡片上的 **⚗ Decompose** 或运行 `oria kanban decompose <id>`。对于不需要扇出的任务（或没有编排器配置文件的设置），**✨ Specify** 按钮通过相同的 LLM 机制进行单任务规格重写（标题 + 正文，包含目标、方法、验收标准）。详见下方[自动与手动编排](#auto-vs-manual-orchestration)。
 - 卡片显示任务 id、标题、优先级徽章、租户标签、分配的配置文件、评论/链接计数、**进度标签**（任务有依赖项时显示 `N/M` 子任务已完成）以及"N 前创建"。每张卡片的复选框启用多选。
 - **Running 列内的按配置文件分组** —— 工具栏复选框切换 Running 列按受让人的子分组。
 - **通过 WebSocket 实时更新** —— 插件以短轮询间隔追踪仅追加的 `task_events` 表；任何配置文件（CLI、gateway 或另一个仪表盘标签页）操作后，看板立即反映变化。重新加载经过防抖处理，因此一批事件只触发一次重新获取。
@@ -407,7 +407,7 @@ hermes dashboard        # 导航栏中出现 "Kanban" 标签页，位于 "Skills
   - **可编辑受让人 / 优先级** —— 点击元数据行进行修改。
   - **可编辑描述** —— 默认以 markdown 渲染（标题、粗体、斜体、内联代码、围栏代码、`http(s)` / `mailto:` 链接、项目符号列表），带有"编辑"按钮可切换到文本区域。Markdown 渲染是一个微型、防 XSS 的渲染器 —— 每次替换都在 HTML 转义的输入上运行，只有 `http(s)` / `mailto:` 链接通过，并且始终设置 `target="_blank"` + `rel="noopener noreferrer"`。
   - **依赖编辑器** —— 父级和子级的芯片列表，每个都有 `×` 用于取消链接，加上所有其他任务的下拉菜单用于添加新的父级或子级。循环尝试在服务器端被拒绝并给出清晰的消息。
-  - **状态操作行**（→ triage / → ready / → running / block / unblock / complete / archive），破坏性转换有确认提示。对于 **Triage** 列中的卡片，该行还提供两个 LLM 驱动的操作：**⚗ Decompose** 将任务扇出为路由到专家配置文件（按描述）的子任务图（编排器驱动路径），**✨ Specify** 进行单任务规格重写。当 LLM 判断任务不需要扇出时，Decompose 会回退到类似 specify 的推进，因此它是严格的超集。两者都可以从 CLI（`hermes kanban decompose <id>` / `specify <id>` / `--all`）、任何 gateway 平台（`/kanban decompose <id>`）以及通过 `POST /api/plugins/kanban/tasks/:id/decompose` 和 `…/specify` 以编程方式访问。在 `config.yaml` 的 `auxiliary.kanban_decomposer` 和 `auxiliary.triage_specifier` 下配置模型。
+  - **状态操作行**（→ triage / → ready / → running / block / unblock / complete / archive），破坏性转换有确认提示。对于 **Triage** 列中的卡片，该行还提供两个 LLM 驱动的操作：**⚗ Decompose** 将任务扇出为路由到专家配置文件（按描述）的子任务图（编排器驱动路径），**✨ Specify** 进行单任务规格重写。当 LLM 判断任务不需要扇出时，Decompose 会回退到类似 specify 的推进，因此它是严格的超集。两者都可以从 CLI（`oria kanban decompose <id>` / `specify <id>` / `--all`）、任何 gateway 平台（`/kanban decompose <id>`）以及通过 `POST /api/plugins/kanban/tasks/:id/decompose` 和 `…/specify` 以编程方式访问。在 `config.yaml` 的 `auxiliary.kanban_decomposer` 和 `auxiliary.triage_specifier` 下配置模型。
   - 结果部分（也以 markdown 渲染）、带 Enter 提交的评论线程、最近 20 个事件。
 - **工具栏过滤器** —— 自由文本搜索、租户下拉菜单（默认为 `config.yaml` 中的 `dashboard.kanban.default_tenant`）、受让人下拉菜单、"显示已归档"切换、"按配置文件分组"切换，以及**推动调度器**按钮，这样你就不必等待下一个 60 秒 tick。
 
@@ -419,13 +419,13 @@ hermes dashboard        # 导航栏中出现 "Kanban" 标签页，位于 "Skills
 
 **自动（默认）** —— `kanban.auto_decompose: true`。Gateway 内嵌调度器在每个 tick 运行**分解器**，受 `kanban.auto_decompose_per_tick`（默认每 tick 3 个任务）限制，以防批量加载分诊任务时突发消耗辅助 LLM。分解器读取粗略想法，查看你安装的配置文件及其描述，并要求 LLM 生成 JSON 任务图：要启动哪些任务、分配给谁，以及哪些依赖哪些。原始分诊任务成为图中每个叶节点的父级，因此它保持存活直到整个图完成 —— 然后推进回 `ready`，让其受让人（编排器配置文件）判断完成情况，并在工作未完成时添加更多任务。这是"丢一行描述，走开"的流程。
 
-**手动** —— `kanban.auto_decompose: false`。分诊任务保持在分诊中，直到你操作。点击卡片上的 **⚗ Decompose** 按钮，运行 `hermes kanban decompose <id>`（或 `--all`），或从聊天中使用 `/kanban decompose <id>`。这与看板的预分解器行为一致，适合需要完全控制运行时机的场景。
+**手动** —— `kanban.auto_decompose: false`。分诊任务保持在分诊中，直到你操作。点击卡片上的 **⚗ Decompose** 按钮，运行 `oria kanban decompose <id>`（或 `--all`），或从聊天中使用 `/kanban decompose <id>`。这与看板的预分解器行为一致，适合需要完全控制运行时机的场景。
 
 **重要边界：** 手动模式只会关闭内置的 Triage 分解器。它不会阻止配置文件调用 `kanban_create`，也不会关闭创建者会话的唤醒。启用 `kanban.auto_subscribe_on_create: true` 时，任务的终止事件会通过合成状态消息恢复原始 agent，使其读取交接并判断是否确实需要新的后续工作。希望任务完成保持被动时，请设置 `auto_subscribe_on_create: false`。溯源时，内置分解器创建的子任务标记为 `created_by=auto-decomposer`；由恢复后的配置文件创建的任务则记录该配置文件名。
 
-从 kanban 页面顶部的 **Orchestration: Auto/Manual** 切换按钮（翠绿色 = 自动，静音灰色 = 手动）在两种模式之间切换，或直接编辑 `config.yaml`。两种模式都与 `hermes kanban specify` 共存 —— 当你不想扇出时，它仍然可用作单任务规格重写。
+从 kanban 页面顶部的 **Orchestration: Auto/Manual** 切换按钮（翠绿色 = 自动，静音灰色 = 手动）在两种模式之间切换，或直接编辑 `config.yaml`。两种模式都与 `oria kanban specify` 共存 —— 当你不想扇出时，它仍然可用作单任务规格重写。
 
-分解器的路由决策依赖于配置文件描述，这是一个每配置文件的标签原语，通过 `hermes profile create --description "..."`、`hermes profile describe <name> --text "..."`、`hermes profile describe <name> --auto`（LLM 从配置文件安装的 skill + 模型自动生成），或仪表盘展开的 **Orchestration settings** 面板中的每配置文件编辑器来设置。没有描述的配置文件仍然出现在名册中 —— 它们可以按名称路由，只是精度较低。分解器**绝不**会将子任务落地为 `assignee=None`：当 LLM 选择未知配置文件时，子任务路由到 `kanban.default_assignee`（如果未设置，则路由到活动默认配置文件）。
+分解器的路由决策依赖于配置文件描述，这是一个每配置文件的标签原语，通过 `oria profile create --description "..."`、`oria profile describe <name> --text "..."`、`oria profile describe <name> --auto`（LLM 从配置文件安装的 skill + 模型自动生成），或仪表盘展开的 **Orchestration settings** 面板中的每配置文件编辑器来设置。没有描述的配置文件仍然出现在名册中 —— 它们可以按名称路由，只是精度较低。分解器**绝不**会将子任务落地为 `assignee=None`：当 LLM 选择未知配置文件时，子任务路由到 `kanban.default_assignee`（如果未设置，则路由到活动默认配置文件）。
 
 配置项（均在 `~/.hermes/config.yaml` 的 `kanban:` 下）：
 
@@ -442,7 +442,7 @@ hermes dashboard        # 导航栏中出现 "Kanban" 标签页，位于 "Skills
 | 键 | 用途 |
 |---|---|
 | `auxiliary.kanban_decomposer` | 生成任务图的模型（由 Decompose 调用）。设置 `provider`/`model` 以覆盖主聊天模型。 |
-| `auxiliary.profile_describer` | 自动生成配置文件描述的模型（由 `hermes profile describe --auto` 调用）。 |
+| `auxiliary.profile_describer` | 自动生成配置文件描述的模型（由 `oria profile describe --auto` 调用）。 |
 
 ### 架构
 
@@ -495,7 +495,7 @@ GUI 严格是一个**通过 DB 读取 + 通过 kanban_db 写入**的层，没有
 | `GET` | `/config` | 从 `config.yaml` 读取 `dashboard.kanban` 偏好设置 —— `default_tenant`、`lane_by_profile`、`include_archived_by_default`、`render_markdown` |
 | `WS` | `/events?since=<event_id>` | `task_events` 行的实时流 |
 
-每个处理器都是一个薄封装 —— 插件约 700 行 Python（路由器 + WebSocket 追踪 + 批量处理器 + 配置读取器），不添加任何新的业务逻辑。一个微型 `_conn()` 辅助函数在每次读写时自动初始化 `kanban.db`，因此无论用户是先打开仪表盘、直接访问 REST API，还是运行 `hermes kanban init`，全新安装都能正常工作。
+每个处理器都是一个薄封装 —— 插件约 700 行 Python（路由器 + WebSocket 追踪 + 批量处理器 + 配置读取器），不添加任何新的业务逻辑。一个微型 `_conn()` 辅助函数在每次读写时自动初始化 `kanban.db`，因此无论用户是先打开仪表盘、直接访问 REST API，还是运行 `oria kanban init`，全新安装都能正常工作。
 
 ### 仪表盘配置
 
@@ -518,9 +518,9 @@ dashboard:
 
 WebSocket 额外增加了一步：它要求仪表盘的临时会话 token 作为 `?token=…` 查询参数（浏览器无法在升级请求上设置 `Authorization`），与浏览器内 PTY 桥使用的模式一致。
 
-如果你运行 `hermes dashboard --host 0.0.0.0`，每个插件路由 —— 包括 kanban —— 都可以从网络访问。**不要在共享主机上这样做。** 看板包含任务正文、评论和工作区路径；攻击者访问这些路由可以读取你整个协作界面，还可以创建 / 重新分配 / 归档任务。
+如果你运行 `oria dashboard --host 0.0.0.0`，每个插件路由 —— 包括 kanban —— 都可以从网络访问。**不要在共享主机上这样做。** 看板包含任务正文、评论和工作区路径；攻击者访问这些路由可以读取你整个协作界面，还可以创建 / 重新分配 / 归档任务。
 
-`~/.hermes/kanban.db` 中的任务是有意与配置文件无关的（这是协调原语）。如果你用 `hermes -p <profile> dashboard` 打开仪表盘，看板仍然显示主机上任何其他配置文件创建的任务。同一用户拥有所有配置文件，但如果多个角色共存，这一点值得了解。
+`~/.hermes/kanban.db` 中的任务是有意与配置文件无关的（这是协调原语）。如果你用 `oria -p <profile> dashboard` 打开仪表盘，看板仍然显示主机上任何其他配置文件创建的任务。同一用户拥有所有配置文件，但如果多个角色共存，这一点值得了解。
 
 ### 实时更新
 
@@ -528,7 +528,7 @@ WebSocket 额外增加了一步：它要求仪表盘的临时会话 token 作为
 
 ### 扩展
 
-插件使用标准的 Hermes 仪表盘插件契约 —— 完整的 manifest 参考、shell 槽、页面范围槽和 Plugin SDK，请参阅[扩展仪表盘](./extending-the-dashboard)。额外的列、自定义卡片样式、租户过滤布局或完整的 `tab.override` 替换都可以表达，无需 fork 此插件。
+插件使用标准的 Oria 仪表盘插件契约 —— 完整的 manifest 参考、shell 槽、页面范围槽和 Plugin SDK，请参阅[扩展仪表盘](./extending-the-dashboard)。额外的列、自定义卡片样式、租户过滤布局或完整的 `tab.override` 替换都可以表达，无需 fork 此插件。
 
 要禁用而不删除：在 `config.yaml` 中添加 `dashboard.plugins.kanban.enabled: false`（或删除 `plugins/kanban/dashboard/manifest.json`）。
 
@@ -541,8 +541,8 @@ GUI 是刻意精简的。插件所做的一切都可以从 CLI 访问；插件�
 这是**你**（或脚本、cron、仪表盘）用来驱动看板的界面。在调度器内部运行的 Worker 使用 `kanban_*` [工具界面](#how-workers-interact-with-the-board)进行相同的操作 —— 这里的 CLI 和那里的工具都通过 `kanban_db` 路由，因此两个界面在构造上是一致的。
 
 ```
-hermes kanban init                                     # 创建 kanban.db + 打印守护进程提示
-hermes kanban create "<title>" [--body ...] [--assignee <profile>]
+oria kanban init                                       # 创建 kanban.db + 打印守护进程提示
+oria kanban create "<title>" [--body ...] [--assignee <profile>]
                                 [--parent <id>]... [--tenant <name>]
                                 [--workspace scratch|worktree|worktree:<path>|dir:<path>]
                                 [--branch <name>]
@@ -551,45 +551,45 @@ hermes kanban create "<title>" [--body ...] [--assignee <profile>]
                                 [--max-retries N]
                                 [--skill <name>]...
                                 [--json]
-hermes kanban list [--mine] [--assignee P] [--status S] [--tenant T] [--archived] [--json]
-hermes kanban show <id> [--json]
-hermes kanban assign <id> <profile>                    # 或 'none' 取消分配
-hermes kanban link <parent_id> <child_id>
-hermes kanban unlink <parent_id> <child_id>
-hermes kanban claim <id> [--ttl SECONDS]
-hermes kanban comment <id> "<text>" [--author NAME]
+oria kanban list [--mine] [--assignee P] [--status S] [--tenant T] [--archived] [--json]
+oria kanban show <id> [--json]
+oria kanban assign <id> <profile>                      # 或 'none' 取消分配
+oria kanban link <parent_id> <child_id>
+oria kanban unlink <parent_id> <child_id>
+oria kanban claim <id> [--ttl SECONDS]
+oria kanban comment <id> "<text>" [--author NAME]
 
 # 批量动词 —— 接受多个 id：
-hermes kanban complete <id>... [--result "..."]
-hermes kanban block <id> "<reason>" [--ids <id>...]
-hermes kanban unblock <id>...
-hermes kanban archive <id>...
+oria kanban complete <id>... [--result "..."]
+oria kanban block <id> "<reason>" [--ids <id>...]
+oria kanban unblock <id>...
+oria kanban archive <id>...
 
-hermes kanban request-review <id> [--summary "..."] [--metadata JSON] [--reviewer PROFILE]
-hermes kanban request-changes <id> "<所需修改>"                       # reviewer -> implementer
-hermes kanban reopen-review  <id>... [--reason "..."]                 # 请求修改：'review' -> ready/todo
+oria kanban request-review <id> [--summary "..."] [--metadata JSON] [--reviewer PROFILE]
+oria kanban request-changes <id> "<所需修改>"                         # reviewer -> implementer
+oria kanban reopen-review    <id>... [--reason "..."]                 # 请求修改：'review' -> ready/todo
 
-hermes kanban tail <id>                                # 跟踪单个任务的事件流
-hermes kanban watch [--assignee P] [--tenant T]        # 将所有事件实时流式传输到终端
+oria kanban tail <id>                                  # 跟踪单个任务的事件流
+oria kanban watch [--assignee P] [--tenant T]          # 将所有事件实时流式传输到终端
         [--kinds completed,blocked,…] [--interval SECS]
-hermes kanban heartbeat <id> [--note "..."]            # 长时间操作的 worker 存活信号
-hermes kanban runs <id> [--json]                       # 尝试历史（每次运行一行）
-hermes kanban assignees [--json]                       # 磁盘上的配置文件 + 每受让人任务计数
-hermes kanban dispatch [--dry-run] [--max N]           # 单次扫描
+oria kanban heartbeat <id> [--note "..."]              # 长时间操作的 worker 存活信号
+oria kanban runs <id> [--json]                         # 尝试历史（每次运行一行）
+oria kanban assignees [--json]                         # 磁盘上的配置文件 + 每受让人任务计数
+oria kanban dispatch [--dry-run] [--max N]             # 单次扫描
         [--failure-limit N] [--json]
-hermes kanban daemon --force                           # 已弃用 —— 独立调度器（改用 `hermes gateway start`）
+oria kanban daemon --force                           # 已弃用 —— 独立调度器（改用 `oria gateway start`）
         [--failure-limit N] [--pidfile PATH] [-v]
-hermes kanban stats [--json]                           # 每状态 + 每受让人计数
-hermes kanban log <id> [--tail BYTES]                  # 来自 ~/.hermes/kanban/logs/ 的 worker 日志
-hermes kanban notify-subscribe <id>                    # gateway 桥接钩子（由 gateway 中的 /kanban 使用）
+oria kanban stats [--json]                             # 每状态 + 每受让人计数
+oria kanban log <id> [--tail BYTES]                    # 来自 ~/.hermes/kanban/logs/ 的 worker 日志
+oria kanban notify-subscribe <id>                      # gateway 桥接钩子（由 gateway 中的 /kanban 使用）
         --platform <name> --chat-id <id> [--thread-id <id>] [--user-id <id>]
-hermes kanban notify-list [<id>] [--json]
-hermes kanban notify-unsubscribe <id>
+oria kanban notify-list [<id>] [--json]
+oria kanban notify-unsubscribe <id>
         --platform <name> --chat-id <id> [--thread-id <id>]
-hermes kanban context <id>                             # worker 看到的内容
-hermes kanban specify [<id> | --all] [--tenant T]      # 将分诊列的想法充实
+oria kanban context <id>                               # worker 看到的内容
+oria kanban specify [<id> | --all] [--tenant T]        # 将分诊列的想法充实
         [--author NAME] [--json]                       #   为完整规格并推进到 todo
-hermes kanban gc [--event-retention-days N]            # 工作区 + 旧事件 + 旧日志
+oria kanban gc [--event-retention-days N]              # 工作区 + 旧事件 + 旧日志
         [--log-retention-days N]
 ```
 
@@ -599,7 +599,7 @@ hermes kanban gc [--event-retention-days N]            # 工作区 + 旧事件 +
 
 ## `/kanban` 斜杠命令 {#kanban-slash-command}
 
-每个 `hermes kanban <action>` 动词也可以作为 `/kanban <action>` 访问 —— 从交互式 `hermes chat` 会话内部**以及**从任何 gateway 平台（Telegram、Discord、Slack、WhatsApp、Signal、Matrix、Mattermost、电子邮件、SMS）。两个界面都调用完全相同的 `hermes_cli.kanban.run_slash()` 入口点，该入口点复用 `hermes kanban` argparse 树，因此参数界面、标志和输出格式在 CLI、`/kanban` 和 `hermes kanban` 之间完全相同。你不必离开聊天来驱动看板。
+每个 `oria kanban <action>` 动词也可以作为 `/kanban <action>` 访问 —— 从交互式 `oria chat` 会话内部**以及**从任何 gateway 平台（Telegram、Discord、Slack、WhatsApp、Signal、Matrix、Mattermost、电子邮件、SMS）。两个界面都调用完全相同的 `hermes_cli.kanban.run_slash()` 入口点，该入口点复用 `oria kanban` argparse 树，因此参数界面、标志和输出格式在 CLI、`/kanban` 和 `oria kanban` 之间完全相同。你不必离开聊天来驱动看板。
 
 ```
 /kanban list
@@ -643,7 +643,7 @@ bot> ✓ t_9fc1a3 completed by transcriber
 
 ### 消息中的输出截断
 
-Gateway 平台有实际的消息长度限制。如果 `/kanban list`、`/kanban show` 或 `/kanban tail` 产生超过约 3800 个字符的输出，响应会被截断，并附上 `… (truncated; use \`hermes kanban …\` in your terminal for full output)` 页脚。CLI 界面没有此限制。
+Gateway 平台有实际的消息长度限制。如果 `/kanban list`、`/kanban show` 或 `/kanban tail` 产生超过约 3800 个字符的输出，响应会被截断，并附上 `… (truncated; use \`oria kanban …\` in your terminal for full output)` 页脚。CLI 界面没有此限制。
 
 ### 自动补全
 
@@ -663,7 +663,7 @@ Gateway 平台有实际的消息长度限制。如果 `/kanban list`、`/kanban 
 | **P6 `@mention`** | 从文本内联路由 | `@reviewer look at this` |
 | **P7 线程范围工作区** | 线程中的 `/kanban here` | 每项目 gateway 线程 |
 | **P8 批量任务** | 一个配置文件，N 个对象 | 50 个社交账号 |
-| **P9 分诊规格器** | 粗略想法 → `triage` → `hermes kanban specify` 扩展正文 → `todo` | "将这个一行描述变成规格化任务" |
+| **P9 分诊规格器** | 粗略想法 → `triage` → `oria kanban specify` 扩展正文 → `todo` | "将这个一行描述变成规格化任务" |
 
 ## 向后续卡片传递上下文（父任务链接）
 
@@ -685,7 +685,7 @@ _metadata_: `{"changed_files": ["hermes_cli/retry.py", "tests/test_retry.py"], "
 
 ```bash
 # 实现卡片 t_impl 已完成。两小时后 CI 失败。
-hermes kanban create "Fix CI failure from t_impl: test_retry flakes on 3.11" \
+oria kanban create "Fix CI failure from t_impl: test_retry flakes on 3.11" \
     --assignee coder \
     --parent t_impl \
     --body "$(cat <<'EOF'
@@ -718,7 +718,7 @@ hotspot: hermes_cli/kanban_db.py — 本轮对 dispatch 循环的第三次冲突
 当一个专家团队为多个业务提供服务时，为每个任务添加租户标签：
 
 ```bash
-hermes kanban create "monthly report" \
+oria kanban create "monthly report" \
     --assignee researcher \
     --tenant business-a \
     --workspace dir:~/tenants/business-a/data/
@@ -733,10 +733,10 @@ Worker 接收 `$HERMES_TENANT` 并按前缀命名空间化其内存写入。看�
 你可以从 CLI 显式管理订阅 —— 当脚本 / cron 任务想要通知一个它不是从那里发起的聊天时很有用：
 
 ```bash
-hermes kanban notify-subscribe t_abcd \
+oria kanban notify-subscribe t_abcd \
     --platform telegram --chat-id 12345678 --thread-id 7
-hermes kanban notify-list
-hermes kanban notify-unsubscribe t_abcd \
+oria kanban notify-list
+oria kanban notify-unsubscribe t_abcd \
     --platform telegram --chat-id 12345678 --thread-id 7
 ```
 
@@ -788,13 +788,13 @@ kanban_complete(
 当你（人类）需要关闭 worker 无法关闭的任务时，同样的交接可以从 CLI 访问 —— 例如被放弃的任务，或你从仪表盘手动标记为完成的任务：
 
 ```bash
-hermes kanban complete t_abcd \
+oria kanban complete t_abcd \
     --result "rate limiter shipped" \
     --summary "implemented token bucket, keys on user_id with IP fallback, all tests pass" \
     --metadata '{"changed_files": ["limiter.py", "tests/test_limiter.py"], "tests_run": 14}'
 
 # 查看重试任务的尝试历史：
-hermes kanban runs t_abcd
+oria kanban runs t_abcd
 #   #  OUTCOME       PROFILE           ELAPSED  STARTED
 #   1  blocked       worker               12s  2026-04-27 14:02
 #        → BLOCKED: need decision on rate-limit key
@@ -804,11 +804,11 @@ hermes kanban runs t_abcd
 
 运行在仪表盘上公开（抽屉中的运行历史部分，每次尝试一行彩色行）以及 REST API 上（`GET /api/plugins/kanban/tasks/:id` 返回 `runs[]` 数组）。带有 `{status: "done", summary, metadata}` 的 `PATCH /api/plugins/kanban/tasks/:id` 将两者都转发到内核，因此仪表盘的"标记完成"按钮等同于 CLI。`task_events` 行携带它们所属的 `run_id`，以便 UI 可以按尝试分组，`completed` 事件在其有效载荷中嵌入第一行摘要（上限 400 个字符），这样 gateway 通知器无需第二次 SQL 往返即可渲染结构化交接。
 
-**批量关闭注意事项。** `hermes kanban complete a b c --summary X` 被拒绝 —— 结构化交接是每次运行的，因此将相同的摘要复制粘贴到 N 个任务几乎总是错误的。不带 `--summary` / `--metadata` 的批量关闭仍然适用于常见的"我完成了一堆管理任务"情况。
+**批量关闭注意事项。** `oria kanban complete a b c --summary X` 被拒绝 —— 结构化交接是每次运行的，因此将相同的摘要复制粘贴到 N 个任务几乎总是错误的。不带 `--summary` / `--metadata` 的批量关闭仍然适用于常见的"我完成了一堆管理任务"情况。
 
 **状态变更导致的运行回收。** 如果你在仪表盘中将运行中的任务从 `running` 拖走（回到 `ready`，或直接到 `todo`），或归档仍在运行的任务，进行中的运行以 `outcome='reclaimed'` 关闭，而不是被孤立。当 `tasks.current_run_id` 为 `NULL` 时，`task_runs` 行始终处于终端状态，反之亦然 —— 该不变量在 CLI、仪表盘、调度器和通知器之间保持。
 
-**从未认领的完成的合成运行。** 完成或阻塞从未被认领的任务（例如，人类从仪表盘关闭带摘要的 `ready` 任务，或 CLI 用户运行 `hermes kanban complete <ready-task> --summary X`）否则会丢失交接。相反，内核插入一个零持续时间运行行（`started_at == ended_at`），携带摘要 / 元数据 / 原因，以保持尝试历史完整。`completed` / `blocked` 事件的 `run_id` 指向该行。
+**从未认领的完成的合成运行。** 完成或阻塞从未被认领的任务（例如，人类从仪表盘关闭带摘要的 `ready` 任务，或 CLI 用户运行 `oria kanban complete <ready-task> --summary X`）否则会丢失交接。相反，内核插入一个零持续时间运行行（`started_at == ended_at`），携带摘要 / 元数据 / 原因，以保持尝试历史完整。`completed` / `blocked` 事件的 `run_id` 指向该行。
 
 **实时抽屉刷新。** 当仪表盘的 WebSocket 事件流报告用户当前正在查看的任务的新事件时，抽屉会重新加载自身（通过线程到其 `useEffect` 依赖列表中的每任务事件计数器）。不再需要关闭并重新打开才能看到运行的新行或更新的结果。
 
@@ -818,7 +818,7 @@ hermes kanban runs t_abcd
 
 ## 事件参考
 
-每次转换都向 `task_events` 追加一行。每行携带一个可选的 `run_id`，以便 UI 可以按尝试分组事件。类型分为三个集群，便于过滤（`hermes kanban watch --kinds completed,gave_up,timed_out`）：
+每次转换都向 `task_events` 追加一行。每行携带一个可选的 `run_id`，以便 UI 可以按尝试分组事件。类型分为三个集群，便于过滤（`oria kanban watch --kinds completed,gave_up,timed_out`）：
 
 **生命周期**（关于任务作为逻辑单元发生了什么变化）：
 
@@ -846,7 +846,7 @@ hermes kanban runs t_abcd
 | 类型 | 有效载荷 | 时机 |
 |---|---|---|
 | `spawned` | `{pid}` | 调度器成功启动 worker 进程。 |
-| `heartbeat` | `{note?}` | Worker 在长时间操作期间调用 `hermes kanban heartbeat $TASK` 发出存活信号。 |
+| `heartbeat` | `{note?}` | Worker 在长时间操作期间调用 `oria kanban heartbeat $TASK` 发出存活信号。 |
 | `reclaimed` | `{stale_lock}` | 认领 TTL 在完成前过期；任务返回 `ready`。 |
 | `crashed` | `{pid, claimer}` | Worker PID 不再存活但 TTL 尚未过期。 |
 | `timed_out` | `{pid, elapsed_seconds, limit_seconds, sigkill}` | 超过 `max_runtime_seconds`；调度器发送 SIGTERM（5 秒宽限后发送 SIGKILL）并重新排队。 |
@@ -856,7 +856,7 @@ hermes kanban runs t_abcd
 | `protocol_violation` | `{pid, claimer, exit_code}` | Worker 在任务仍处于 `running` 状态时成功退出，通常是因为它回答了问题而没有调用 `kanban_complete` 或 `kanban_block`。调度器还会立即发出 `gave_up` 并自动阻塞，而不是重试。 |
 | `gave_up` | `{failures, effective_limit, limit_source, error}` | N 次连续不成功尝试后熔断器触发。任务以最后一个错误自动阻塞。有效限制解析为任务 `max_retries`，然后是调度器 `failure_limit` / `kanban.failure_limit`，然后是内置默认值。 |
 
-`hermes kanban tail <id>` 显示单个任务的这些事件。`hermes kanban watch` 在整个看板范围内流式传输它们。
+`oria kanban tail <id>` 显示单个任务的这些事件。`oria kanban watch` 在整个看板范围内流式传输它们。
 
 ## 范围之外
 

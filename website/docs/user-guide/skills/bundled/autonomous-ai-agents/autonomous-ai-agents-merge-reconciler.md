@@ -17,7 +17,7 @@ Neutral third-party resolution of agent merge conflicts.
 | Source | Bundled (installed by default) |
 | Path | `skills/autonomous-ai-agents\merge-reconciler` |
 | Version | `1.0.0` |
-| Author | Hermes Agent |
+| Author | Oria |
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `Multi-Agent`, `Git`, `Merge-Conflict`, `Kanban`, `Arbitration` |
@@ -26,7 +26,7 @@ Neutral third-party resolution of agent merge conflicts.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Merge Reconciler

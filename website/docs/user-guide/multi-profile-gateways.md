@@ -10,14 +10,14 @@ covers the operational concerns: starting them all together, viewing logs
 across profiles, preventing the host from sleeping, and recovering from common
 launchd/systemd quirks.
 
-If you only run one Hermes agent, you don't need this page — see
+If you only run one Oria agent, you don't need this page — see
 [Profiles](./profiles.md) for the basics. And if your instances live on
 *different* machines that one desktop app should reach simultaneously, see
-[Connecting Desktop to Many Hermes Instances](./multi-connection-desktop.md).
+[Connecting Desktop to Many Oria Instances](./multi-connection-desktop.md).
 
 ## When to use this
 
-You want this setup when you have two or more Hermes agents that should all
+You want this setup when you have two or more Oria agents that should all
 be online at the same time. Common reasons:
 
 - A personal assistant on one Telegram bot and a coding agent on another
@@ -29,18 +29,18 @@ be online at the same time. Common reasons:
 Every profile already gets its own per-platform supervisor entry: a LaunchAgent
 (`ai.hermes.gateway-<name>.plist`), a systemd user service
 (`hermes-gateway-<name>.service`), a systemd **system** service when installed with
-`sudo hermes gateway install --system` (runs as the invoking user via `User=`), a
+`sudo oria gateway install --system` (runs as the invoking user via `User=`), a
 Windows Scheduled Task, or an s6/Docker service — and the Desktop app spawns its own
-per-profile `hermes serve` backend. This guide adds the patterns for managing them
+per-profile `oria serve` backend. This guide adds the patterns for managing them
 collectively.
 
 ## Quick start
 
 ```bash
 # Create profiles (once)
-hermes profile create coder
-hermes profile create personal-bot
-hermes profile create research
+oria profile create coder
+oria profile create personal-bot
+oria profile create research
 
 # Configure each
 coder setup
@@ -90,8 +90,8 @@ Set the flag on the **default profile** (it owns the multiplexer) and restart
 its gateway:
 
 ```bash
-hermes config set gateway.multiplex_profiles true
-hermes gateway restart
+oria config set gateway.multiplex_profiles true
+oria gateway restart
 ```
 
 Equivalently, in the default profile's `~/.hermes/config.yaml`:
@@ -108,7 +108,7 @@ credentials, and routes each inbound message to the profile it belongs to. Each
 turn resolves the routed profile's config, skills, memory, SOUL, **and provider
 keys** — credentials are never shared across profiles.
 
-You do **not** run `hermes gateway start` for the secondary profiles — the
+You do **not** run `oria gateway start` for the secondary profiles — the
 default gateway serves them. See the contract changes below.
 
 ### What changes when multiplexing is on
@@ -118,7 +118,7 @@ moment the flag is off.
 
 #### 1. Secondary profiles must not start their own gateway
 
-With a multiplexer running, a named-profile `hermes gateway run`, `start`,
+With a multiplexer running, a named-profile `oria gateway run`, `start`,
 `install` or `restart` is a **hard error** (exit code 78), pointing you back at
 the multiplexer:
 
@@ -129,9 +129,9 @@ profile 'coder'. ...
 
 The refusal happens in the CLI before any service manager is touched, so a served
 profile never ends up with a permanently failed systemd unit or a launchd respawn
-loop. `hermes -p coder gateway stop` refuses the same way (exit 78) when coder has no
+loop. `oria -p coder gateway stop` refuses the same way (exit 78) when coder has no
 gateway of its own — there is nothing to stop but the multiplexer, which
-`hermes gateway stop` on the default profile takes down for every served profile.
+`oria gateway stop` on the default profile takes down for every served profile.
 The dashboard and Desktop app follow the CLI: for a served profile the "Start" and
 "Stop" gateway actions answer `409` with the same explanation (rendered as an inline
 notice on the System page), and "Restart" restarts the multiplexer (the process that
@@ -147,8 +147,8 @@ default home's `gateway_state.json`), so it stays correct when the multiplexer w
 enabled only through `GATEWAY_MULTIPLEX_PROFILES` in the default profile's
 environment, or when profiles were added after the gateway started.
 
-The setup flows follow the same rule: `hermes -p coder setup gateway`, `hermes -p coder setup`,
-`hermes -p coder gateway setup` and `hermes -p coder import` configure the profile's bots but
+The setup flows follow the same rule: `oria -p coder setup gateway`, `oria -p coder setup`,
+`oria -p coder gateway setup` and `oria -p coder import` configure the profile's bots but
 skip the "install the gateway background service" step for a served profile, printing
 *"Profile 'coder' is already served by the default multiplexer"* instead of registering a
 stray unit or plist that could only sit dead. Add the bot token and the running multiplexer
@@ -195,7 +195,7 @@ no API server is enabled); it serves three kinds of profile-prefixed paths:
   default profile (their inbound is routed to profiles via `profile_routes`), or
   disable them in the secondary. The gateway logs one INFO line per skipped
   secondary platform, and if **no** profile runs it a WARNING says the platform
-  is not being served; `hermes gateway status --profile work` shows
+  is not being served; `oria gateway status --profile work` shows
   `whatsapp: not served under multiplex (shared ingress owned by default)`.
 
 Authentication follows the profile named in the URL. Unprefixed endpoints keep
@@ -212,9 +212,9 @@ using the default listener's existing credentials.
   `/p/coder/webhooks/<route>` and is rejected on every other profile prefix.
 - Webhook routes without `profile` remain default-profile routes and are not
   reachable through a named profile prefix. Dynamic subscriptions bind the same
-  way: `hermes webhook subscribe <name> --route-profile coder` writes
+  way: `oria webhook subscribe <name> --route-profile coder` writes
   `profile: coder` into the default gateway's `webhook_subscriptions.json` and
-  prints the `/p/coder/webhooks/<name>` URL (`hermes webhook ls` shows the
+  prints the `/p/coder/webhooks/<name>` URL (`oria webhook ls` shows the
   binding). Use `--route-profile`, not the global `-p coder`: `-p` would write
   the subscription into coder's own subscriptions file, which the default
   gateway's webhook adapter never reads.
@@ -237,7 +237,7 @@ silently dropping the unsafe profile.
 
 #### Inbound-port platforms under the multiplexer
 
-A standalone `hermes -p coder gateway run` binds coder's Twilio, LINE, Teams,
+A standalone `oria -p coder gateway run` binds coder's Twilio, LINE, Teams,
 … webhook servers on their own ports. Under the multiplexer those adapters are
 still coder's — same credentials from `profiles/coder/.env`, same
 `config.yaml`, replies sent through coder's channel — but they bind **no port**.
@@ -273,16 +273,16 @@ and every status surface repeats it, so you know what to paste into the vendor
 console:
 
 ```
-$ hermes -p coder gateway status
+$ oria -p coder gateway status
 ✓ Gateway is running via the default-profile multiplexer
-  Manage it from the default profile: hermes gateway status
+  Manage it from the default profile: oria gateway status
 
 Inbound callback URLs on the shared listener:
   line: http://127.0.0.1:8642/p/coder/line/webhook
   sms: http://127.0.0.1:8642/p/coder/webhooks/twilio
 ```
 
-`hermes gateway status` and `hermes status` on the default profile list the same
+`oria gateway status` and `oria status` on the default profile list the same
 URLs per served profile, and the dashboard's Channels page and the Desktop
 Messaging page show them as each platform's `ingress_url` when viewing that
 profile. The default's own `api_server` and `webhook` are reported the same way
@@ -332,9 +332,9 @@ parent conversation.
 #### 5. One PID/lock and one status surface
 
 There is a single process-level PID and lock (the multiplexer, under the default
-home). `hermes status` on the default profile reports the multiplexer and lists
-the profiles it serves (`Serves: coder, research`); `hermes -p coder status`,
-`hermes -p coder gateway status` and `hermes -p coder cron status` all report
+home). `oria status` on the default profile reports the multiplexer and lists
+the profiles it serves (`Serves: coder, research`); `oria -p coder status`,
+`oria -p coder gateway status` and `oria -p coder cron status` all report
 "running via the default-profile multiplexer" instead of "stopped", and the
 dashboard's `/api/status?profile=coder` / Channels page report the multiplexer as
 coder's running gateway (with coder's own adapters as its platforms). The single
@@ -447,8 +447,8 @@ profile and never shares with the default or any sibling:
 | Platform proxies (`TELEGRAM_PROXY`, `DISCORD_PROXY`, `HTTPS_PROXY`, …) | The profile's own `.env` | Direct connection — never the default profile's proxy |
 | MCP discovery in the Desktop/dashboard backend | Once per served profile home | A profile selected after another has already built an agent still discovers its own `mcp_servers` |
 | MCP connections in the Desktop/dashboard backend and the per-profile cron ticker | Keyed per served profile even with `gateway.multiplex_profiles` off — same rule as the multiplexer | A same-named `mcp_servers` entry with other credentials is its own connection; a served profile never calls a server as another profile |
-| Dashboard actions (`hermes -p <name> …` spawned by the Desktop/dashboard) | A scrubbed child env pinned to that profile's `HERMES_HOME` | The child loads its own `.env`; the dashboard profile's tokens and ports are not inherited |
-| Cron `.env` tuning (`HERMES_CRON_TIMEOUT`, `HERMES_MODEL` fallback, `HERMES_CRON_MAX_PARALLEL`, prefill file), worker / Bot Chat child env | The profile's own `.env`; children never inherit the default profile's `.env` settings or bridged `TERMINAL_*` policy | Cron defaults / model refusal, exactly as a standalone `hermes -p <name> gateway run` |
+| Dashboard actions (`oria -p <name> …` spawned by the Desktop/dashboard) | A scrubbed child env pinned to that profile's `HERMES_HOME` | The child loads its own `.env`; the dashboard profile's tokens and ports are not inherited |
+| Cron `.env` tuning (`HERMES_CRON_TIMEOUT`, `HERMES_MODEL` fallback, `HERMES_CRON_MAX_PARALLEL`, prefill file), worker / Bot Chat child env | The profile's own `.env`; children never inherit the default profile's `.env` settings or bridged `TERMINAL_*` policy | Cron defaults / model refusal, exactly as a standalone `oria -p <name> gateway run` |
 | Kanban workers and notifications for a profile's tasks | The assignee's `.env` + `config.yaml` (toolset pin, terminal backend, media policy, display language) | — |
 | `/loop` ticks, `background_process_notifications` gate, `notice_delivery`, background-process checkpoint recovery | The owning profile's `state.db` / `config.yaml` / `processes.json` | — |
 
@@ -462,7 +462,7 @@ on the default profile).
 live named profile under `profiles/` — there is no per-profile opt-out list.
 (The former `gateway.multiplex_profile_allowlist` key is retired; a config
 migration removes it from `config.yaml`, and a profile you do not want served is
-archived or deleted instead — `hermes profile delete <name>`, or move the
+archived or deleted instead — `oria profile delete <name>`, or move the
 directory out of `profiles/`.) Deleted profiles leave a tombstone and are never
 enumerated; a profile whose directory is gone is never recreated by a served
 turn, the cron ticker or log routing.
@@ -473,19 +473,19 @@ scheduler ticks (the Desktop backend's ticker re-enumerates the same set on
 every cycle — a profile created or deleted while Desktop runs joins or leaves
 the ticked set without a restart — and stands down for any profile a running
 multiplexer or its own gateway already serves). A
-multiplexer started as `hermes -p <name> gateway run` always ticks its own
+multiplexer started as `oria -p <name> gateway run` always ticks its own
 profile's cron store as well.
 
 The served set is **live**. A profile created while the multiplexer is running
-(`hermes profile create`, the dashboard, Desktop or the TUI) is served at once:
+(`oria profile create`, the dashboard, Desktop or the TUI) is served at once:
 the creator pings the multiplexer over its control socket, and the multiplexer
 also rescans `profiles/` every 30 seconds as a safety net. The new profile's
 adapters are built the moment its `config.yaml`/`.env` carries a bot token
 (creators usually create first, then add the token), `served_profiles` in the
-default profile's `gateway_state.json` is updated, and `hermes -p <name> gateway
+default profile's `gateway_state.json` is updated, and `oria -p <name> gateway
 status` reports it as served — no restart, and the other profiles' adapters and
 in-flight turns are untouched. Deleting a profile stops and unroutes its
-adapters the same way, and `hermes profile rename` unroutes the old name before
+adapters the same way, and `oria profile rename` unroutes the old name before
 the directory moves and hot-serves the new one (the old name is not resurrected
 by the adapters or the cron ticker that were still bound to it). The
 one-credential-one-poller rule still applies: a
@@ -608,9 +608,9 @@ run_for_profile() {
   profile="$1"
   action="$2"
   if [ "$profile" = "default" ]; then
-    hermes gateway "$action"
+    oria gateway "$action"
   else
-    hermes -p "$profile" gateway "$action"
+    oria -p "$profile" gateway "$action"
   fi
 }
 
@@ -623,7 +623,7 @@ case "$action" in
     done
     ;;
   list)
-    hermes gateway list
+    oria gateway list
     ;;
   *)
     usage
@@ -639,12 +639,12 @@ hermes-gateways start      # start every configured profile
 hermes-gateways stop       # stop every configured profile
 hermes-gateways restart    # restart all
 hermes-gateways status     # status across all
-hermes-gateways list       # delegates to `hermes gateway list`
+hermes-gateways list       # delegates to `oria gateway list`
 ```
 
 :::tip
-The `default` profile is targeted with `hermes gateway <action>` (no `-p`),
-not `hermes -p default gateway <action>`. The wrapper above handles both forms.
+The `default` profile is targeted with `oria gateway <action>` (no `-p`),
+not `oria -p default gateway <action>`. The wrapper above handles both forms.
 :::
 
 ## Manage one profile
@@ -661,7 +661,7 @@ coder gateway install    # create the LaunchAgent / systemd unit
 coder gateway uninstall  # remove the service file
 ```
 
-These are equivalent to `hermes -p coder gateway <action>` — useful if a
+These are equivalent to `oria -p coder gateway <action>` — useful if a
 profile alias is not on `PATH` or if you target profiles dynamically from a
 script.
 
@@ -701,15 +701,15 @@ tail -f ~/.hermes/logs/gateway.log ~/.hermes/profiles/*/logs/gateway.log
 The CLI also has a structured log viewer:
 
 ```bash
-hermes logs -f                  # follow default profile
-hermes -p coder logs -f         # follow one profile
-hermes logs --help              # filters, levels, JSON output
+oria logs -f                    # follow default profile
+oria -p coder logs -f           # follow one profile
+oria logs --help                # filters, levels, JSON output
 ```
 
 ## Identify what's actually running
 
 ```bash
-hermes profile list             # profiles + model + gateway state
+oria profile list               # profiles + model + gateway state
 hermes-gateways status          # full status across every profile
 launchctl list | grep hermes    # macOS — PIDs and labels
 systemctl --user list-units 'hermes-gateway-*'   # Linux — units
@@ -731,7 +731,7 @@ The default profile uses `~/.hermes/` directly with the same three files.
 Edit them with any editor or via the CLI:
 
 ```bash
-hermes config set model.model anthropic/claude-sonnet-4    # default profile
+oria config set model.model anthropic/claude-sonnet-4      # default profile
 coder config set model.model openai/gpt-5                  # named profile
 ```
 
@@ -821,33 +821,33 @@ with one command — and roll back with another. Standalone per-profile gateways
 remain fully supported; this is an optional migration, not a removal.
 
 ```bash
-hermes gateway migrate --multiplex --dry-run   # print the plan and any blockers; changes nothing
-hermes gateway migrate --multiplex             # apply (asks for confirmation on a TTY; -y skips)
-hermes gateway migrate --standalone            # roll back to per-profile gateways
+oria gateway migrate --multiplex --dry-run     # print the plan and any blockers; changes nothing
+oria gateway migrate --multiplex               # apply (asks for confirmation on a TTY; -y skips)
+oria gateway migrate --standalone              # roll back to per-profile gateways
 ```
 
-### What `hermes update` does
+### What `oria update` does
 
 After a successful update, when the install has two or more profiles, at least
 one secondary profile runs its own gateway (a live process or an installed
-service) and `gateway.multiplex_profiles` is off, `hermes update` runs the same
+service) and `gateway.multiplex_profiles` is off, `oria update` runs the same
 preflight:
 
 - **Nothing blocks it** → the migration runs automatically (the same code path
-  as `hermes gateway migrate --multiplex --yes`) and prints what it did. This
+  as `oria gateway migrate --multiplex --yes`) and prints what it did. This
   is deterministic and never prompts, so it also runs on headless/cron updates.
 - **Something blocks it** → a warning block lists each blocker with its exact
   fix and the one-liner to run later. Nothing is changed.
 
 Single-profile installs are never migrated (there is nothing to gain), and an
-install that is already multiplexing is left alone. `hermes update` also does
+install that is already multiplexing is left alone. `oria update` also does
 nothing when no secondary profile runs its own gateway — it never flips modes
 on an install where nothing was running.
 
-### Boundaries `hermes update` never crosses on its own
+### Boundaries `oria update` never crosses on its own
 
 The unattended hook only folds profiles that share **one UNIX user, one service
-domain and one `profiles/` tree** — the shape `hermes profile create` produces.
+domain and one `profiles/` tree** — the shape `oria profile create` produces.
 A standalone secondary behind any of these boundaries stops the automatic path:
 
 | boundary | example |
@@ -857,12 +857,12 @@ A standalone secondary behind any of these boundaries stops the automatic path:
 | different UNIX user | a system unit with its own `User=`, or a live gateway owned by another uid; a system unit whose `User=` this host cannot resolve counts as unknown, never as "same user" |
 | `HERMES_HOME` outside `<default home>/profiles/` | a unit pinning `HERMES_HOME=/opt/hermes/profiles/emma` |
 
-In that case `hermes update` prints the boundary it found plus
-`hermes gateway migrate --multiplex`, and changes nothing — no unit is removed
+In that case `oria update` prints the boundary it found plus
+`oria gateway migrate --multiplex`, and changes nothing — no unit is removed
 and `gateway.multiplex_profiles` stays off. Collapsing such a fleet replaces a
 kernel-enforced boundary (file ownership, `User=`) with in-process isolation,
 which is an operator's decision. The explicit command still makes it: the same
-findings appear as **notices** in `hermes gateway migrate --multiplex --dry-run`
+findings appear as **notices** in `oria gateway migrate --multiplex --dry-run`
 so you can read them first, and `--multiplex` proceeds when you confirm.
 
 ### Opting out of the automatic migration
@@ -871,20 +871,20 @@ Set `gateway.auto_multiplex_migration: false` on the **default** profile to keep
 the automatic fold from ever running on this install:
 
 ```bash
-hermes config set gateway.auto_multiplex_migration false
+oria config set gateway.auto_multiplex_migration false
 ```
 
-`hermes update` then leaves per-profile gateways exactly as they are, with no
+`oria update` then leaves per-profile gateways exactly as they are, with no
 output and no changes, however eligible the install looks. The setting lives in
 config, so it survives updates — the decision is made once rather than
 re-litigated on every release. It is read from the effective config like every
 other setting, so a value pinned in the managed scope (`/etc/hermes/config.yaml`)
 wins over the profile's own file. It governs the **automatic** path only:
-`hermes gateway migrate --multiplex` is an explicit request and still migrates
+`oria gateway migrate --multiplex` is an explicit request and still migrates
 (and is the supported way to opt back in). Absent or `true` keeps the default
 behaviour described above.
 
-The explicit command is different: `hermes gateway migrate --multiplex` with
+The explicit command is different: `oria gateway migrate --multiplex` with
 two or more profiles and **no** standalone secondary gateway still applies the
 one remaining step — it sets `gateway.multiplex_profiles: true`, (re)starts the
 default gateway and writes the same rollback manifest (with an empty
@@ -892,10 +892,10 @@ default gateway and writes the same rollback manifest (with an empty
 get multiplex.
 
 :::tip Clones do not carry channels
-`hermes profile create --clone` leaves the source's bot tokens and allowlists
+`oria profile create --clone` leaves the source's bot tokens and allowlists
 behind (see [Profiles → messaging channels are never cloned](./profiles.md#messaging-channels-are-never-cloned---clone-channels-to-opt-in)),
 so a fleet of clones no longer trips the duplicate-credential blocker below.
-Older clones that still carry them are flagged by `hermes profile list`.
+Older clones that still carry them are flagged by `oria profile list`.
 :::
 
 ### What the migration does
@@ -916,7 +916,7 @@ Older clones that still carry them are flagged by `hermes profile list`.
 | Blocker | Why | Fix |
 |---|---|---|
 | Two profiles configure the same platform credential (e.g. the same `TELEGRAM_BOT_TOKEN`) | Under one process a bot token can only be polled once; the multiplexer would park the duplicate and that profile's bot would go silent | Remove the token from the second profile, or keep it in `default` and route that profile's chats with [`profile_routes`](#routing-shared-bot-chats-to-profiles-profile_routes) |
-| A secondary profile enables a port-binding platform that has **no** `/p/<profile>/` ingress on the default listener | The multiplexer skips that whole profile (see [rule 2](#2-http-inbound-platforms-are-reached-via-a-pprofile-url-prefix)) | Disable the platform in that profile (`platforms.<name>.enabled: false`), or keep the profile on a standalone gateway with `hermes -p <name> gateway start --force` |
+| A secondary profile enables a port-binding platform that has **no** `/p/<profile>/` ingress on the default listener | The multiplexer skips that whole profile (see [rule 2](#2-http-inbound-platforms-are-reached-via-a-pprofile-url-prefix)) | Disable the platform in that profile (`platforms.<name>.enabled: false`), or keep the profile on a standalone gateway with `oria -p <name> gateway start --force` |
 
 The credential check reuses the gateway's own conflict detection, so its verdict
 matches what the multiplexer does at startup. Which port-binding platforms have
@@ -942,14 +942,14 @@ prefixed URL; nothing else about the key changes.
 ### Profiles created after the migration
 
 A profile created while the multiplexer runs is served without a restart (see
-above). `hermes profile create` confirms this when the live multiplexer picked the
-profile up; it prints the `hermes gateway restart` reminder only when it could not
+above). `oria profile create` confirms this when the live multiplexer picked the
+profile up; it prints the `oria gateway restart` reminder only when it could not
 reach the multiplexer (for example, a gateway started from an older build).
 
 ### Rollback
 
 ```bash
-hermes gateway migrate --standalone
+oria gateway migrate --standalone
 ```
 
 reads `gateway_migration.json`, sets `gateway.multiplex_profiles` back to its
@@ -962,25 +962,25 @@ gateway up fails after the per-profile gateways were removed (for example a
 system unit that has to run as root), `--multiplex` rolls back through the
 manifest on the spot so no profile is left without a gateway. Should the
 process die between flipping the flag and starting the default, the next
-`hermes gateway migrate --multiplex` sees the manifest with no live gateway and
+`oria gateway migrate --multiplex` sees the manifest with no live gateway and
 resumes from it instead of reporting "already multiplexed".
 If no manifest exists (you enabled multiplexing by hand), leave multiplex mode
-with `hermes config set gateway.multiplex_profiles false && hermes gateway restart`
+with `oria config set gateway.multiplex_profiles false && oria gateway restart`
 and reinstall the per-profile services you want.
 
 Not covered automatically: s6-supervised containers (set the flag on the
 default profile and restart the container) and Windows Scheduled Tasks (set the
-flag, stop the per-profile tasks, `hermes gateway restart`). The dashboard's
+flag, stop the per-profile tasks, `oria gateway restart`). The dashboard's
 System page offers the same migration as a button when the preflight finds an
 eligible install.
 
 ## Updating the code
 
-`hermes update` pulls the latest code once and syncs new bundled skills into
+`oria update` pulls the latest code once and syncs new bundled skills into
 every profile:
 
 ```bash
-hermes update
+oria update
 hermes-gateways restart
 ```
 
@@ -995,7 +995,7 @@ User-modified skills are never overwritten.
 
 ### "Could not find service in domain for user gui: 501"
 
-You ran `hermes gateway start` after a previous `hermes gateway stop`. The
+You ran `oria gateway start` after a previous `oria gateway stop`. The
 CLI's `stop` does a full `launchctl unload`, which removes the service from
 launchd's registry. The CLI catches this specific error on `start` and
 automatically re-loads the plist (`↻ launchd job was unloaded; reloading
@@ -1027,6 +1027,6 @@ systemctl --user restart hermes-gateway-<profile>.service
 ### Health check
 
 ```bash
-hermes doctor                  # default profile
-hermes -p <profile> doctor     # one profile
+oria doctor                    # default profile
+oria -p <profile> doctor       # one profile
 ```

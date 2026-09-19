@@ -419,9 +419,9 @@ function SkillCard({
               </div>
             )}
             <div className={styles.installHint}>
-              <code>{skill.installCmd || `hermes skills install ${skill.name}`}</code>
+              <code>{skill.installCmd || `oria skills install ${skill.name}`}</code>
               <CopyButton
-                text={skill.installCmd || `hermes skills install ${skill.name}`}
+                text={skill.installCmd || `oria skills install ${skill.name}`}
               />
             </div>
             {onPick ? (
@@ -522,7 +522,7 @@ export default function SkillsDashboard() {
           type: "hermes-skill-pick",
           name: skill.name,
           identifier: skill.identifier || skill.name,
-          installCmd: skill.installCmd || `hermes skills install ${skill.name}`,
+          installCmd: skill.installCmd || `oria skills install ${skill.name}`,
           source: skill.source,
         },
         "*"
@@ -679,13 +679,13 @@ export default function SkillsDashboard() {
   return (
     <Layout
       title="Skills Hub"
-      description="Browse all skills and plugins available for Hermes Agent"
+      description="Browse all skills and plugins available for Oria"
     >
       <div className={`${styles.page} ${pickerMode ? styles.pickerMode : ""}`}>
         <header className={styles.hero}>
           <div className={styles.heroGlow} />
           <div className={styles.heroContent}>
-            <p className={styles.heroEyebrow}>Hermes Agent</p>
+            <p className={styles.heroEyebrow}>Oria</p>
             <h1 className={styles.heroTitle}>Skills Hub</h1>
             <nav className={styles.crossNav} aria-label="Catalog pages">
               <span className={`${styles.crossNavLink} ${styles.crossNavActive}`}>

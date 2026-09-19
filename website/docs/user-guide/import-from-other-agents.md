@@ -1,27 +1,27 @@
 ---
 sidebar_position: 9
 title: "Import from Other Agents"
-description: "One-command import of a Claude Code (~/.claude) or OpenAI Codex CLI (~/.codex) setup into Hermes — instructions, allowlists, MCP servers, skills, and memories."
+description: "One-command import of a Claude Code (~/.claude) or OpenAI Codex CLI (~/.codex) setup into Oria — instructions, allowlists, MCP servers, skills, and memories."
 ---
 
 # Import from Other Agents
 
-`hermes import-agent` imports your existing **Claude Code** or **OpenAI Codex CLI** setup into Hermes with one command. It follows the same preview-first pattern as [`hermes claw migrate`](../guides/migrate-from-openclaw.md): you always see a per-item plan before anything is written, and `--dry-run` never touches disk.
+`oria import-agent` imports your existing **Claude Code** or **OpenAI Codex CLI** setup into Oria with one command. It follows the same preview-first pattern as [`oria claw migrate`](../guides/migrate-from-openclaw.md): you always see a per-item plan before anything is written, and `--dry-run` never touches disk.
 
 ```bash
-hermes import-agent                    # auto-detect ~/.claude or ~/.codex
-hermes import-agent claude-code        # import from ~/.claude
-hermes import-agent codex              # import from ~/.codex
-hermes import-agent claude-code --dry-run          # preview only
-hermes import-agent codex --source /path/to/.codex # custom location
-hermes import-agent claude-code --overwrite --yes  # replace conflicts, skip prompts
+oria import-agent                      # auto-detect ~/.claude or ~/.codex
+oria import-agent claude-code          # import from ~/.claude
+oria import-agent codex                # import from ~/.codex
+oria import-agent claude-code --dry-run            # preview only
+oria import-agent codex --source /path/to/.codex # custom location
+oria import-agent claude-code --overwrite --yes    # replace conflicts, skip prompts
 ```
 
 ## What gets imported
 
 ### Claude Code (`~/.claude`)
 
-| Claude Code | Hermes |
+| Claude Code | Oria |
 |---|---|
 | `CLAUDE.md` (global instructions) | Memory entries in `~/.hermes/memories/MEMORY.md` |
 | `settings.json` → `permissions.allow` (`Bash(...)` rules) | `command_allowlist` in `config.yaml` |
@@ -34,7 +34,7 @@ Claude's `Bash(npm run test:*)` prefix rules become `npm run test*` globs. Non-`
 
 ### Codex CLI (`~/.codex`)
 
-| Codex CLI | Hermes |
+| Codex CLI | Oria |
 |---|---|
 | `AGENTS.md` (global instructions) | Memory entries in `~/.hermes/memories/MEMORY.md` |
 | `config.toml` → `[mcp_servers.*]` | `mcp_servers` in `config.yaml` |
@@ -43,23 +43,23 @@ Claude's `Bash(npm run test:*)` prefix rules become `npm run test*` globs. Non-`
 
 ## What is never imported
 
-**API keys and credentials.** Credential files (`~/.claude/.credentials.json`, `~/.codex/auth.json`) are never read, and MCP server environment variables or headers with secret-looking names (`*_TOKEN`, `*_API_KEY`, `Authorization`, ...) are stripped and listed in the report so you can re-add them deliberately. Run `hermes setup` to configure providers, or add secrets to `~/.hermes/.env`.
+**API keys and credentials.** Credential files (`~/.claude/.credentials.json`, `~/.codex/auth.json`) are never read, and MCP server environment variables or headers with secret-looking names (`*_TOKEN`, `*_API_KEY`, `Authorization`, ...) are stripped and listed in the report so you can re-add them deliberately. Run `oria setup` to configure providers, or add secrets to `~/.hermes/.env`.
 
 ## Behavior notes
 
 - **Preview first, always.** The command prints the full plan before applying; in non-interactive sessions it stops at the preview unless you pass `--yes`.
 - **Merges, not replaces.** Memory entries are deduplicated against your existing `MEMORY.md`; allowlist/denylist patterns merge with what's already in `config.yaml`.
-- **Conflicts are skipped by default.** An MCP server or skill that already exists in Hermes is reported as a conflict; pass `--overwrite` to replace it.
+- **Conflicts are skipped by default.** An MCP server or skill that already exists in Oria is reported as a conflict; pass `--overwrite` to replace it.
 - **Malformed files don't abort the run.** A broken `settings.json` or `config.toml` becomes a per-item error in the report while everything else still imports.
-- Coming from OpenClaw instead? Use [`hermes claw migrate`](../guides/migrate-from-openclaw.md).
+- Coming from OpenClaw instead? Use [`oria claw migrate`](../guides/migrate-from-openclaw.md).
 
 ## Keeping imports in sync
 
 Every successful import registers its source (and the digest of everything it read) in `~/.hermes/import-sync.json`. When the other agent's setup changes later — new skills, edited `CLAUDE.md`/`AGENTS.md`, added MCP servers — pull the changes in with:
 
 ```bash
-hermes import-agent --sync            # re-import every changed source
-hermes import-agent --sync --dry-run  # preview what a sync would do
+oria import-agent --sync              # re-import every changed source
+oria import-agent --sync --dry-run    # preview what a sync would do
 ```
 
 Sync is prompt-free and cheap: sources whose files are unchanged are skipped by digest comparison, so it is safe to run on a schedule (e.g. a daily [cron job](features/cron.md)). Rules:
@@ -71,4 +71,4 @@ Sync is prompt-free and cheap: sources whose files are unchanged are skipped by 
 
 This mirrors ChatGPT Work's *Settings > Import* automatic updates, adapted to an explicit, inspectable command instead of a background service.
 
-The manifest is per profile. A profile created with `hermes profile create <name> --clone --sync-imports` carries it over, so `hermes -p <name> import-agent --sync` keeps pulling from the same external trees (see [Profiles](./profiles.md#keep-a-clones-imported-agent-setups-synced---sync-imports)).
+The manifest is per profile. A profile created with `oria profile create <name> --clone --sync-imports` carries it over, so `oria -p <name> import-agent --sync` keeps pulling from the same external trees (see [Profiles](./profiles.md#keep-a-clones-imported-agent-setups-synced---sync-imports)).

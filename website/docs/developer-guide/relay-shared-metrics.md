@@ -5,31 +5,31 @@ description: "NeMo Relay shared metrics: what is exported, consent and retention
 
 # NeMo Relay Shared Metrics
 
-Hermes includes NeMo Relay as a normal runtime dependency on platforms for
+Oria includes NeMo Relay as a normal runtime dependency on platforms for
 which Relay publishes a native wheel. The shared-metrics integration is built
-into Hermes and does not require a Hermes observability plugin. Hermes remains
+into Oria and does not require an Oria observability plugin. Oria remains
 importable without Relay on other native targets. Those targets use an
 explicit reduced-capability no-op host:
-Hermes execution remains available, while Relay scopes, middleware, plugins,
+Oria execution remains available, while Relay scopes, middleware, plugins,
 and subscribers are unavailable. The `hermes-agent[nemo-relay]` extra remains
 as a no-op compatibility alias for existing installation commands.
 
 > [!WARNING]
-> This removes the Hermes `observability/nemo_relay` plugin. Existing users
+> This removes the Oria `observability/nemo_relay` plugin. Existing users
 > must remove `observability/nemo_relay` (or its legacy `nemo_relay` alias)
 > from `plugins.enabled` and move exporter configuration into a Relay
 > `plugins.toml` selected with `HERMES_NEMO_RELAY_PLUGINS_TOML`. The legacy
 > `HERMES_NEMO_RELAY_ATOF_*` and `HERMES_NEMO_RELAY_ATIF_*` variables no
-> longer activate exporters. Without the new variable, Hermes does not run
+> longer activate exporters. Without the new variable, Oria does not run
 > Relay plugin discovery, configuration layering, middleware, or exporters.
 
-Hermes requires NeMo Relay 0.8.3 or later within the 0.8 release line. That
-line provides the provider-codec and canonical tool-result contracts Hermes
+Oria requires NeMo Relay 0.8.3 or later within the 0.8 release line. That
+line provides the provider-codec and canonical tool-result contracts Oria
 uses for managed provider and tool calls.
 
 ## Runtime Dependency and Data Boundary
 
-Hermes installs the platform-specific `nemo-relay` native wheel from the
+Oria installs the platform-specific `nemo-relay` native wheel from the
 bounded `>=0.8.3,<0.9` dependency range. The published package is built from
 the [NVIDIA NeMo Relay repository](https://github.com/NVIDIA/NeMo-Relay).
 Unsupported platforms use the explicit no-op runtime described above rather
@@ -40,7 +40,7 @@ workers must be regenerated and rebuilt when they use tool callbacks, tool
 execution intercepts, or manual tool-end APIs.
 
 When Relay managed execution is active, the provider request and response pass
-through that native module in the Hermes process so configured interceptors can
+through that native module in the Oria process so configured interceptors can
 operate on the real call. This is separate from the shared-metrics data
 contract. Shared-metrics mode installs no rich-observability network exporter,
 and its subscriber
@@ -51,7 +51,7 @@ sends whole packages rather than live spans. Enabling a
 separately configured rich-observability or dynamic plugin can create a
 different data path and requires its own policy review.
 
-Collection remains off unless Hermes policy enables it:
+Collection remains off unless Oria policy enables it:
 
 ```yaml
 telemetry:
@@ -66,13 +66,13 @@ behalf.
 Relay plugin activation is owned by the native runtime and remains explicitly
 opt-in. Set `HERMES_NEMO_RELAY_PLUGINS_TOML` to a selected `plugins.toml` to
 activate configured middleware, exporters, or dynamic plugins. When the
-variable is unset, Hermes does not invoke Relay's plugin initializer, so Relay
+variable is unset, Oria does not invoke Relay's plugin initializer, so Relay
 does not perform plugin configuration discovery or layering. When it is set
 and the selected file loads successfully, Relay discovers supported user and
 system `plugins.toml` files and layers the selected static configuration over
 them. Repository-local `.nemo-relay/plugins.toml` files are ignored. Dynamic
 `[[plugins.dynamic]]` records are loaded from the selected file only. If the
-selected file cannot be loaded, Hermes reports the error and does not invoke
+selected file cannot be loaded, Oria reports the error and does not invoke
 Relay initialization or fall back to ambient discovery.
 
 ## Session-Span Segmentation for Continuous Sessions
@@ -101,14 +101,14 @@ retain the same `session_id` and add `hermes.session.segment` plus
 
 ## Process-Wide Plugin Policy and Profile Isolation
 
-Relay plugin configuration is a process-level deployment choice, not a Hermes
+Relay plugin configuration is a process-level deployment choice, not an Oria
 profile setting. The first hosted profile triggers lazy initialization, and
-every additional profile hosted by that Hermes process shares the resulting
+every additional profile hosted by that Oria process shares the resulting
 static middleware, dynamic plugins, subscribers, exporters, and guardrail
-policy. After initialization succeeds, Hermes logs:
+policy. After initialization succeeds, Oria logs:
 
 ```text
-Relay plugins are active process-wide and apply to all profiles hosted by this Hermes process.
+Relay plugins are active process-wide and apply to all profiles hosted by this Oria process.
 ```
 
 Profile scopes still preserve causal isolation inside that shared policy.
@@ -121,19 +121,19 @@ profile.
 A worker plugin running in a separate worker process does not create a
 per-profile security boundary. One process-wide activation dispatches calls
 from all hosted profiles to that worker while preserving the invoking
-profile's Relay scope stack. Native dynamic plugins are loaded into the Hermes
+profile's Relay scope stack. Native dynamic plugins are loaded into the Oria
 process and share the same policy boundary.
 
-Run profiles in separate Hermes processes when they require different trust
+Run profiles in separate Oria processes when they require different trust
 levels, plugin credentials, exporter destinations, or guardrail policies.
 This process-wide plugin contract does not change each profile's independent
 shared-metrics consent, local SQLite state, or ATIF trajectory grouping.
 
-Hermes core owns one Relay host and one isolated Relay session scope per Hermes
+Oria core owns one Relay host and one isolated Relay session scope per Oria
 session. Core lifecycle producers use
 `agent.relay_runtime` to obtain the shared session handle or
 run Relay scope, LLM, tool, and mark APIs in that session context. New product
-marks do not require Hermes plugin registration. Shared-metrics marks must
+marks do not require Oria plugin registration. Shared-metrics marks must
 still contain only fields approved by the versioned allowlist; the hard
 dependency does not change the collection or privacy policy.
 
@@ -144,17 +144,17 @@ model calls, top-level task runs, tool and approval outcomes, and skill
 lifecycle and reuse:
 
 ```text
-Hermes turn, API, tool, and approval hooks
+Oria turn, API, tool, and approval hooks
   -> Relay session, task, LLM, tool, and mark lifecycle
-  -> Hermes shared-metrics subscriber
+  -> Oria shared-metrics subscriber
   -> SQLite counters
   -> immutable JSON delta package
 ```
 
-Hermes sends an empty `LLMRequest` into the metrics-owned lifecycle. This does
+Oria sends an empty `LLMRequest` into the metrics-owned lifecycle. This does
 not describe the separate managed-execution call through the native runtime
 documented above. The terminal metrics event contains the model identifier and
-provider route that Hermes used for the logical call, such as
+provider route that Oria used for the logical call, such as
 `nvidia/nemotron-3-ultra` through `openrouter`. These identifiers are
 lowercased and structurally bounded, but they are not normalized through a
 checked-in model catalog. Pricing and model-family classification belong to
@@ -167,30 +167,30 @@ counters created by older builds can be exported without losing data.
 The first consented session start emits an empty `hermes.client.active` Relay
 mark. The profile-scoped subscriber creates a random UUID install identity and
 uses a transactional compare-and-set to record at most one client-active
-counter in any rolling 24-hour window. The metric has no dimensions; Hermes
+counter in any rolling 24-hour window. The metric has no dimensions; Oria
 version, OS family, architecture, and install method remain bounded package
-resources. Concurrent Hermes processes share the SQLite latch, so simultaneous
+resources. Concurrent Oria processes share the SQLite latch, so simultaneous
 starts cannot double-count one install. A later session or task can attempt the
 mark again, but the subscriber suppresses it until the rolling window expires.
 
 Each task run is a Relay `Function` scope named `hermes.task_run`, parented to
-the owning Hermes session. The start counter contains only bounded execution
+the owning Oria session. The start counter contains only bounded execution
 surface and entrypoint values. The terminal counter contains bounded outcome,
 end reason, termination status, duration, logical model-call count, terminal
 tool-call count, and provider-retry count buckets. Retries are additional
-provider attempts for the same Hermes API request ID; they do not inflate the
-logical model-call count. Tool calls are deduplicated by their Hermes tool-call
+provider attempts for the same Oria API request ID; they do not inflate the
+logical model-call count. Tool calls are deduplicated by their Oria tool-call
 ID after a terminal tool result is observed. The outer `AIAgent` execution
 boundary closes the task for normal returns, early returns, exceptions, and
-cancellations. Active task ownership follows the task ID if Hermes rotates its
+cancellations. Active task ownership follows the task ID if Oria rotates its
 conversation session during context compression.
 
 Each tool invocation is represented by a Relay tool lifecycle named
 `hermes.tool_call`. The terminal counter contains only bounded tool category,
-outcome, approval outcome, latency, and explicit retry-count buckets. Hermes
+outcome, approval outcome, latency, and explicit retry-count buckets. Oria
 derives the category from the toolset already declared in its runtime registry;
 custom and unrecognized toolsets collapse to `other` rather than exporting
-tool or plugin names. Hermes does not infer retries from repeated tool names or
+tool or plugin names. Oria does not infer retries from repeated tool names or
 adjacent calls; when the
 hook does not provide an explicit retry relationship, the retry bucket is
 `unknown`. Approval decisions are emitted as `hermes.tool_approval` marks and
@@ -203,7 +203,7 @@ remains in the task's tool-count bucket.
 Successful skill mutations emit `hermes.skill.lifecycle` marks with only a
 bounded action and provenance. Successful loads emit `hermes.skill.load`
 marks with bounded provenance, first-use or reuse state, reuse-after-patch
-state, and a use-count bucket. Hermes derives reuse and patch-generation
+state, and a use-count bucket. Oria derives reuse and patch-generation
 continuity transactionally in its existing `skills/.usage.json` state; skill
 names and exact counts or generations never enter Relay metrics events,
 SQLite dimensions, or packages. A use after a new patch is counted once as
@@ -220,7 +220,7 @@ $HERMES_HOME/telemetry/shared_metrics/outbox/*.json
 
 The database keeps transactional aggregate and package-outbox state. Package
 files are immutable delta documents that conform to a closed JSON schema and
-are written with atomic replacement. Each package records the Hermes version,
+are written with atomic replacement. Each package records the Oria version,
 OS family, architecture, and install method as bounded client resources.
 Unrecognized platform or installation values are exported as `unknown`; raw
 platform strings, hostnames, and paths are never included. Fully packaged
@@ -252,7 +252,7 @@ decision has been made.
 > 2026-08-27 — see A.2 for the record, including the superseded
 > HMAC-pseudonym design).
 
-The install identity is scoped to one `HERMES_HOME`. To reset it, stop Hermes
+The install identity is scoped to one `HERMES_HOME`. To reset it, stop Oria
 processes and remove `$HERMES_HOME/telemetry/shared_metrics`. This deliberately
 removes the old identity, aggregate database, and queued local packages
 together; the next consented session creates a new identity. Disabling shared
@@ -261,7 +261,7 @@ local state.
 
 ## Smoke Test
 
-Run a real Hermes CLI turn against the deterministic local model server:
+Run a real Oria CLI turn against the deterministic local model server:
 
 ```bash
 ./.venv/bin/python scripts/smoke_nemo_relay_shared_metrics.py
@@ -289,7 +289,7 @@ Sending is off by default and requires both `telemetry.shared_metrics.enabled`
 and `telemetry.shared_metrics.send`.
 
 The exporter sends the package files already written under
-`$HERMES_HOME/telemetry/shared_metrics/outbox/` to the Hermes telemetry ingest
+`$HERMES_HOME/telemetry/shared_metrics/outbox/` to the Oria telemetry ingest
 service. That service validates only the envelope (`schema_version` plus a UUID
 `package_id`) and stores the body verbatim in S3.
 

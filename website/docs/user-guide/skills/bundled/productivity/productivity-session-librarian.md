@@ -17,7 +17,7 @@ Organize sessions by prompt: find, rename, archive, prune.
 | Source | Bundled (installed by default) |
 | Path | `skills/productivity/session-librarian` |
 | Version | `1.0.0` |
-| Author | Hermes Agent + Teknium |
+| Author | Oria + Teknium |
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `Sessions`, `Organization`, `Cleanup`, `Library`, `Productivity` |
@@ -26,7 +26,7 @@ Organize sessions by prompt: find, rename, archive, prune.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Session Librarian

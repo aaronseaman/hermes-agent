@@ -17,7 +17,7 @@ Watch product, flight, or listing prices; alert on target.
 | Source | Bundled (installed by default) |
 | Path | `skills/productivity\product-price-monitor` |
 | Version | `0.1.0` |
-| Author | Ben Barclay (benbarclay), Hermes Agent |
+| Author | Ben Barclay (benbarclay), Oria |
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `Prices`, `Availability`, `Shopping`, `Travel`, `Alerts` |
@@ -26,7 +26,7 @@ Watch product, flight, or listing prices; alert on target.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Product Price Monitor

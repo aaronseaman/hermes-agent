@@ -14,7 +14,7 @@ Query Shopify Admin/Storefront GraphQL APIs via curl.
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/productivity/shopify` |
+| Source | Optional — install with `oria skills install official/productivity/shopify` |
 | Path | `optional-skills/productivity\shopify` |
 | Version | `1.0.0` |
 | Author | community |
@@ -26,7 +26,7 @@ Query Shopify Admin/Storefront GraphQL APIs via curl.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Shopify — Admin & Storefront GraphQL APIs
@@ -142,7 +142,7 @@ mutation($input: ProductCreateInput!) {
     product { id handle }
     userErrors { field message }
   }
-}' '{"input":{"title":"Test Hoodie","status":"DRAFT","vendor":"Hermes","productType":"Apparel","tags":["test"]}}'
+}' '{"input":{"title":"Test Hoodie","status":"DRAFT","vendor":"Oria","productType":"Apparel","tags":["test"]}}'
 ```
 
 Variants now have their own mutations in recent versions:

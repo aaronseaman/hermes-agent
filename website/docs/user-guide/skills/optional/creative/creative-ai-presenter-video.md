@@ -14,10 +14,10 @@ Make a verified AI presenter video from script + image.
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/creative/ai-presenter-video` |
+| Source | Optional — install with `oria skills install official/creative/ai-presenter-video` |
 | Path | `optional-skills/creative/ai-presenter-video` |
 | Version | `1.0.0` |
-| Author | cclank (https://github.com/cclank/lanshu-create-ai-presenter-video), ported by Hermes Agent |
+| Author | cclank (https://github.com/cclank/lanshu-create-ai-presenter-video), ported by Oria |
 | License | MIT |
 | Platforms | linux, macos |
 | Tags | `video`, `presenter`, `avatar`, `lipsync`, `tts`, `captions`, `creative` |
@@ -26,7 +26,7 @@ Make a verified AI presenter video from script + image.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # AI Presenter Video
@@ -44,13 +44,13 @@ is actually available in the session (FAL video/image models via
 the whisper/STT tooling, ffmpeg for everything deterministic).
 
 > Ported from cclank/lanshu-create-ai-presenter-video (MIT). Upstream body
-> kept substantively verbatim in `references/`; Hermes adaptations live in
+> kept substantively verbatim in `references/`; Oria adaptations live in
 > this hub file. Scripts are deterministic (no network, no credentials).
 
-## Hermes adaptations (read first)
+## Oria adaptations (read first)
 
 - **Skill dir resolution** — upstream hardcoded its own agent's skills path.
-  In Hermes the loader expands `${HERMES_SKILL_DIR}` to this skill's installed
+  In Oria the loader expands `${HERMES_SKILL_DIR}` to this skill's installed
   directory, so every command below uses that token directly:
 
   ```bash

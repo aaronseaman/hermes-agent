@@ -1,6 +1,6 @@
 # Terminal Environment Provider Plugins
 
-Hermes runs shell commands through a pluggable set of **terminal backends**.
+Oria runs shell commands through a pluggable set of **terminal backends**.
 The built-in backends (local, Docker, Singularity, Modal, Daytona, Vercel
 Sandbox, SSH) live in the core repo under `tools/environments/`. Third-party
 sandbox vendors integrate as **plugins** instead — a standalone plugin repo
@@ -17,9 +17,9 @@ A registered backend automatically participates in every core surface:
 | Surface | Driven by |
 |---|---|
 | Command dispatch (`terminal`, `execute_code`, file tools) | `create_environment()` |
-| `hermes setup` backend picker | `display_name`, `description`, `setup_instructions()`, `post_setup()` |
+| `oria setup` backend picker | `display_name`, `description`, `setup_instructions()`, `post_setup()` |
 | Dashboard terminal-backend picker (probe status) | `probe()` |
-| `hermes status` / `hermes doctor` | `doctor_checks()` |
+| `oria status` / `oria doctor` | `doctor_checks()` |
 | System-prompt environment hints | `is_remote`, `env_description` |
 | Dangerous-command approval skipping | `skip_container_guards` |
 | Container path/cwd handling | `is_container` |
@@ -95,8 +95,8 @@ kind: backend
 Enable it, select it, run:
 
 ```bash
-hermes plugins enable acmebox
-hermes config set terminal.backend acmebox
+oria plugins enable acmebox
+oria config set terminal.backend acmebox
 ```
 
 ## Rules

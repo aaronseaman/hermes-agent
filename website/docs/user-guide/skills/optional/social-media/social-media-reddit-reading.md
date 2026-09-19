@@ -14,10 +14,10 @@ Read Reddit: subreddits, search, threads, users. No browser.
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/social-media/reddit-reading` |
+| Source | Optional — install with `oria skills install official/social-media/reddit-reading` |
 | Path | `optional-skills/social-media/reddit-reading` |
 | Version | `1.0.0` |
-| Author | Teknium (teknium1), Hermes Agent |
+| Author | Teknium (teknium1), Oria |
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `Reddit`, `Social Media`, `Research`, `Discussions`, `Community` |
@@ -26,7 +26,7 @@ Read Reddit: subreddits, search, threads, users. No browser.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Reddit Reading Skill
@@ -118,7 +118,7 @@ than stopping at titles; the listing only carries the first ~300 characters of e
 
 ⑤ If the user needs sustained Reddit access (monitoring, more than ~10 calls), stop and
 ask them to register the app credentials (Prerequisites) rather than grinding through the
-throttle. Tell them plainly: it is a free app registration, not logging Hermes into their
+throttle. Tell them plainly: it is a free app registration, not logging Oria into their
 account. Never ask for a Reddit password or browser cookies.
 
 ## Pitfalls

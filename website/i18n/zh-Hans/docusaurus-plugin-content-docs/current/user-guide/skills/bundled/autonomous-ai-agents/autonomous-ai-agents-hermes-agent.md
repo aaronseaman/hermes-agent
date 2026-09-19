@@ -1,14 +1,14 @@
 ---
-title: "Hermes Agent — 配置、扩展或贡献 Hermes Agent"
-sidebar_label: "Hermes Agent"
-description: "配置、扩展或贡献 Hermes Agent"
+title: "Oria — 配置、扩展或贡献 Oria"
+sidebar_label: "Oria"
+description: "配置、扩展或贡献 Oria"
 ---
 
 {/* This page is auto-generated from the skill's SKILL.md by website/scripts/generate-skill-docs.py. Edit the source SKILL.md, not this page. */}
 
-# Hermes Agent
+# Oria
 
-配置、扩展或贡献 Hermes Agent。
+配置、扩展或贡献 Oria。
 
 ## Skill 元数据
 
@@ -17,7 +17,7 @@ description: "配置、扩展或贡献 Hermes Agent"
 | 来源 | 内置（默认安装） |
 | 路径 | `skills/autonomous-ai-agents/hermes-agent` |
 | 版本 | `2.1.0` |
-| 作者 | Hermes Agent + Teknium |
+| 作者 | Oria + Teknium |
 | 许可证 | MIT |
 | 平台 | linux, macos, windows |
 | 标签 | `hermes`, `setup`, `configuration`, `multi-agent`, `spawning`, `cli`, `gateway`, `development` |
@@ -26,25 +26,25 @@ description: "配置、扩展或贡献 Hermes Agent"
 ## 参考：完整 SKILL.md
 
 :::info
-以下是 Hermes 在触发此 skill 时加载的完整 skill 定义。这是 agent 在 skill 激活时看到的指令内容。
+以下是 Oria 在触发此 skill 时加载的完整 skill 定义。这是 agent 在 skill 激活时看到的指令内容。
 :::
 
-# Hermes Agent
+# Oria
 
-Hermes Agent 是 Nous Research 开发的开源 AI agent 框架，可在终端、消息平台和 IDE 中运行。它与 Claude Code（Anthropic）、Codex（OpenAI）和 OpenClaw 同属一类——使用工具调用（tool calling）与系统交互的自主编码和任务执行 agent。Hermes 支持任意 LLM 提供商（OpenRouter、Anthropic、OpenAI、DeepSeek、本地模型及 15+ 其他提供商），可在 Linux、macOS 和 WSL 上运行。
+Oria 是 Nous Research 开发的开源 AI agent 框架，可在终端、消息平台和 IDE 中运行。它与 Claude Code（Anthropic）、Codex（OpenAI）和 OpenClaw 同属一类——使用工具调用（tool calling）与系统交互的自主编码和任务执行 agent。Oria 支持任意 LLM 提供商（OpenRouter、Anthropic、OpenAI、DeepSeek、本地模型及 15+ 其他提供商），可在 Linux、macOS 和 WSL 上运行。
 
-Hermes 的差异化特性：
+Oria 的差异化特性：
 
-- **通过 skill 自我提升** — Hermes 通过将可复用流程保存为 skill 来从经验中学习。当它解决复杂问题、发现工作流或被纠正时，可以将该知识持久化为 skill 文档，加载到未来的会话中。skill 随时间积累，使 agent 在你的特定任务和环境中表现越来越好。
+- **通过 skill 自我提升** — Oria 通过将可复用流程保存为 skill 来从经验中学习。当它解决复杂问题、发现工作流或被纠正时，可以将该知识持久化为 skill 文档，加载到未来的会话中。skill 随时间积累，使 agent 在你的特定任务和环境中表现越来越好。
 - **跨会话持久记忆** — 记住你是谁、你的偏好、环境细节和经验教训。可插拔的记忆后端（内置、Honcho、Mem0 等）让你选择记忆的工作方式。
 - **多平台 gateway** — 同一个 agent 在 Telegram、Discord、Slack、WhatsApp、Signal、Matrix、Email 及 10+ 其他平台上运行，具备完整工具访问权限，而不仅仅是聊天。
 - **提供商无关** — 在工作流中途切换模型和提供商，无需更改其他任何内容。凭证池自动轮换多个 API key。
-- **Profiles（配置文件）** — 运行多个独立的 Hermes 实例，各自拥有隔离的配置、会话、skill 和记忆。
+- **Profiles（配置文件）** — 运行多个独立的 Oria 实例，各自拥有隔离的配置、会话、skill 和记忆。
 - **可扩展** — 插件、MCP 服务器、自定义工具、webhook 触发器、cron 调度以及完整的 Python 生态系统。
 
-人们将 Hermes 用于软件开发、研究、系统管理、数据分析、内容创作、家庭自动化，以及任何受益于具有持久上下文和完整系统访问权限的 AI agent 的场景。
+人们将 Oria 用于软件开发、研究、系统管理、数据分析、内容创作、家庭自动化，以及任何受益于具有持久上下文和完整系统访问权限的 AI agent 的场景。
 
-**此 skill 帮助你高效使用 Hermes Agent** — 包括设置、配置功能、生成额外的 agent 实例、排查问题、找到正确的命令和设置，以及在需要扩展或贡献时理解系统的工作原理。
+**此 skill 帮助你高效使用 Oria** — 包括设置、配置功能、生成额外的 agent 实例、排查问题、找到正确的命令和设置，以及在需要扩展或贡献时理解系统的工作原理。
 
 **文档：** https://hermes-agent.nousresearch.com/docs/
 
@@ -149,7 +149,7 @@ hermes skills tap add REPO  Add a GitHub repo as skill source
 ### MCP 服务器
 
 ```
-hermes mcp serve            Run Hermes as an MCP server
+hermes mcp serve            Run Oria as an MCP server
 hermes mcp add NAME         Add an MCP server (--url or --command)
 hermes mcp remove NAME      Remove an MCP server
 hermes mcp list             List configured servers
@@ -240,7 +240,7 @@ hermes memory setup/status/off  Memory provider config
 hermes completion bash|zsh  Shell completions
 hermes acp                  ACP server (IDE integration)
 hermes claw migrate         Migrate from OpenClaw
-hermes uninstall            Uninstall Hermes
+hermes uninstall            Uninstall Oria
 ```
 
 ---
@@ -259,13 +259,13 @@ hermes uninstall            Uninstall Hermes
 /compress            Manually compress context
 /stop                Kill background processes
 /rollback [N]        Restore filesystem checkpoint
-/snapshot [sub]      Create or restore state snapshots of Hermes config/state (CLI)
+/snapshot [sub]      Create or restore state snapshots of Oria config/state (CLI)
 /bg <prompt> Run prompt in background
 /queue <prompt>      Queue for next turn
 /steer <prompt>      Inject a message after the next tool call without interrupting
 /agents (/tasks)     Show active agents and running tasks
 /resume [name]       Resume a named session
-/goal [text|sub]     Set a standing goal Hermes works on across turns until achieved
+/goal [text|sub]     Set a standing goal Oria works on across turns until achieved
                      (subcommands: status, pause, resume, clear)
 /redraw              Force a full UI repaint (CLI)
 ```
@@ -279,7 +279,7 @@ hermes uninstall            Uninstall Hermes
 /verbose             Cycle: off → new → all → verbose
 /voice [on|off|tts]  Voice mode
 /yolo                Toggle approval bypass
-/busy [sub]          Control how messages behave while Hermes works (CLI + gateway)
+/busy [sub]          Control how messages behave while Oria works (CLI + gateway)
                      (subcommands: queue, steer, interrupt, status)
 /indicator [style]   Pick the TUI busy-indicator style (CLI)
                      (styles: kaomoji, emoji, unicode, ascii)
@@ -309,7 +309,7 @@ hermes uninstall            Uninstall Hermes
 /deny                Deny a pending command (gateway)
 /restart             Restart gateway (gateway)
 /sethome             Set current chat as home channel (gateway)
-/update              Update Hermes to latest (gateway)
+/update              Update Oria to latest (gateway)
 /topic [sub]         Enable or inspect Telegram DM topic sessions (gateway)
 /platforms (/gateway) Show platform connection status (gateway)
 ```
@@ -454,11 +454,11 @@ Profiles 使用 `~/.hermes/profiles/<name>/`，布局相同。
 
 ## 安全与隐私开关
 
-常见的"为什么 Hermes 对我的输出/工具调用/命令做了 X？"开关——以及更改它们的确切命令。其中大多数需要新会话（聊天中的 `/reset`，或启动新的 `hermes` 调用），因为它们在启动时只读取一次。
+常见的"为什么 Oria 对我的输出/工具调用/命令做了 X？"开关——以及更改它们的确切命令。其中大多数需要新会话（聊天中的 `/reset`，或启动新的 `hermes` 调用），因为它们在启动时只读取一次。
 
 ### 工具输出中的密钥脱敏
 
-密钥脱敏**默认关闭** — 工具输出（终端 stdout、`read_file`、网页内容、子 agent 摘要等）不经修改直接传递。如果用户希望 Hermes 在 API key、token 和密钥进入对话上下文和日志之前自动屏蔽它们：
+密钥脱敏**默认关闭** — 工具输出（终端 stdout、`read_file`、网页内容、子 agent 摘要等）不经修改直接传递。如果用户希望 Oria 在 API key、token 和密钥进入对话上下文和日志之前自动屏蔽它们：
 
 ```bash
 hermes config set security.redact_secrets true       # 全局启用
@@ -482,7 +482,7 @@ hermes config set privacy.redact_pii false   # 禁用（默认）
 
 ### 命令审批提示
 
-默认情况下（`approvals.mode: smart`），Hermes 会让辅助 LLM 评估被标记为破坏性的 shell 命令（`rm -rf`、`git reset --hard` 等）。模式如下：
+默认情况下（`approvals.mode: smart`），Oria 会让辅助 LLM 评估被标记为破坏性的 shell 命令（`rm -rf`、`git reset --hard` 等）。模式如下：
 
 - `smart` — 低风险命令仅批准一次，高风险命令拒绝，不确定时提示（默认）
 - `manual` — 始终提示
@@ -545,9 +545,9 @@ stt:
 
 ---
 
-## 生成额外的 Hermes 实例
+## 生成额外的 Oria 实例
 
-将额外的 Hermes 进程作为完全独立的子进程运行——拥有独立的会话、工具和环境。
+将额外的 Oria 进程作为完全独立的子进程运行——拥有独立的会话、工具和环境。
 
 ### 何时使用此方式 vs delegate_task
 
@@ -570,7 +570,7 @@ terminal(command="hermes chat -q 'Set up CI/CD for ~/myapp'", background=true)
 
 ### 交互式 PTY 模式（通过 tmux）
 
-Hermes 使用 prompt_toolkit，需要真实终端。使用 tmux 进行交互式生成：
+Oria 使用 prompt_toolkit，需要真实终端。使用 tmux 进行交互式生成：
 
 ```
 # 启动
@@ -678,7 +678,7 @@ agent 创建的 skill 的后台维护。跟踪使用情况，将闲置 skill 标
 
 ## Windows 特有问题
 
-Hermes 在 Windows 上原生运行（PowerShell、cmd、Windows Terminal、git-bash mintty、VS Code 集成终端）。大多数功能开箱即用，但 Win32 和 POSIX 之间有一些差异曾给我们带来麻烦——遇到新问题时请在此记录，以免下一个人（或下一个会话）重新踩坑。
+Oria 在 Windows 上原生运行（PowerShell、cmd、Windows Terminal、git-bash mintty、VS Code 集成终端）。大多数功能开箱即用，但 Win32 和 POSIX 之间有一些差异曾给我们带来麻烦——遇到新问题时请在此记录，以免下一个人（或下一个会话）重新踩坑。
 
 ### 输入/键绑定
 
@@ -694,11 +694,11 @@ mintty / git-bash 行为相同（Alt+Enter 全屏），除非你在选项 → �
 
 ### `execute_code` / 沙箱
 
-**WinError 10106**（"无法加载或初始化请求的服务提供商"）来自沙箱子进程——它无法创建 `AF_INET` socket，因此回退的 loopback-TCP RPC 在 `connect()` 之前失败。根本原因通常**不是**损坏的 Winsock LSP；而是 Hermes 自身的环境清理器从子进程环境中删除了 `SYSTEMROOT` / `WINDIR` / `COMSPEC`。Python 的 `socket` 模块需要 `SYSTEMROOT` 来定位 `mswsock.dll`。通过 `tools/code_execution_tool.py` 中的 `_WINDOWS_ESSENTIAL_ENV_VARS` 允许列表修复。如果仍然遇到此问题，在 `execute_code` 块内 echo `os.environ` 以确认 `SYSTEMROOT` 已设置。完整诊断方案见 `references/execute-code-sandbox-env-windows.md`。
+**WinError 10106**（"无法加载或初始化请求的服务提供商"）来自沙箱子进程——它无法创建 `AF_INET` socket，因此回退的 loopback-TCP RPC 在 `connect()` 之前失败。根本原因通常**不是**损坏的 Winsock LSP；而是 Oria 自身的环境清理器从子进程环境中删除了 `SYSTEMROOT` / `WINDIR` / `COMSPEC`。Python 的 `socket` 模块需要 `SYSTEMROOT` 来定位 `mswsock.dll`。通过 `tools/code_execution_tool.py` 中的 `_WINDOWS_ESSENTIAL_ENV_VARS` 允许列表修复。如果仍然遇到此问题，在 `execute_code` 块内 echo `os.environ` 以确认 `SYSTEMROOT` 已设置。完整诊断方案见 `references/execute-code-sandbox-env-windows.md`。
 
 ### 测试/贡献
 
-**`scripts/run_tests.sh` 在 Windows 上无法直接使用** — 它查找 POSIX venv 布局（`.venv/bin/activate`）。Hermes 安装的 venv 位于 `venv/Scripts/`，也没有 pip 或 pytest（为减小安装体积而精简）。解决方案：将 `pytest + pyyaml` 安装到系统 Python 3.11 用户站点，然后设置 `PYTHONPATH` 直接调用 pytest：
+**`scripts/run_tests.sh` 在 Windows 上无法直接使用** — 它查找 POSIX venv 布局（`.venv/bin/activate`）。Oria 安装的 venv 位于 `venv/Scripts/`，也没有 pip 或 pytest（为减小安装体积而精简）。解决方案：将 `pytest + pyyaml` 安装到系统 Python 3.11 用户站点，然后设置 `PYTHONPATH` 直接调用 pytest：
 
 ```bash
 "/c/Program Files/Python311/python" -m pip install --user pytest pyyaml
@@ -720,7 +720,7 @@ export PYTHONPATH="$(pwd)"
 
 **行尾。** Git 可能警告 `LF will be replaced by CRLF the next time Git touches it`。这是外观问题——仓库的 `.gitattributes` 会规范化。不要让编辑器自动将已提交的 POSIX 换行文件转换为 CRLF。
 
-**正斜杠几乎在所有地方都有效。** `C:/Users/...` 被每个 Hermes 工具和大多数 Windows API 接受。在代码和日志中优先使用正斜杠——避免在 bash 中转义反斜杠。
+**正斜杠几乎在所有地方都有效。** `C:/Users/...` 被每个 Oria 工具和大多数 Windows API 接受。在代码和日志中优先使用正斜杠——避免在 bash 中转义反斜杠。
 
 ---
 
@@ -891,7 +891,7 @@ python -m pytest tests/tools/ -q            # 特定区域
 - 推送任何变更前运行完整套件
 - 使用 `-o 'addopts='` 清除任何内置的 pytest 标志
 
-**Windows 贡献者：** `scripts/run_tests.sh` 目前查找 POSIX venv（`.venv/bin/activate` / `venv/bin/activate`），在 Windows 上会报错，因为布局是 `venv/Scripts/activate` + `python.exe`。Hermes 安装的 venv 位于 `venv/Scripts/`，也没有 `pip` 或 `pytest`——为终端用户安装体积而精简。解决方案：将 pytest + pyyaml 安装到系统 Python 3.11 用户站点（`/c/Program Files/Python311/python -m pip install --user pytest pyyaml`），然后直接运行测试：
+**Windows 贡献者：** `scripts/run_tests.sh` 目前查找 POSIX venv（`.venv/bin/activate` / `venv/bin/activate`），在 Windows 上会报错，因为布局是 `venv/Scripts/activate` + `python.exe`。Oria 安装的 venv 位于 `venv/Scripts/`，也没有 `pip` 或 `pytest`——为终端用户安装体积而精简。解决方案：将 pytest + pyyaml 安装到系统 Python 3.11 用户站点（`/c/Program Files/Python311/python -m pip install --user pytest pyyaml`），然后直接运行测试：
 
 ```bash
 export PYTHONPATH="$(pwd)"

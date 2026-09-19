@@ -39,7 +39,7 @@ classifying a process by `"serve" in cmdline` or similar. `kanban --preserve-cac
 subcommand. Rules:
 
 - Use the canonical matchers: `gateway.status.looks_like_gateway_command_line` (gateway run),
-  `hermes_cli.update_cmd._hermes_holder_subcommand` (top-level subcommand of any Hermes argv). Never
+  `hermes_cli.update_cmd._hermes_holder_subcommand` (top-level subcommand of any Oria argv). Never
   hand-roll token scans.
 - Flag sets must be DERIVED from the parser (`_holder_value_flags()` introspects
   `build_top_level_parser()`), never hand-written lists — they drift.
@@ -70,8 +70,8 @@ User skins are `~/.hermes/skins/<name>.yaml` with the same keys, activated with 
 
 ## Profiles: multi-instance support
 
-Hermes supports profiles — fully isolated instances, each with its own `HERMES_HOME` (config, API
-keys, memory, sessions, skills, gateway). For single-profile commands (`hermes -p x <cmd>`),
+Oria supports profiles — fully isolated instances, each with its own `HERMES_HOME` (config, API
+keys, memory, sessions, skills, gateway). For single-profile commands (`oria -p x <cmd>`),
 `_apply_profile_override()` in `hermes_cli/main.py` sets `HERMES_HOME` before any module imports, so
 every `get_hermes_home()` reference scopes to the active profile. The multiplex gateway and the
 Desktop/dashboard `serve` backend serve several profiles from one process instead: the active
@@ -80,6 +80,6 @@ profile's, and a module-level constant derived from the home freezes to that lau
 [Gateway Internals § Multiplexed profiles](./gateway-internals.md#multiplexed-profiles)). Profile
 operations are HOME-anchored (`_get_profiles_root()` returns
 `Path.home() / ".hermes" / "profiles"`, not `get_hermes_home() / "profiles"`) so
-`hermes -p coder profile list` sees all profiles regardless of which one is active — intentional.
+`oria -p coder profile list` sees all profiles regardless of which one is active — intentional.
 Profile-safe coding rules are in the root `AGENTS.md`; multiplex secret-scope rules in
 `gateway/AGENTS.md`.

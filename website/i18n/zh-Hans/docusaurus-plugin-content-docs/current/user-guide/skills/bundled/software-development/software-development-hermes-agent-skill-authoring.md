@@ -1,12 +1,12 @@
 ---
-title: "Hermes Agent Skill 编写——在仓库中编写 SKILL"
-sidebar_label: "Hermes Agent Skill 编写"
+title: "Oria Skill 编写——在仓库中编写 SKILL"
+sidebar_label: "Oria Skill 编写"
 description: "在仓库中编写 SKILL.md"
 ---
 
 {/* This page is auto-generated from the skill's SKILL.md by website/scripts/generate-skill-docs.py. Edit the source SKILL.md, not this page. */}
 
-# Hermes Agent Skill 编写
+# Oria Skill 编写
 
 编写仓库内 SKILL.md：frontmatter（前置元数据）、验证器、结构。
 
@@ -17,7 +17,7 @@ description: "在仓库中编写 SKILL.md"
 | 来源 | 内置（默认安装） |
 | 路径 | `skills/software-development/hermes-agent-skill-authoring` |
 | 版本 | `1.0.0` |
-| 作者 | Hermes Agent |
+| 作者 | Oria |
 | 许可证 | MIT |
 | 平台 | linux, macos, windows |
 | 标签 | `skills`, `authoring`, `hermes-agent`, `conventions`, `skill-md` |
@@ -26,10 +26,10 @@ description: "在仓库中编写 SKILL.md"
 ## 参考：完整 SKILL.md
 
 :::info
-以下是 Hermes 在触发此 skill 时加载的完整 skill 定义。这是 agent 在 skill 激活时所看到的指令内容。
+以下是 Oria 在触发此 skill 时加载的完整 skill 定义。这是 agent 在 skill 激活时所看到的指令内容。
 :::
 
-# 编写 Hermes-Agent Skills（仓库内）
+# 编写 Oria Skills（仓库内）
 
 ## 概述
 

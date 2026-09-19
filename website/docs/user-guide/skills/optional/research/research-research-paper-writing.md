@@ -14,7 +14,7 @@ Write ML papers for NeurIPS/ICML/ICLR: design→submit.
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/research/research-paper-writing` |
+| Source | Optional — install with `oria skills install official/research/research-paper-writing` |
 | Path | `optional-skills/research\research-paper-writing` |
 | Version | `1.1.0` |
 | Author | Orchestra Research |
@@ -27,7 +27,7 @@ Write ML papers for NeurIPS/ICML/ICLR: design→submit.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that Oria loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
 # Research Paper Writing Pipeline
@@ -1382,13 +1382,13 @@ The main pipeline above targets empirical ML papers. Other paper types require d
 
 ---
 
-## Hermes Agent Integration
+## Oria Integration
 
-This skill is designed for the Hermes agent. It uses Hermes tools, delegation, scheduling, and memory for the full research lifecycle.
+This skill is designed for the Oria agent. It uses Oria tools, delegation, scheduling, and memory for the full research lifecycle.
 
 ### Related Skills
 
-Compose this skill with other Hermes skills for specific phases:
+Compose this skill with other Oria skills for specific phases:
 
 | Skill | When to Use | How to Load |
 |-------|-------------|-------------|
@@ -1401,7 +1401,7 @@ Compose this skill with other Hermes skills for specific phases:
 
 **This skill supersedes `ml-paper-writing`** — it contains all of ml-paper-writing's content plus the full experiment/analysis pipeline and autoreason methodology.
 
-### Hermes Tools Reference
+### Oria Tools Reference
 
 | Tool | Usage in This Pipeline |
 |------|----------------------|

@@ -1,7 +1,7 @@
 ---
 sidebar_position: 11
 title: "Cron 内部机制"
-description: "Hermes 如何存储、调度、编辑、暂停、加载技能以及投递 cron 任务"
+description: "Oria 如何存储、调度、编辑、暂停、加载技能以及投递 cron 任务"
 ---
 
 # Cron 内部机制
@@ -16,7 +16,7 @@ cron 子系统提供定时任务执行能力——从简单的单次延迟到带
 | `cron/scheduler.py` | 调度器循环——到期任务检测、执行、重复计数跟踪 |
 | `tools/cronjob_tools.py` | 面向模型的 `cronjob` 工具注册与处理器 |
 | `gateway/run.py` | Gateway 集成——在长运行循环中触发 cron tick |
-| `hermes_cli/cron.py` | CLI `hermes cron` 子命令 |
+| `hermes_cli/cron.py` | CLI `oria cron` 子命令 |
 
 ## 调度模型
 
@@ -104,7 +104,7 @@ tick()
 
 在 gateway 模式下，调度器运行在专用后台线程中（`gateway/run.py` 中的 `_start_cron_ticker`），每 60 秒调用一次 `scheduler.tick()`，与消息处理并行运行。
 
-在 CLI 模式下，cron 任务仅在运行 `hermes cron` 命令或活跃 CLI 会话期间触发。
+在 CLI 模式下，cron 任务仅在运行 `oria cron` 命令或活跃 CLI 会话期间触发。
 
 ### 全新会话隔离
 
@@ -213,20 +213,20 @@ Cron 运行的会话已禁用 `cronjob` 工具集。这可防止：
 
 ## 锁机制
 
-调度器使用跨进程文件锁（Unix 上的 `fcntl.flock`，Windows 上的 `msvcrt.locking`）防止重叠的 tick 对同一批到期任务执行两次——即使在 gateway 的进程内 ticker 与独立的 `hermes cron` / 手动 `tick()` 调用之间也如此。若无法获取锁，`tick()` 立即返回 0。
+调度器使用跨进程文件锁（Unix 上的 `fcntl.flock`，Windows 上的 `msvcrt.locking`）防止重叠的 tick 对同一批到期任务执行两次——即使在 gateway 的进程内 ticker 与独立的 `oria cron` / 手动 `tick()` 调用之间也如此。若无法获取锁，`tick()` 立即返回 0。
 
 ## CLI 接口
 
-`hermes cron` CLI 提供直接的任务管理功能：
+`oria cron` CLI 提供直接的任务管理功能：
 
 ```bash
-hermes cron list                    # 显示所有任务
-hermes cron create                  # 交互式创建任务（别名：add）
-hermes cron edit <job_id>           # 编辑任务配置
-hermes cron pause <job_id>          # 暂停运行中的任务
-hermes cron resume <job_id>         # 恢复已暂停的任务
-hermes cron run <job_id>            # 触发立即执行
-hermes cron remove <job_id>         # 删除任务
+oria cron list                      # 显示所有任务
+oria cron create                    # 交互式创建任务（别名：add）
+oria cron edit <job_id>             # 编辑任务配置
+oria cron pause <job_id>            # 暂停运行中的任务
+oria cron resume <job_id>           # 恢复已暂停的任务
+oria cron run <job_id>              # 触发立即执行
+oria cron remove <job_id>           # 删除任务
 ```
 
 ## 相关文档

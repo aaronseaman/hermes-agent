@@ -8,7 +8,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Sessions
 
-Hermes Agent automatically saves every conversation as a session. Sessions enable conversation resume, cross-session search, and full conversation history management.
+Oria automatically saves every conversation as a session. Sessions enable conversation resume, cross-session search, and full conversation history management.
 
 ## How Sessions Work
 
@@ -28,10 +28,10 @@ The SQLite database stores:
 
 ### What Counts Toward Context
 
-Hermes stores session history so it can resume conversations, but it does not
+Oria stores session history so it can resume conversations, but it does not
 keep re-sending every byte it has ever handled. On each turn, the model sees
 the selected system prompt, the current conversation window, and any content
-Hermes explicitly injects for that turn.
+Oria explicitly injects for that turn.
 
 Media attachments are handled as turn-scoped inputs:
 
@@ -44,8 +44,8 @@ Media attachments are handled as turn-scoped inputs:
   the raw image, audio, or binary file bytes are not repeatedly copied into
   future prompts.
 
-For example, if a user sends an image and asks Hermes to make a meme from it,
-Hermes may inspect that image once with vision and run an image-processing
+For example, if a user sends an image and asks Oria to make a meme from it,
+Oria may inspect that image once with vision and run an image-processing
 script. Future turns do not automatically carry the original JPEG in context.
 They carry only whatever was written into the conversation, such as the user's
 request, a short image description, a local cache path, or the final assistant
@@ -59,9 +59,9 @@ into chat.
 
 :::tip
 Use `/compress` when a session gets long, `/new` for a fresh thread, and
-`hermes sessions prune` only when you want to delete old ended sessions from
+`oria sessions prune` only when you want to delete old ended sessions from
 storage. If `state.db` has simply grown large, start with the non-destructive
-option first: `hermes sessions optimize` merges FTS5 index segments and
+option first: `oria sessions optimize` merges FTS5 index segments and
 VACUUMs the database without touching any session data. Compression reduces the active context; it is not a privacy delete.
 Pass a name to `/new` (e.g. `/new payments-refactor`) to set the new session's
 initial title up front — useful for finding it later with `/resume <name>` or
@@ -74,7 +74,7 @@ Each session is tagged with its source platform:
 
 | Source | Description |
 |--------|-------------|
-| `cli` | Interactive CLI (`hermes` or `hermes chat`) |
+| `cli` | Interactive CLI (`oria` or `oria chat`) |
 | `telegram` | Telegram messenger |
 | `discord` | Discord server/DM |
 | `slack` | Slack workspace |
@@ -105,19 +105,19 @@ Resume previous conversations from the CLI using `--continue` or `--resume`:
 
 ```bash
 # Resume the most recent CLI session
-hermes --continue
-hermes -c
+oria --continue
+oria -c
 
 # Or with the chat subcommand
-hermes chat --continue
-hermes chat -c
+oria chat --continue
+oria chat -c
 ```
 
 This looks up the most recent `cli` session from the SQLite database and loads its full conversation history.
 
 #### Per-Terminal Continue
 
-A bare `-c` is terminal-aware: each CLI session drops a small breadcrumb file under `~/.hermes/terminal-sessions/` keyed by the terminal it runs in (tty device, tmux pane, kitty window, wezterm pane, Zellij pane, Windows Terminal session, ...). When you run `hermes -c` again in the *same* terminal, Hermes resumes that terminal's own session — so two panes side by side each continue their own conversation instead of both grabbing the globally most-recent one. If there's no breadcrumb for the terminal (first use, deleted session, or a stale breadcrumb older than 30 days), `-c` falls back to the most-recent-session behavior. `-c "name"` and `--resume` are unaffected. Disable with `session.terminal_continue: false` in `config.yaml`.
+A bare `-c` is terminal-aware: each CLI session drops a small breadcrumb file under `~/.hermes/terminal-sessions/` keyed by the terminal it runs in (tty device, tmux pane, kitty window, wezterm pane, Zellij pane, Windows Terminal session, ...). When you run `oria -c` again in the *same* terminal, Oria resumes that terminal's own session — so two panes side by side each continue their own conversation instead of both grabbing the globally most-recent one. If there's no breadcrumb for the terminal (first use, deleted session, or a stale breadcrumb older than 30 days), `-c` falls back to the most-recent-session behavior. `-c "name"` and `--resume` are unaffected. Disable with `session.terminal_continue: false` in `config.yaml`.
 
 ### Resume by Name
 
@@ -125,31 +125,31 @@ If you've given a session a title (see [Session Naming](#session-naming) below),
 
 ```bash
 # Resume a named session
-hermes -c "my project"
+oria -c "my project"
 
 # If there are lineage variants (my project, my project #2, my project #3),
 # this automatically resumes the most recent one
-hermes -c "my project"   # → resumes "my project #3"
+oria -c "my project"     # → resumes "my project #3"
 ```
 
 ### Resume Specific Session
 
 ```bash
 # Resume a specific session by ID
-hermes --resume 20250305_091523_a1b2c3d4
-hermes -r 20250305_091523_a1b2c3d4
+oria --resume 20250305_091523_a1b2c3d4
+oria -r 20250305_091523_a1b2c3d4
 
 # Resume by title
-hermes --resume "refactoring auth"
+oria --resume "refactoring auth"
 
 # Resume the most recent session — same lookup as -c
-hermes --resume latest
+oria --resume latest
 
 # Or with the chat subcommand
-hermes chat --resume 20250305_091523_a1b2c3d4
+oria chat --resume 20250305_091523_a1b2c3d4
 ```
 
-Session IDs are shown when you exit a CLI session, and can be found with `hermes sessions list`.
+Session IDs are shown when you exit a CLI session, and can be found with `oria sessions list`.
 
 :::note
 `latest` is a reserved keyword for `--resume`. A session literally titled "latest" is still reachable by its ID or via `-c latest` (title match).
@@ -161,10 +161,10 @@ Pass `--in <dir>` to change into a directory before starting or resuming. Combin
 
 ```bash
 # Resume the latest session that belongs to ./my-project
-hermes --resume latest --in ./my-project
+oria --resume latest --in ./my-project
 
 # Works with the TUI too
-hermes --tui --resume latest --in ./my-project
+oria --tui --resume latest --in ./my-project
 ```
 
 `--in` also pins the session to that directory: the resumed session's recorded working directory is not restored (as if `--no-restore-cwd` were passed).
@@ -174,25 +174,25 @@ hermes --tui --resume latest --in ./my-project
 Resuming a CLI session also `cd`s back into the session's recorded working directory (its git repo root or project dir), so the conversation picks up in the workspace it belonged to. If you'd rather stay where you are, pass `--no-restore-cwd`:
 
 ```bash
-hermes --resume 20250305_091523_a1b2c3 --no-restore-cwd
+oria --resume 20250305_091523_a1b2c3 --no-restore-cwd
 ```
 
 A `↪ restored workspace dir: …` line confirms the switch. Restore failures never break the resume itself.
 
 ### Filtering Sessions by Workspace
 
-`hermes sessions list` accepts `--workspace <needle>` to show only sessions whose workspace key (git repo root, else cwd) matches — by path substring or exact directory basename:
+`oria sessions list` accepts `--workspace <needle>` to show only sessions whose workspace key (git repo root, else cwd) matches — by path substring or exact directory basename:
 
 ```bash
-hermes sessions list --workspace my-project
-hermes sessions list --workspace ~/code/hermes-agent
+oria sessions list --workspace my-project
+oria sessions list --workspace ~/code/hermes-agent
 ```
 
 ### Conversation Recap on Resume
 
-When you resume a session, Hermes displays a compact recap of the previous conversation in a styled panel before the input prompt:
+When you resume a session, Oria displays a compact recap of the previous conversation in a styled panel before the input prompt:
 
-<img className="docs-terminal-figure" src={useBaseUrl('/img/docs/session-recap.svg')} alt="Stylized preview of the Previous Conversation recap panel shown when resuming a Hermes session." />
+<img className="docs-terminal-figure" src={useBaseUrl('/img/docs/session-recap.svg')} alt="Stylized preview of the Previous Conversation recap panel shown when resuming an Oria session." />
 <p className="docs-figure-caption">Resume mode shows a compact recap panel with recent user and assistant turns before returning you to the live prompt.</p>
 
 The recap:
@@ -242,7 +242,7 @@ What happens:
 
 6. From that point, the conversation lives on the platform. Reply in the new thread — anyone authorized in that channel shares the same session, and any later real user message in the thread joins seamlessly because thread sessions key without `user_id`.
 
-**Resume back to CLI:** when you want to come back to a desktop, just run `/resume <title>` (or `hermes -r "<title>"` from the shell) and pick up where the platform left off.
+**Resume back to CLI:** when you want to come back to a desktop, just run `/resume <title>` (or `oria -r "<title>"` from the shell) and pick up where the platform left off.
 
 **Failure modes:**
 - No home channel configured → CLI refuses with a `/sethome` hint.
@@ -259,7 +259,7 @@ Give sessions human-readable titles so you can find and resume them easily.
 
 ### Auto-Generated Titles
 
-Hermes automatically generates a short descriptive title (3–7 words) for each session after the first exchange. This runs in a background thread using a fast auxiliary model, so it adds no latency. You'll see auto-generated titles when browsing sessions with `hermes sessions list` or `hermes sessions browse`.
+Oria automatically generates a short descriptive title (3–7 words) for each session after the first exchange. This runs in a background thread using a fast auxiliary model, so it adds no latency. You'll see auto-generated titles when browsing sessions with `oria sessions list` or `oria sessions browse`.
 
 Auto-titling only fires once per session and is skipped if you've already set a title manually.
 
@@ -276,7 +276,7 @@ The title is applied immediately. If the session hasn't been created in the data
 You can also rename existing sessions from the command line:
 
 ```bash
-hermes sessions rename 20250305_091523_a1b2c3d4 "refactoring auth module"
+oria sessions rename 20250305_091523_a1b2c3d4 "refactoring auth module"
 ```
 
 ### Title Rules
@@ -288,13 +288,13 @@ hermes sessions rename 20250305_091523_a1b2c3d4 "refactoring auth module"
 
 ### Auto-Lineage on Compression
 
-When a session's context is compressed (manually via `/compress` or automatically), Hermes creates a new continuation session. If the original had a title, the new session automatically gets a numbered title:
+When a session's context is compressed (manually via `/compress` or automatically), Oria creates a new continuation session. If the original had a title, the new session automatically gets a numbered title:
 
 ```
 "my project" → "my project #2" → "my project #3"
 ```
 
-When you resume by name (`hermes -c "my project"`), it automatically picks the most recent session in the lineage.
+When you resume by name (`oria -c "my project"`), it automatically picks the most recent session in the lineage.
 
 ### /title in Messaging Platforms
 
@@ -305,19 +305,19 @@ The `/title` command works in all gateway platforms (Telegram, Discord, Slack, W
 
 ## Session Management Commands
 
-Hermes provides a full set of session management commands via `hermes sessions`:
+Oria provides a full set of session management commands via `oria sessions`:
 
 ### List Sessions
 
 ```bash
 # List recent sessions (default: last 20)
-hermes sessions list
+oria sessions list
 
 # Filter by platform
-hermes sessions list --source telegram
+oria sessions list --source telegram
 
 # Show more sessions
-hermes sessions list --limit 50
+oria sessions list --limit 50
 ```
 
 When more sessions exist than `--limit` allows, the listing ends with a `… more not shown (use --limit N to see more)` footer, so a capped page is never mistaken for the full list.
@@ -343,7 +343,7 @@ What's the weather in Las Vegas?                    3d ago        tele   2025030
 
 ### Export Sessions
 
-`hermes sessions export` is one surface for every export format, selected with `--format`:
+`oria sessions export` is one surface for every export format, selected with `--format`:
 
 | Format | Output | Use it for |
 |--------|--------|------------|
@@ -360,25 +360,25 @@ All formats share the same selection knobs: `--session-id` for one session, or t
 
 ```bash
 # Export all sessions to a JSONL file
-hermes sessions export backup.jsonl
+oria sessions export backup.jsonl
 
 # Export sessions from a specific platform
-hermes sessions export telegram-history.jsonl --source telegram
+oria sessions export telegram-history.jsonl --source telegram
 
 # Export a single session
-hermes sessions export session.jsonl --session-id 20250305_091523_a1b2c3d4
+oria sessions export session.jsonl --session-id 20250305_091523_a1b2c3d4
 
 # Point at a directory (existing, or ending in /) and the file is named for you:
 # ~/exports/hermes_session_20250305_091523_a1b2c3d4.jsonl
-hermes sessions export ~/exports/ --session-id 20250305_091523_a1b2c3d4
+oria sessions export ~/exports/ --session-id 20250305_091523_a1b2c3d4
 
 # Redact API keys/tokens/credentials from the exported content
-hermes sessions export backup.jsonl --redact
+oria sessions export backup.jsonl --redact
 ```
 
 Exported files contain one JSON object per line with full session metadata and all messages.
 
-Each record also carries a `timings` block derived from the message timestamps, so a reader of an export attached to a bug report can tell a single long model gap from many small tool round-trips without reconstructing it by hand. It holds only ids, roles, counts and durations — `wall_clock_ms`, `largest_gap_ms`, `role_counts`, `tool_calls_emitted` and per-message `intervals` — never prompt text, tool arguments or results, so it survives `--redact` unchanged. Hermes does not persist a model/tool stopwatch, so `complete` is always `false`; when a session has no timestamped messages, `available` is `false` and `unavailable_reason` says why. The block is rebuilt on every export and ignored (and not counted toward size limits) on import.
+Each record also carries a `timings` block derived from the message timestamps, so a reader of an export attached to a bug report can tell a single long model gap from many small tool round-trips without reconstructing it by hand. It holds only ids, roles, counts and durations — `wall_clock_ms`, `largest_gap_ms`, `role_counts`, `tool_calls_emitted` and per-message `intervals` — never prompt text, tool arguments or results, so it survives `--redact` unchanged. Oria does not persist a model/tool stopwatch, so `complete` is always `false`; when a session has no timestamped messages, `available` is `false` and `unavailable_reason` says why. The block is rebuilt on every export and ignored (and not counted toward size limits) on import.
 
 #### HTML
 
@@ -386,10 +386,10 @@ Each record also carries a `timings` block derived from the message timestamps, 
 
 ```bash
 # One session as a standalone HTML page
-hermes sessions export --format html --session-id 20250305_091523_a1b2c3d4 transcript.html
+oria sessions export --format html --session-id 20250305_091523_a1b2c3d4 transcript.html
 
 # All Telegram sessions from the last week in one file, secrets redacted
-hermes sessions export --format html --newer-than 1w --source telegram --redact archive.html
+oria sessions export --format html --newer-than 1w --source telegram --redact archive.html
 ```
 
 #### Prompts Only
@@ -398,10 +398,10 @@ hermes sessions export --format html --newer-than 1w --source telegram --redact 
 
 ```bash
 # One JSONL record per prompt (session id, index, timestamp, text)
-hermes sessions export prompts.jsonl --session-id 20250305_091523_a1b2c3d4 --only user-prompts
+oria sessions export prompts.jsonl --session-id 20250305_091523_a1b2c3d4 --only user-prompts
 
 # Markdown, straight to stdout
-hermes sessions export - --session-id 20250305_091523_a1b2c3d4 --only user-prompts --format md
+oria sessions export - --session-id 20250305_091523_a1b2c3d4 --only user-prompts --format md
 ```
 
 Works with `--format jsonl` (default) or `md`, honors the same filters for bulk export, and combines with `--redact`.
@@ -412,13 +412,13 @@ Works with `--format jsonl` (default) or `md`, honors the same filters for bulk 
 
 ```bash
 # Trace of the most recent session, to stdout
-hermes sessions export --format trace
+oria sessions export --format trace
 
 # One session to a local trace file
-hermes sessions export --format trace --session-id 20250305_091523_a1b2c3d4 trace.jsonl
+oria sessions export --format trace --session-id 20250305_091523_a1b2c3d4 trace.jsonl
 
 # Upload straight to your private HF traces dataset
-hermes sessions export --format trace --session-id 20250305_091523_a1b2c3d4 --upload
+oria sessions export --format trace --session-id 20250305_091523_a1b2c3d4 --upload
 ```
 
 Trace exports are secret-redacted by default (they're meant to leave the machine); `--no-redact` opts out after manual review. `--upload` is private unless `--public`. Bulk trace export with filters writes one `<id>.trace.jsonl` per session.
@@ -429,22 +429,22 @@ Pass `--format md` or `--format qmd` when you want a readable, file-based archiv
 
 ```bash
 # Export one session to Markdown
-hermes sessions export --format md --session-id 20250305_091523_a1b2c3d4
+oria sessions export --format md --session-id 20250305_091523_a1b2c3d4
 
 # Export a compression lineage as one logical document
-hermes sessions export --format md --session-id 20250305_091523_a1b2c3d4 --lineage logical
+oria sessions export --format md --session-id 20250305_091523_a1b2c3d4 --lineage logical
 
 # Preview ended sessions older than 90 days without writing files
-hermes sessions export --format md --older-than 90 --dry-run
+oria sessions export --format md --older-than 90 --dry-run
 
 # Export ended Telegram sessions older than 2 weeks to QMD files
-hermes sessions export --format qmd --older-than 2w --source telegram
+oria sessions export --format qmd --older-than 2w --source telegram
 
 # Export long Claude sessions, secrets redacted
-hermes sessions export --format md --model sonnet --min-messages 50 --redact
+oria sessions export --format md --model sonnet --min-messages 50 --redact
 
 # Only after verification, export and delete one explicitly named session
-hermes sessions export --format md --session-id 20250305_091523_a1b2c3d4 --delete-after-verified --yes
+oria sessions export --format md --session-id 20250305_091523_a1b2c3d4 --delete-after-verified --yes
 ```
 
 Markdown/QMD export writes one `.md` or `.qmd` file per exported session plus a `manifest.jsonl` with the file path, message count, lineage ids, and SHA-256. Bulk export requires at least one filter; a bare bulk export is refused. `--delete-after-verified` is intentionally limited to `--session-id` and requires `--yes`. Because deleting a parent session also removes its delegate/subagent sessions, this mode exports and verifies each delegate in a separate file before deleting anything. If the delegate set changes during export, deletion is refused. `--redact` scrubs secrets (API keys, tokens, credentials) from message content and tool output before writing — recommended for any export you plan to share.
@@ -453,20 +453,20 @@ Markdown/QMD export writes one `.md` or `.qmd` file per exported session plus a 
 
 ```bash
 # Delete a specific session (with confirmation)
-hermes sessions delete 20250305_091523_a1b2c3d4
+oria sessions delete 20250305_091523_a1b2c3d4
 
 # Delete without confirmation
-hermes sessions delete 20250305_091523_a1b2c3d4 --yes
+oria sessions delete 20250305_091523_a1b2c3d4 --yes
 ```
 
 ### Rename a Session
 
 ```bash
 # Set or change a session's title
-hermes sessions rename 20250305_091523_a1b2c3d4 "debugging auth flow"
+oria sessions rename 20250305_091523_a1b2c3d4 "debugging auth flow"
 
 # Multi-word titles don't need quotes in the CLI
-hermes sessions rename 20250305_091523_a1b2c3d4 debugging auth flow
+oria sessions rename 20250305_091523_a1b2c3d4 debugging auth flow
 ```
 
 If the title is already in use by another session, an error is shown.
@@ -480,59 +480,59 @@ and both see it.
 
 ```bash
 # Pin one or more sessions (unique ID prefixes work)
-hermes sessions pin 20250305_091523_a1b2c3d4
-hermes sessions pin 20250305 20250306
+oria sessions pin 20250305_091523_a1b2c3d4
+oria sessions pin 20250305 20250306
 
 # Remove the pin
-hermes sessions unpin 20250305_091523_a1b2c3d4
+oria sessions unpin 20250305_091523_a1b2c3d4
 
 # List pinned sessions
-hermes sessions pinned
+oria sessions pinned
 
 # Machine-readable output, e.g. for a nightly backup of your pin set
-hermes sessions pinned --json > pinned-sessions.json
+oria sessions pinned --json > pinned-sessions.json
 ```
 
 ### Prune Old Sessions
 
 ```bash
 # Delete ended sessions inactive for 90 days (default)
-hermes sessions prune
+oria sessions prune
 
 # Custom age threshold — bare numbers are days
-hermes sessions prune --older-than 30
+oria sessions prune --older-than 30
 
 # Durations work too: 5h, 30m, 2d, 1w
-hermes sessions prune --older-than 12h
+oria sessions prune --older-than 12h
 
 # Delete only a specific time window (e.g. a batch of test sessions
 # created in the last 5 hours)
-hermes sessions prune --newer-than 5h
+oria sessions prune --newer-than 5h
 
 # Explicit window with absolute timestamps
-hermes sessions prune --after "2026-07-05 09:00" --before "2026-07-05 14:30"
+oria sessions prune --after "2026-07-05 09:00" --before "2026-07-05 14:30"
 
 # Only prune sessions from a specific platform (all ages — any filter
 # disables the implicit 90-day default)
-hermes sessions prune --source telegram
-hermes sessions prune --source cron --older-than 60   # add a time flag to narrow
+oria sessions prune --source telegram
+oria sessions prune --source cron --older-than 60     # add a time flag to narrow
 
 # More filters — all AND together
-hermes sessions prune --newer-than 5h --title "smoke test"   # title substring
-hermes sessions prune --older-than 30 --max-messages 3        # tiny sessions
-hermes sessions prune --cwd ~/scratch --end-reason done       # by cwd / end reason
-hermes sessions prune --model gpt-5 --older-than 1w           # by model (substring)
-hermes sessions prune --provider openrouter --older-than 60   # by billing provider
-hermes sessions prune --branch feature/old-experiment         # by git branch
-hermes sessions prune --user 12345678 --chat-type group       # by messaging origin
-hermes sessions prune --max-tokens 500 --older-than 7         # by token usage
-hermes sessions prune --max-cost 0.01 --max-tool-calls 0      # cheap, tool-less runs
+oria sessions prune --newer-than 5h --title "smoke test"     # title substring
+oria sessions prune --older-than 30 --max-messages 3          # tiny sessions
+oria sessions prune --cwd ~/scratch --end-reason done         # by cwd / end reason
+oria sessions prune --model gpt-5 --older-than 1w             # by model (substring)
+oria sessions prune --provider openrouter --older-than 60     # by billing provider
+oria sessions prune --branch feature/old-experiment           # by git branch
+oria sessions prune --user 12345678 --chat-type group         # by messaging origin
+oria sessions prune --max-tokens 500 --older-than 7           # by token usage
+oria sessions prune --max-cost 0.01 --max-tool-calls 0        # cheap, tool-less runs
 
 # Preview what would be deleted, without deleting anything
-hermes sessions prune --newer-than 5h --dry-run
+oria sessions prune --newer-than 5h --dry-run
 
 # Skip confirmation
-hermes sessions prune --older-than 30 --yes
+oria sessions prune --older-than 30 --yes
 ```
 
 Time values (`--older-than`, `--newer-than`, `--before`, `--after`) accept a
@@ -549,9 +549,9 @@ exact), `--end-reason`, `--user`, `--chat-id`, `--chat-type` (exact),
 `--cwd` (path prefix), plus numeric bounds `--min/--max-messages`,
 `--min/--max-tokens` (input+output), `--min/--max-cost` (USD, actual falling
 back to estimated), and `--min/--max-tool-calls`. Using any filter disables
-the implicit 90-day default, so `hermes sessions prune --source cron` or
+the implicit 90-day default, so `oria sessions prune --source cron` or
 `--model gpt-4o` matches all ages — add a time flag to narrow it. Only a
-completely bare `hermes sessions prune` keeps the 90-day cutoff. Every
+completely bare `oria sessions prune` keeps the 90-day cutoff. Every
 non-`--yes` run shows the match count plus the oldest and newest matching
 session before asking for confirmation.
 
@@ -565,28 +565,28 @@ Pruning only deletes **ended** sessions (sessions that have been explicitly ende
 ### Bulk-Archive Sessions
 
 If you want sessions out of your listings without deleting anything,
-`hermes sessions archive` takes the same filters as `prune` but soft-hides
+`oria sessions archive` takes the same filters as `prune` but soft-hides
 matching sessions instead (sets the same archived flag as archiving a single
 session from the Desktop/Dashboard UI — messages and search stay intact):
 
 ```bash
 # Archive everything from the last 5 hours (e.g. 75 CI smoke-test sessions)
-hermes sessions archive --newer-than 5h
+oria sessions archive --newer-than 5h
 
 # Archive by title substring, preview first
-hermes sessions archive --title "dry run" --dry-run
-hermes sessions archive --title "dry run" --yes
+oria sessions archive --title "dry run" --dry-run
+oria sessions archive --title "dry run" --yes
 ```
 
-At least one filter is required — a bare `hermes sessions archive` refuses to
+At least one filter is required — a bare `oria sessions archive` refuses to
 archive your entire history. Archived sessions are hidden from
-`hermes sessions list` and `/resume` but remain in the database and can be
+`oria sessions list` and `/resume` but remain in the database and can be
 unarchived from the Desktop/Dashboard session list.
 
 ### Session Statistics
 
 ```bash
-hermes sessions stats
+oria sessions stats
 ```
 
 Output:
@@ -600,7 +600,7 @@ Total messages: 3847
 Database size: 12.4 MB
 ```
 
-For deeper analytics — token usage, cost estimates, tool breakdown, and activity patterns — use [`hermes insights`](/reference/cli-commands#hermes-insights).
+For deeper analytics — token usage, cost estimates, tool breakdown, and activity patterns — use [`oria insights`](/reference/cli-commands#oria-insights).
 
 ### Repair Stranded Gateway Sessions
 
@@ -610,20 +610,20 @@ conversation may be stranded in a session row that lost its routing identity
 (the damage class fixed in the v0.21 session-continuity work; current versions
 prevent it by construction and self-heal at runtime).
 
-`hermes sessions repair-routing` finds message-bearing session rows with no
+`oria sessions repair-routing` finds message-bearing session rows with no
 routing identity and re-attaches each one to the conversation it continues —
 but only when the evidence is unambiguous:
 
 ```bash
 # Report only — shows each orphan, the proposed adoption, and the evidence
-hermes sessions repair-routing
+oria sessions repair-routing
 
 # Perform the adoptions (stop the gateway first — a running gateway holds
 # the old routing in memory and would write it back over the repair)
-hermes sessions repair-routing --apply
+oria sessions repair-routing --apply
 
 # Widen/narrow the contiguity window (default 900 seconds)
-hermes sessions repair-routing --max-gap-seconds 300
+oria sessions repair-routing --max-gap-seconds 300
 ```
 
 Evidence rules:
@@ -647,35 +647,35 @@ routing is the only thing the repair changes. Back up first
 
 ## Importing Sessions from Claude Code and Codex CLI
 
-Started a conversation in another agent CLI? You can pull it into Hermes and
-continue it here. Hermes reads Claude Code's session logs
+Started a conversation in another agent CLI? You can pull it into Oria and
+continue it here. Oria reads Claude Code's session logs
 (`~/.claude/projects/`, or `$CLAUDE_CONFIG_DIR/projects/` when Claude Code's
 config dir is relocated) and Codex CLI's rollouts (`~/.codex/sessions/`, or
 `$CODEX_HOME/sessions/`) — the foreign files are only read, never modified.
 
 ```bash
 # Interactive picker across both tools, newest first
-hermes sessions import
+oria sessions import
 
 # Limit to one tool, or point at a specific file
-hermes sessions import --from claude
-hermes sessions import --from codex ~/.codex/sessions/2026/08/15/rollout-....jsonl
+oria sessions import --from claude
+oria sessions import --from codex ~/.codex/sessions/2026/08/15/rollout-....jsonl
 
 # Import-and-resume in one step
-hermes --resume @claude
-hermes --resume @codex
+oria --resume @claude
+oria --resume @codex
 ```
 
-`hermes sessions import` creates a new Hermes session titled
+`oria sessions import` creates a new Oria session titled
 `Imported from Claude Code: <first user message>` (or Codex CLI) and prints
-the id plus a ready-to-paste `hermes --resume <id>` command.
+the id plus a ready-to-paste `oria --resume <id>` command.
 `--resume @claude` / `--resume @codex` show the same picker and drop you
 straight into the imported conversation.
 
-**Hermes Desktop** has the same importer in the command palette (**Import
+**Oria Desktop** has the same importer in the command palette (**Import
 session**). It lists the logs on the machine the
 connected backend runs on — not the computer running the app — shows a
-read-only preview, and **Continue in Hermes** copies the conversation into the
+read-only preview, and **Continue in Oria** copies the conversation into the
 selected profile. Browsing never writes to your session store, importing never
 touches the source file, and importing the same log twice opens the existing
 copy instead of making another.
@@ -782,13 +782,13 @@ On messaging platforms, sessions are keyed by a deterministic session key built 
 | Group thread/topic | `agent:main:<platform>:group:<chat_id>:<thread_id>` | Shared session for all thread participants (default). Per-user with `thread_sessions_per_user: true`. |
 | Channel | `agent:main:<platform>:channel:<chat_id>:<user_id>` | Per-user inside the channel when the platform exposes a user ID |
 
-When Hermes cannot get a participant identifier for a shared chat, it falls back to one shared session for that room.
+When Oria cannot get a participant identifier for a shared chat, it falls back to one shared session for that room.
 
 ### Shared vs Isolated Group Sessions
 
-By default, Hermes uses `group_sessions_per_user: true` in `config.yaml`. That means:
+By default, Oria uses `group_sessions_per_user: true` in `config.yaml`. That means:
 
-- Alice and Bob can both talk to Hermes in the same Discord channel without sharing transcript history
+- Alice and Bob can both talk to Oria in the same Discord channel without sharing transcript history
 - one user's long tool-heavy task does not pollute another user's context window
 - interrupt handling also stays per-user because the running-agent key matches the isolated session key
 
@@ -876,12 +876,12 @@ It only ever contains gateway/messaging entries, so if you run a messaging
 platform you'll see only those (e.g. `agent:main:whatsapp:dm:...`).
 
 This is **expected** and does **not** mean your CLI sessions are missing.
-`hermes sessions list`, `/sessions`, and the dashboard all read `state.db`,
+`oria sessions list`, `/sessions`, and the dashboard all read `state.db`,
 which holds **every** session (CLI, TUI, and gateway). The `/save` snapshots
 under `~/.hermes/sessions/saved/*.json` are convenience exports, not the index.
 
-If CLI sessions genuinely don't appear in `hermes sessions list`, the cause is
-`state.db` not receiving them — run `hermes sessions repair` and watch for a
+If CLI sessions genuinely don't appear in `oria sessions list`, the cause is
+`state.db` not receiving them — run `oria sessions repair` and watch for a
 `⚠ Session store unavailable` warning at CLI startup, which means SQLite
 persistence failed for that run.
 :::
@@ -889,7 +889,7 @@ persistence failed for that run.
 :::note Legacy JSONL transcripts
 Sessions created before state.db became canonical may have leftover
 `*.jsonl` files in `~/.hermes/sessions/`. They are no longer written or
-read by Hermes. Safe to delete after verifying the corresponding session
+read by Oria. Safe to delete after verifying the corresponding session
 exists in state.db.
 :::
 
@@ -909,7 +909,7 @@ Key tables in `state.db`:
 - Before reset, the agent saves memories and skills from the expiring session
 - Auto-pruning (**on by default** since #54189): when `sessions.auto_prune` is `true`, ended sessions inactive for `sessions.retention_days` (default 90) are pruned at CLI/gateway/cron startup
 - After a prune that actually removed rows, `state.db` is `VACUUM`ed to reclaim disk space only when **both** gates pass: at least `sessions.min_vacuum_interval_days` (default 30) have elapsed since the last successful `VACUUM`, **and** more than 25% of the file's pages are reclaimable (`PRAGMA freelist_count / page_count`). A dense database never pays for a full rewrite to reclaim a few MB (SQLite does not shrink the file on plain DELETE)
-- Pruning runs at most once per `sessions.min_interval_hours` (default 24); the last-run timestamp is tracked inside `state.db` itself so it's shared across every Hermes process in the same `HERMES_HOME`
+- Pruning runs at most once per `sessions.min_interval_hours` (default 24); the last-run timestamp is tracked inside `state.db` itself so it's shared across every Oria process in the same `HERMES_HOME`
 
 Without pruning, `state.db` grows without bound — multi-GB files within weeks were reported on gateway + cron installs. If you would rather keep every ended session forever (the pre-#54189 behavior), turn it off in `~/.hermes/config.yaml`:
 
@@ -969,22 +969,22 @@ history of the conversation:
 
 When a resume is refused the client receives error code `4130` with the count
 and the scope it was measured against (`across its lineage` or
-`in its tip segment`). `hermes sessions export` still works for such sessions.
+`in its tip segment`). `oria sessions export` still works for such sessions.
 
 ### Manual Cleanup
 
 ```bash
 # Prune sessions older than 90 days
-hermes sessions prune
+oria sessions prune
 
 # Delete a specific session
-hermes sessions delete <session_id>
+oria sessions delete <session_id>
 
 # Export before pruning (backup)
-hermes sessions export backup.jsonl
-hermes sessions prune --older-than 30 --yes
+oria sessions export backup.jsonl
+oria sessions prune --older-than 30 --yes
 ```
 
 :::tip
-Auto-prune is **on by default**: ended sessions that have been inactive for `sessions.retention_days` (default 90) are removed at startup, and active sessions are never touched (see [Automatic Cleanup](#automatic-cleanup) above). Session history powers `session_search` recall across past conversations, so if you want to keep every ended session forever, set `sessions.auto_prune: false` in `config.yaml`, or raise `retention_days`. With auto-prune off, `hermes sessions prune` remains available for one-off cleanup (observed failure mode without any pruning: a 384 MB `state.db` with ~1000 sessions slowing down FTS5 inserts and `/resume` listing).
+Auto-prune is **on by default**: ended sessions that have been inactive for `sessions.retention_days` (default 90) are removed at startup, and active sessions are never touched (see [Automatic Cleanup](#automatic-cleanup) above). Session history powers `session_search` recall across past conversations, so if you want to keep every ended session forever, set `sessions.auto_prune: false` in `config.yaml`, or raise `retention_days`. With auto-prune off, `oria sessions prune` remains available for one-off cleanup (observed failure mode without any pruning: a 384 MB `state.db` with ~1000 sessions slowing down FTS5 inserts and `/resume` listing).
 :::
