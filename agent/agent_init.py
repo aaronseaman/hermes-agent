@@ -178,7 +178,7 @@ def _build_codex_gpt5_autoraise_notice(
         f"ℹ Codex {model} caps context at {cap}, so auto-compaction was raised "
         f"to {to_pct}% (from {from_pct}%) to use more of the window before "
         f"summarizing.\n"
-        f"  Opt back out: hermes config set compression.codex_gpt55_autoraise false"
+        f"  Opt back out: oria config set compression.codex_gpt55_autoraise false"
     )
 
 
@@ -872,11 +872,11 @@ def _routed_client_kwargs(agent, fallback_model, _provider_timeout) -> Dict[str,
         raise RuntimeError(
             f"Provider '{_explicit}' is set in config.yaml but no API key "
             f"was found. Set the {_env_hint} environment "
-            f"variable, or switch to a different provider with `hermes model`."
+            f"variable, or switch to a different provider with `oria model`."
         )
     raise RuntimeError(
-        "No LLM provider configured. Run `hermes model` to "
-        "select a provider, or run `hermes setup` for first-time "
+        "No LLM provider configured. Run `oria model` to "
+        "select a provider, or run `oria setup` for first-time "
         "configuration."
     )
 
@@ -1901,7 +1901,7 @@ def _enforce_minimum_context(agent):
         raise ValueError(
             f"Model {agent.model} has a context window of {_ctx:,} tokens, "
             f"which is below the minimum {MINIMUM_CONTEXT_LENGTH:,} required "
-            f"by Hermes Agent.  Choose a model with at least "
+            f"by Oria.  Choose a model with at least "
             f"{MINIMUM_CONTEXT_LENGTH // 1000}K context.  If your server "
             f"reports a window smaller than the model's true window, set "
             f"model.context_length in config.yaml to the real value "

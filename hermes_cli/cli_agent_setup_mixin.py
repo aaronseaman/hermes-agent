@@ -226,12 +226,12 @@ class CLIAgentSetupMixin:
                     print(f"\n⚠️  No API key found for provider '{_prov}'.")
                 else:
                     print("\n⚠️  No inference provider is configured.")
-                print("   Run 'hermes model' to choose a provider, or "
-                      "'hermes setup' for first-time setup.")
+                print("   Run 'oria model' to choose a provider, or "
+                      "'oria setup' for first-time setup.")
                 return False
         if not isinstance(base_url, str) or not base_url:
             print("\n⚠️  Provider resolver returned an empty base URL. "
-                  "Check your provider config or run: hermes setup")
+                  "Check your provider config or run: oria setup")
             return False
         credentials_changed = api_key != self.api_key or base_url != self.base_url
         routing_changed = resolved_routing != (self.provider, self.api_mode, self.acp_command, self.acp_args)
@@ -360,19 +360,19 @@ class CLIAgentSetupMixin:
             print()
             answer = "n"
         if answer in {"n", "no"}:
-            _cprint("  Skipped. Run 'hermes model' or 'hermes setup' any time.")
+            _cprint("  Skipped. Run 'oria model' or 'oria setup' any time.")
             return False
         try:
             from hermes_cli.main import select_provider_and_model
             select_provider_and_model()
         except (KeyboardInterrupt, EOFError, SystemExit):
             print()
-            _cprint("  Setup cancelled. Run 'hermes model' any time.")
+            _cprint("  Setup cancelled. Run 'oria model' any time.")
             return False
         except Exception as exc:
             logger.debug("first-run provider setup failed: %s", exc)
             _cprint(f"  ⚠️  Provider setup failed: {exc}")
-            _cprint("  Run 'hermes model' to try again.")
+            _cprint("  Run 'oria model' to try again.")
             return False
 
         # Re-sync CLI state from what the picker persisted so the next turn uses it without a restart.
@@ -391,7 +391,7 @@ class CLIAgentSetupMixin:
         if self._runtime_credentials_ready():
             _cprint("  ✓ Provider configured — you're ready to chat.")
             return True
-        _cprint("  Provider setup didn't complete. Run 'hermes model' to retry.")
+        _cprint("  Provider setup didn't complete. Run 'oria model' to retry.")
         return False
 
     def _resolve_turn_agent_config(self, user_message: str) -> dict:
@@ -451,7 +451,7 @@ class CLIAgentSetupMixin:
             else:
                 ChatConsole().print(rich)
         if not session_meta:
-            hint = "Use a session ID from a previous CLI run (hermes sessions list)."
+            hint = "Use a session ID from a previous CLI run (oria sessions list)."
             if _quiet_mode:
                 print(f"Session not found: {self.session_id}", file=sys.stderr)
                 print(hint, file=sys.stderr)
@@ -653,7 +653,7 @@ class CLIAgentSetupMixin:
         session_meta = self._session_db.get_session(self.session_id)
         if not session_meta:
             self._console_print(f"[bold red]Session not found: {self.session_id}[/]")
-            self._console_print("[dim]Use a session ID from a previous CLI run (hermes sessions list).[/]")
+            self._console_print("[dim]Use a session ID from a previous CLI run (oria sessions list).[/]")
             return False
         session_meta = self._follow_compression_chain(
             session_meta,
@@ -717,8 +717,8 @@ class CLIAgentSetupMixin:
         # role -> (label, label style, body style, continuation indent)
         role_styles = {
             "user": ("  ● You: ", f"dim bold {_session_label_c}", "dim", " " * 9),
-            "assistant": ("  ◆ Hermes: ", f"dim bold {_assistant_label_c}", "dim", " " * 12),
-            "assistant_last": ("  ◆ Hermes: ", f"bold {_assistant_label_c}", "", " " * 12),  # full, non-dim
+            "assistant": ("  ◆ Oria: ", f"dim bold {_assistant_label_c}", "dim", " " * 12),
+            "assistant_last": ("  ◆ Oria: ", f"bold {_assistant_label_c}", "", " " * 12),  # full, non-dim
         }
         lines = Text()
         if skipped:

@@ -156,7 +156,7 @@ def _resolve_session_id(db, session_id: str) -> Optional[str]:
             detail=(
                 "Session store is corrupt (database disk image is malformed). "
                 "Sessions cannot be read until it is repaired — run "
-                "`hermes doctor` for diagnosis."),
+                "`oria doctor` for diagnosis."),
         ) from exc
 
 

@@ -47,7 +47,7 @@ def _render_distribution_plan(plan) -> None:
     if mf.author:
         print(f"  Author:   {mf.author}")
     if mf.hermes_requires:
-        print(f"  Requires: Hermes {mf.hermes_requires}")
+        print(f"  Requires: Oria {mf.hermes_requires}")
     print(f"  Source:   {plan.provenance}")
     print(f"  Target:   {plan.target_dir}")
     if plan.existing:
@@ -101,7 +101,7 @@ def _profile_status(args):
         print(f"Gateway:        {'running' if p.gateway_running else 'stopped'}")
         print(f"Skills:         {p.skill_count} installed")
         if p.alias_path:
-            print(f"Alias:          {p.alias_name or p.name} → hermes -p {p.name}")
+            print(f"Alias:          {p.alias_name or p.name} → oria -p {p.name}")
     print()
 
 
@@ -216,7 +216,7 @@ def _profile_create(args):
         else:
             print(f"Cloned config, .env, SOUL.md, and skills from {source_label}.")
         if sync_imports:
-            print(f"Import sources carried over — `hermes -p {name} import-agent --sync` "
+            print(f"Import sources carried over — `oria -p {name} import-agent --sync` "
                   "keeps pulling the same Claude Code / Codex trees.")
         _print_channel_clone_notice(name, source_label, clone_channels, "--clone-all" if clone_all else "--clone")
         # Auto-clone Honcho config for the new profile (only with clone operations)
@@ -245,8 +245,8 @@ def _profile_create(args):
         collision = check_alias_collision(name)
         if collision:
             print(f"\n⚠ Cannot create alias '{name}' — {collision}")
-            print(f"  Choose a custom alias:  hermes profile alias {name} --name <custom>")
-            print(f"  Or access via flag:     hermes -p {name} chat")
+            print(f"  Choose a custom alias:  oria profile alias {name} --name <custom>")
+            print(f"  Or access via flag:     oria -p {name} chat")
         else:
             wrapper_path = create_wrapper_script(name)
             if wrapper_path:
@@ -269,7 +269,7 @@ def _profile_create(args):
         print("  (served now by the running multiplexed gateway — add its bot token and it connects)")
     elif served is not None:
         # The multiplexer did not pick the profile up (older gateway or the signal failed): a restart serves it.
-        print("  hermes gateway restart    Serve this profile from the running multiplexed gateway")
+        print("  oria gateway restart      Serve this profile from the running multiplexed gateway")
     else:
         print(f"  {name} gateway start      Start the messaging gateway")
     if clone or clone_all:
@@ -388,9 +388,9 @@ def _profile_show(args):
         print(f"Distribution: {dist_name}@{dist_version or '?'}")
         if dist_source:
             print(f"Installed from: {dist_source}")
-        print(f"  (run `hermes profile info {name}` for full manifest)")
+        print(f"  (run `oria profile info {name}` for full manifest)")
     if alias_name:
-        print(f"Alias:   {alias_name} → hermes -p {name}  ({_wrapper_path(alias_name)})")
+        print(f"Alias:   {alias_name} → oria -p {name}    ({_wrapper_path(alias_name)})")
     print()
 
 
@@ -488,9 +488,9 @@ def _profile_install(args):
         if plan.has_cron:
             print(
                 "  Cron jobs were included but are NOT scheduled automatically.\n"
-                f"  Review them with:  hermes -p {plan.manifest.name} cron list"
+                f"  Review them with:  oria -p {plan.manifest.name} cron list"
             )
-        print(f"\n  Use with:      hermes -p {plan.manifest.name} chat")
+        print(f"\n  Use with:      oria -p {plan.manifest.name} chat")
     except (DistributionError, ValueError) as e:
         _die(f"Error: {e}")
 
@@ -504,7 +504,7 @@ def _profile_update(args):
         if current is None:
             _die(
                 f"Error: Profile '{canon}' is not a distribution (no distribution.yaml). "
-                "Only profiles installed via `hermes profile install` can be updated."
+                "Only profiles installed via `oria profile install` can be updated."
             )
         force_config = getattr(args, "force_config", False)
         if not getattr(args, "yes", False):
@@ -521,7 +521,7 @@ def _profile_update(args):
         plan = update_distribution(canon, force_config=force_config)
         print(f"\n✓ Updated '{plan.manifest.name}' → v{plan.manifest.version}")
         if plan.has_cron:
-            print(f"  Cron files were refreshed.  Review with:  hermes -p {plan.manifest.name} cron list")
+            print(f"  Cron files were refreshed.  Review with:  oria -p {plan.manifest.name} cron list")
     except (DistributionError, ValueError) as e:
         _die(f"Error: {e}")
 
@@ -530,7 +530,7 @@ _INFO_FIELDS = (
     ("description", "Description:  "),
     ("author", "Author:       "),
     ("license", "License:      "),
-    ("hermes_requires", "Requires:     Hermes "),
+    ("hermes_requires", "Requires:     Oria "),
     ("source", "Source:       "),
     ("installed_at", "Installed:    "),
 )

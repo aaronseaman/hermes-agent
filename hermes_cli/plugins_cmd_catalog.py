@@ -43,7 +43,7 @@ def raise_if_removed(*candidates: str) -> None:
             if removed.date:
                 detail += f" (removed {removed.date})"
             raise PluginOperationError(
-                f"Plugin '{removed.name}' was removed from the Hermes plugin catalog and is blocked from "
+                f"Plugin '{removed.name}' was removed from the Oria plugin catalog and is blocked from "
                 f"installation: {detail}")
 
 
@@ -53,8 +53,8 @@ def resolve_catalog_name(identifier: str, console) -> PluginCatalogEntry:
     entry = get_live_catalog_entry(identifier)
     if entry is None:
         _fail(console, (
-            f"[red]Error:[/red] '{identifier}' is not in the Hermes plugin catalog and is not a Git URL or "
-            "owner/repo shorthand. Browse entries with `hermes plugins search`."))
+            f"[red]Error:[/red] '{identifier}' is not in the Oria plugin catalog and is not a Git URL or "
+            "owner/repo shorthand. Browse entries with `oria plugins search`."))
         raise SystemExit(1)  # _fail exits; keeps type-checkers honest
     return entry
 
@@ -127,7 +127,7 @@ def repin_catalog_plugin(target: Path, sidecar: dict) -> tuple[str, bool]:
     if entry is None:
         raise PluginOperationError(
             f"Plugin '{catalog_name}' is no longer in the catalog — it may have been removed. "
-            "See `hermes plugins info` and the removed blocklist.")
+            "See `oria plugins info` and the removed blocklist.")
     if str(sidecar.get("sha") or "").strip().lower() == entry.sha:
         return entry.sha, False
     was_enabled = _get_enabled_set()  # the force reinstall must not flip activation state
@@ -163,7 +163,7 @@ def _capability_counts(entry: PluginCatalogEntry) -> str:
 def _render_entries(entries: List[PluginCatalogEntry], console) -> None:
     from hermes_cli.plugins_cmd import _table
     table = _table(((("Name", "bold")), ("Category", None), ("Tier", None), ("Description", None),
-                    ("Pinned", "dim"), ("Capabilities", "dim")), title="Hermes Plugin Catalog (curated)")
+                    ("Pinned", "dim"), ("Capabilities", "dim")), title="Oria Plugin Catalog (curated)")
     for e in sorted(entries, key=lambda e: (e.category, e.tier != "official", e.name)):
         tier = "[cyan]official[/cyan]" if e.tier == "official" else "[magenta]community[/magenta]"
         desc = e.description if len(e.description) <= 60 else e.description[:57] + "..."
@@ -171,7 +171,7 @@ def _render_entries(entries: List[PluginCatalogEntry], console) -> None:
     console.print()
     console.print(table)
     console.print()
-    console.print("[dim]Details:[/dim] hermes plugins info <name>    [dim]Install:[/dim] hermes plugins install <name>")
+    console.print("[dim]Details:[/dim] oria plugins info <name>    [dim]Install:[/dim] oria plugins install <name>")
 
 
 def cmd_search(term: str = "", *, json_output: bool = False) -> None:
@@ -219,7 +219,7 @@ def cmd_info(name: str) -> None:
         console.print(f"[red bold]✗ REMOVED from catalog: {removed.reason or 'no reason recorded'}"
                       f"{f' ({removed.date})' if removed.date else ''}[/red bold]")
         console.print()
-    console.print(f"[dim]Install:[/dim]     hermes plugins install {entry.name}")
+    console.print(f"[dim]Install:[/dim]     oria plugins install {entry.name}")
     console.print()
 
 

@@ -7,7 +7,7 @@ def build_worktree_parser(subparsers) -> None:
     """Attach the ``worktree`` subcommand to ``subparsers``."""
     worktree_parser = subparsers.add_parser(
         "worktree", help="Audit and reclaim accumulated git worktrees and merged branches",
-        description="Attended reclaim for the .worktrees/ directory hermes -w sessions "
+        description="Attended reclaim for the .worktrees/ directory oria -w sessions "
             "accumulate. Never deletes uncommitted tracked changes, unique "
             "unpushed commits, or in-use trees; untracked-only scratch is "
             "archived to ~/.hermes/archive/worktree-prune/ before removal. See: "

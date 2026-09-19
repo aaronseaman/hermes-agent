@@ -18,7 +18,7 @@ def cmd_migrate(args: Any) -> int:
     if getattr(args, "migrate_type", None) == "xai":
         return cmd_migrate_xai(args)
 
-    print("usage: hermes migrate xai [--apply] [--no-backup]", file=sys.stderr)
+    print("usage: oria migrate xai [--apply] [--no-backup]", file=sys.stderr)
     return 2
 
 
@@ -57,7 +57,7 @@ def cmd_migrate_xai(args: Any) -> int:
     if not apply:
         print(color("Dry-run mode — no changes written.", Colors.DIM))
         print(color(
-            "Re-run with `hermes migrate xai --apply` to rewrite "
+            "Re-run with `oria migrate xai --apply` to rewrite "
             f"{config_path} in-place (backup created automatically).",
             Colors.DIM))
         return 0
@@ -80,7 +80,7 @@ def cmd_migrate_xai(args: Any) -> int:
         f"  {color('✓', Colors.GREEN)} Updated {len(result.issues_resolved)} "
         f"slot(s) in {result.file_path}")
     print()
-    print(color("Run `hermes doctor` to confirm no retired xAI models remain.", Colors.DIM))
+    print(color("Run `oria doctor` to confirm no retired xAI models remain.", Colors.DIM))
     return 0
 
 

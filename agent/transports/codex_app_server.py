@@ -149,7 +149,7 @@ class CodexAppServerClient:
         self._stderr_reader.start()
 
     def initialize(
-        self, client_name: str = "hermes", client_title: str = "Hermes Agent",
+        self, client_name: str = "hermes", client_title: str = "Oria",
         client_version: str = "0.1", capabilities: Optional[dict] = None, timeout: float = 10.0,
     ) -> dict:
         """Send ``initialize`` + ``initialized``; return the server's InitializeResponse."""

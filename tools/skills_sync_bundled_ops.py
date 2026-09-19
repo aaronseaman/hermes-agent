@@ -29,7 +29,7 @@ def reset_bundled_skill(name: str, restore: bool = False) -> dict:
 
     if not in_manifest and not is_bundled:
         return _fail("not_in_manifest", f"'{name}' is not a tracked bundled skill. Nothing to reset. "
-                     f"(Hub-installed skills use `hermes skills uninstall`.)")
+                     f"(Hub-installed skills use `oria skills uninstall`.)")
     # Step 1 (optional): delete the user's copy so next sync re-copies bundled. Must happen BEFORE manifest
     # deletion so that a failed rmtree does not leave the skill in a manifest-less limbo state (see #34972).
     deleted_user_copy = False
@@ -49,7 +49,7 @@ def reset_bundled_skill(name: str, restore: bool = False) -> dict:
         ss._write_manifest(manifest)
     synced = ss.sync_skills(quiet=True)
     if not restore:
-        action, message = "manifest_cleared", (f"Cleared manifest entry for '{name}'. Future `hermes update` runs "
+        action, message = "manifest_cleared", (f"Cleared manifest entry for '{name}'. Future `oria update` runs "
                                                f"will re-baseline against your current copy and accept upstream changes.")
     else:
         action = "restored"
@@ -98,7 +98,7 @@ def diff_bundled_skill(name: str) -> dict:
 
     if (bundled_src := bundled_by_name.get(name)) is None:
         return _fail(False, f"'{name}' is not a tracked bundled skill (no stock version to "
-                     f"diff against). Hub-installed skills use `hermes skills inspect`.")
+                     f"diff against). Hub-installed skills use `oria skills inspect`.")
     dest = ss._compute_relative_dest(bundled_src, bundled_dir)
     if not dest.exists():
         return _fail(True, f"No local copy of '{name}' found at {dest}.")
@@ -130,7 +130,7 @@ def diff_bundled_skill(name: str) -> dict:
 _OPT_OUT_MESSAGES = {  # (enabled, changed) -> message
     (True, True): "Opted out of bundled skills. Future install / update / sync runs will not seed bundled skills into this profile.",
     (True, False): "Already opted out — marker was already present.",
-    (False, True): "Opted back in. The next `hermes update` (or `hermes skills opt-in --sync`) will re-seed bundled skills.",
+    (False, True): "Opted back in. The next `oria update` (or `oria skills opt-in --sync`) will re-seed bundled skills.",
     (False, False): "Not opted out — no marker to remove."}
 
 
@@ -144,8 +144,8 @@ def set_bundled_skills_opt_out(enabled: bool) -> dict:
         if enabled:
             ss._hermes_home().mkdir(parents=True, exist_ok=True)
             marker.write_text(
-                "This profile opted out of bundled-skill seeding (`hermes skills opt-out`).\n"
-                "Delete this file to re-enable sync on the next `hermes update`.\n",
+                "This profile opted out of bundled-skill seeding (`oria skills opt-out`).\n"
+                "Delete this file to re-enable sync on the next `oria update`.\n",
                 encoding="utf-8")
         elif existed:
             marker.unlink()

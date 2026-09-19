@@ -62,9 +62,9 @@ def _sqlite_partial_completion_lines(sqlite_version: str) -> list[str]:
     from hermes_cli.update_cmd import _m
     return [
         f"⚠ Update partially complete — your Python's SQLite ({sqlite_version}) has a known "
-        "corruption bug. Hermes works, but sessions could be damaged.",
+        "corruption bug. Oria works, but sessions could be damaged.",
         f"  Fix: run the installer again ({_REINSTALL_ONE_LINER[bool(_m()._is_windows())]}) "
-        "which installs a safe Python, then run `hermes doctor` to confirm.",
+        "which installs a safe Python, then run `oria doctor` to confirm.",
     ]
 
 
@@ -117,7 +117,7 @@ def _purge_stale_hermes_modules() -> None:
     their module objects — so later imports rebuild a self-consistent graph from the new tree.
     """
     from hermes_cli.update_cmd import _m
-    with _best_effort('Could not purge stale Hermes modules: %s'):
+    with _best_effort('Could not purge stale Oria modules: %s'):
         importlib.invalidate_caches()
         modules = _m().sys.modules
         prefixes = _stale_purge_prefixes()
@@ -170,8 +170,8 @@ def _print_curator_first_run_notice() -> None:
         f"~{days}d after installation; only agent-created skills are in "
         f"scope and nothing is ever auto-deleted (archive is recoverable)."
     )
-    print("  Preview now:  hermes curator run --dry-run")
-    print("  Pause it:     hermes curator pause")
+    print("  Preview now:  oria curator run --dry-run")
+    print("  Pause it:     oria curator pause")
     print("  Docs:         https://hermes-agent.nousresearch.com/docs/user-guide/features/curator")
 
 
@@ -242,11 +242,11 @@ def _print_fts_optimize_available_notice() -> None:
         print()
         print("◆ Session database optimization incomplete")
         print(
-            "  A previous `hermes sessions optimize-storage` run was "
+            "  A previous `oria sessions optimize-storage` run was "
             "interrupted. Search still works; re-run the command to resume "
             "and finish reclaiming disk:"
         )
-        print("    hermes sessions optimize-storage")
+        print("    oria sessions optimize-storage")
         return
 
     est_reclaim = size_gb * 0.6
@@ -266,7 +266,7 @@ def _print_fts_optimize_available_notice() -> None:
             f"typically frees ~60% of state.db — about {est_reclaim:.1f} GB "
             f"of your current {size_gb:.1f} GB."
         )
-    print("  Run when convenient:  hermes sessions optimize-storage")
+    print("  Run when convenient:  oria sessions optimize-storage")
     print(
         "  It runs in the foreground with a progress bar, is safe to "
         "interrupt/re-run, and never changes your conversations."
@@ -297,7 +297,7 @@ def _print_curator_recent_run_notice() -> None:
         print(f"ℹ Skill curator — last run {_format_time_ago(last_run_at)}")
         for line in summary.splitlines():
             print(f"  {line}")
-        print("  (This message shows once per curator run. View anytime: hermes curator status)")
+        print("  (This message shows once per curator run. View anytime: oria curator status)")
 
     with suppress(Exception):
         state["last_run_summary_shown_at"] = last_run_at
@@ -373,7 +373,7 @@ def _finish_dashboard_update_cleanup(
     print()
     print("⚠ A web dashboard/serve process was stopped during update and could not be auto-restarted.")
     print("  Re-launch it when you want the web UI back:")
-    print("    hermes dashboard --port <port>")
+    print("    oria dashboard --port <port>")
 
 
 def _print_update_completion(message: str) -> None:
@@ -485,7 +485,7 @@ def _print_update_summary(*, node_failures: list, desktop_build_ok: bool, pre_up
             print("  Code and Python deps are updated, but the dashboard/TUI may")
             print("  be in a mixed state until the Node deps are rebuilt.")
         if not desktop_build_ok:
-            print("  Run `hermes desktop` to retry the desktop rebuild.")
+            print("  Run `oria desktop` to retry the desktop rebuild.")
         if not sqlite_runtime_ok:
             for line in _sqlite_partial_completion_lines(sqlite_info.sqlite_version_string):
                 print(line)
@@ -509,7 +509,7 @@ def _restore_state_db_from_snapshot(state_path: Path, snap_state: Path) -> bool:
     if holders:
         print(
             f"  ✗ Auto-restore refused: process(es) {holders} still hold "
-            "state.db or its WAL open. Stop them (hermes gateway stop), "
+            "state.db or its WAL open. Stop them (oria gateway stop), "
             "then restore manually with /snapshot restore."
         )
         return False
@@ -523,7 +523,7 @@ def _restore_state_db_from_snapshot(state_path: Path, snap_state: Path) -> bool:
     except LiveConnectionError as exc:
         print(
             f"  ✗ Auto-restore refused: {exc} Close the in-process database "
-            "handles (or restart Hermes) and retry."
+            "handles (or restart Oria) and retry."
         )
         return False
     restored = verify_sqlite_integrity(state_path, check_header=True, run_pragma=True)
@@ -592,7 +592,7 @@ def _print_bundled_skills_sync_report() -> None:
         print(f"  ↑ {len(result['updated'])} updated: {', '.join(result['updated'])}")
     if result.get("user_modified"):
         print(f"  ~ {len(result['user_modified'])} user-modified (kept)")
-        print("    → see them: hermes skills list-modified  (diff/reset to resume updates)")
+        print("    → see them: oria skills list-modified    (diff/reset to resume updates)")
     if result.get("cleaned"):
         print(f"  − {len(result['cleaned'])} removed from manifest")
     if result.get("relocated"):
@@ -650,7 +650,7 @@ def _ensure_fhs_path_guard() -> None:
         return  # already on PATH, nothing to do
 
     path_line = 'export PATH="/usr/local/bin:$PATH"'
-    path_comment = "# Hermes Agent — ensure /usr/local/bin is on PATH (RHEL non-login shells)"
+    path_comment = "# Oria — ensure /usr/local/bin is on PATH (RHEL non-login shells)"
     wrote_any = False
     for candidate in (".bashrc", ".bash_profile"):
         cfg = Path(home) / candidate
@@ -703,8 +703,8 @@ def _ensure_sibling_launcher(name: str, args: str, purpose: str) -> None:
                 continue
             shim = (
                 "#!/usr/bin/env bash\n"
-                # "hermes-agent" marks the shim as ours for `hermes uninstall`.
-                f"# hermes-agent {purpose} (written by `hermes update`).\n"
+                # "hermes-agent" marks the shim as ours for `oria uninstall`.
+                f"# hermes-agent {purpose} (written by `oria update`).\n"
                 f'exec "{hermes_cmd}"{args} "$@"\n'
             )
             target.write_text(shim, encoding="utf-8")
@@ -858,7 +858,7 @@ def _run_full_backup() -> None:
         display_path = str(out_path)
 
     print(f"  Saved:    {display_path} ({format_bytes(size_bytes)}, {elapsed:.1f}s)")
-    print(f"  Restore:  hermes import {out_path}")
+    print(f"  Restore:  oria import {out_path}")
     print("  Disable:  set updates.pre_update_backup: quick (or off) in config.yaml")
     print()
 
@@ -1045,7 +1045,7 @@ def _run_post_update_maintenance(
     if sys.platform == "darwin" and had_desktop_app_before_update:
         print()
         print(
-            "  ℹ macOS: if Hermes re-prompts for permissions you already "
+            "  ℹ macOS: if Oria re-prompts for permissions you already "
             "granted (toggle shows ON), the stored grant is stale — run "
             "`tccutil reset ScreenCapture com.nousresearch.hermes` (repeat "
             "per affected service), toggle it ON in System Settings, then "

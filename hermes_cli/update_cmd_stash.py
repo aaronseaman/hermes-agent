@@ -80,7 +80,7 @@ def _stash_local_changes_if_needed(git_cmd: list[str], cwd: Path) -> Optional[st
             # No entry created: changes NOT saved — bail before touching HEAD.
             print("✗ Could not stash local changes — update aborted.")
             _print_first_line(push.stderr)
-            print("  Commit, stash, or clean up your local changes manually, then re-run `hermes update`.")
+            print("  Commit, stash, or clean up your local changes manually, then re-run `oria update`.")
             raise subprocess.CalledProcessError(push.returncode, push.args, output=push.stdout, stderr=push.stderr)
         # Non-zero but entry created: push saved everything yet couldn't delete some untracked files
         # (e.g. root-owned dir). Not a failure — continue.
@@ -215,7 +215,7 @@ def _reject_unsafe_stash_restore(
     """Restore the clean updated tree, preserve the stash, and abort the update."""
     from hermes_cli.update_cmd import _git_untracked_paths
     print()
-    print("✗ Restored local changes made the Hermes agent unexecutable.")
+    print("✗ Restored local changes made the Oria agent unexecutable.")
     print(f"  Health check failed: {failing_target}")
     if detail:
         for line in str(detail).splitlines()[:6]:
@@ -250,7 +250,7 @@ def _confirm_restore(stash_ref: str, input_fn) -> bool:
     print()
     print("⚠ Local changes were stashed before updating.")
     print("  Restoring them may reapply local customizations onto the updated codebase.")
-    print("  Review the result afterward if Hermes behaves unexpectedly.")
+    print("  Review the result afterward if Oria behaves unexpectedly.")
     print(f"Restore local changes now? {prompt_suffix}")
     if remote_prompt:
         response = input_fn(f"Restore local changes now? {prompt_suffix}", "n")
@@ -301,13 +301,13 @@ def _drop_restored_stash(git_cmd: list[str], cwd: Path, stash_ref: str) -> None:
     from hermes_cli.update_cmd import _git_run
     stash_selector = _resolve_stash_selector(git_cmd, cwd, stash_ref)
     if stash_selector is None:
-        print("⚠ Local changes were restored, but Hermes couldn't find the stash entry to drop.")
+        print("⚠ Local changes were restored, but Oria couldn't find the stash entry to drop.")
         print(_STASH_LEFT_IN_PLACE)
         _print_stash_cleanup_guidance(stash_ref)
         return
     drop = _git_run(git_cmd, ["stash", "drop", stash_selector], cwd)
     if drop.returncode != 0:
-        print("⚠ Local changes were restored, but Hermes couldn't drop the saved stash entry.")
+        print("⚠ Local changes were restored, but Oria couldn't drop the saved stash entry.")
         _print_nonempty(drop.stdout)
         _print_nonempty(drop.stderr)
         print(_STASH_LEFT_IN_PLACE)
@@ -346,7 +346,7 @@ def _restore_stashed_changes(
             break
     _drop_restored_stash(git_cmd, cwd, stash_ref)
     print("⚠ Local changes were restored on top of the updated codebase.")
-    print("  Review `git diff` / `git status` if Hermes behaves unexpectedly.")
+    print("  Review `git diff` / `git status` if Oria behaves unexpectedly.")
     return True
 
 
@@ -361,13 +361,13 @@ def _discard_stashed_changes(git_cmd: list[str], cwd: Path, stash_ref: str) -> b
     if stash_selector is None:
         print(
             "⚠ Configured to discard local changes on non-interactive update, "
-            "but Hermes couldn't find the stash entry to drop."
+            "but Oria couldn't find the stash entry to drop."
         )
         _print_stash_cleanup_guidance(stash_ref)
         return False
     drop = _git_run(git_cmd, ["stash", "drop", stash_selector], cwd)
     if drop.returncode != 0:
-        print("⚠ Configured to discard local changes, but Hermes couldn't drop the saved stash entry.")
+        print("⚠ Configured to discard local changes, but Oria couldn't drop the saved stash entry.")
         _print_first_line(drop.stderr)
         _print_stash_cleanup_guidance(stash_ref, stash_selector)
         return False

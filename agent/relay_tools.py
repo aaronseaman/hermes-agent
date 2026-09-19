@@ -102,7 +102,7 @@ def _json_equal(left: Any, right: Any) -> bool:
 
 def _run_awaitable(value: Any) -> Any:
     return relay_llm._run_awaitable(
-        value, loop_error="Synchronous Hermes Relay tool execution cannot run on an active event-loop thread",
+        value, loop_error="Synchronous Oria Relay tool execution cannot run on an active event-loop thread",
     )
 
 

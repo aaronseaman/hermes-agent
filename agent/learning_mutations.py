@@ -117,11 +117,11 @@ def _delete_skill(name: str) -> dict[str, Any]:
     # ``_pinned_guard`` (which only blocks deletion) precisely because there is no user in the loop to
     # consent to an edit here.
     if skill_usage.get_record(name).get("pinned"):
-        return {"ok": False, "message": f"'{name}' is pinned — unpin it first (hermes curator unpin {name})"}
+        return {"ok": False, "message": f"'{name}' is pinned — unpin it first (oria curator unpin {name})"}
     ok, message = skill_usage.archive_skill(name)
     if ok:
         _clear_skill_cache()
-    return {"ok": ok, "message": f"archived '{name}' — restore with: hermes curator restore {name}" if ok else message}
+    return {"ok": ok, "message": f"archived '{name}' — restore with: oria curator restore {name}" if ok else message}
 
 
 def _delete_memory(node_id: str) -> dict[str, Any]:

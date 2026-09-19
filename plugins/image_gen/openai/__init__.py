@@ -108,8 +108,8 @@ class OpenAIImageGenProvider(StaticImageGenProvider):
         api_key = get_secret("OPENAI_API_KEY")
         if not api_key:
             return error_factory("openai", aspect)(
-                "OPENAI_API_KEY not set. Run `hermes tools` → Image "
-                "Generation → OpenAI to configure, or `hermes setup` "
+                "OPENAI_API_KEY not set. Run `oria tools` → Image "
+                "Generation → OpenAI to configure, or `oria setup` "
                 "to add the key.",
                 "auth_required")
 

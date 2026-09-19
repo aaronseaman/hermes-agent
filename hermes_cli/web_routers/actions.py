@@ -52,7 +52,7 @@ _ACTION_LOG_TAIL_MAX_CHUNK_BYTES = 64 * 1024
 
 _UPDATE_ACTION_COMPLETED_RE = re.compile(r"^=== hermes-update completed ([0-9a-f]{32}) ===$")
 
-_MANAGED_EXTERNALLY_MESSAGE = "Hermes updates are managed outside this dashboard in containerized environments."
+_MANAGED_EXTERNALLY_MESSAGE = "Oria updates are managed outside this dashboard in containerized environments."
 
 # Per-kind dashboard error codes the UI keys on, by admission-refusal code.
 _UPDATE_REFUSAL_ERROR_CODES = {
@@ -243,14 +243,14 @@ async def update_hermes():
         return response
 
     action_id = secrets.token_hex(16)
-    with http_failure("Failed to spawn hermes update", 500, "Failed to start update"):
+    with http_failure("Failed to spawn oria update", 500, "Failed to start update"):
         proc = _spawn_hermes_action(["update"], "hermes-update", env_overrides={"HERMES_ACTION_ID": action_id})
     return {"ok": True, "pid": proc.pid, "name": "hermes-update", "action_id": action_id}
 
 
 _NON_APPLYABLE_MESSAGES = {
     "docker": format_docker_update_message,
-    "apt": lambda: "Hermes is managed by Termux APT; run `pkg upgrade hermes-agent`.",
+    "apt": lambda: "Oria is managed by Termux APT; run `pkg upgrade hermes-agent`.",
 }
 
 
@@ -418,5 +418,5 @@ async def get_update_receipt():
     """
     receipt = _read_latest_receipt()
     if not receipt:
-        raise HTTPException(status_code=404, detail="No update receipt found (no `hermes update` run recorded).")
+        raise HTTPException(status_code=404, detail="No update receipt found (no `oria update` run recorded).")
     return {"receipt": receipt, "summary": _latest_update_receipt_summary()}

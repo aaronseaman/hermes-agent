@@ -145,7 +145,7 @@ def _real_profile_snapshot_error(err: str) -> str:
     from hermes_cli.browser_connect import _PROFILE_LOCKED_PREFIX
     if err and err.startswith(_PROFILE_LOCKED_PREFIX):
         return (err[len(_PROFILE_LOCKED_PREFIX):] + " To close it (only after the user approves — it "
-                "quits their browser and loses unsaved tabs), run: `hermes browser close-profile`, then retry.")
+                "quits their browser and loses unsaved tabs), run: `oria browser close-profile`, then retry.")
     return f"{_RP}{err}"
 
 

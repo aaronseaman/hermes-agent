@@ -115,7 +115,7 @@ def _validate_moa(req: _Request) -> dict[str, Any]:
         cfg = normalize_moa_config(load_config().get("moa") or {})
         if req.requested in cfg["presets"]:
             return _accept()
-        return _reject(f"MoA preset `{req.requested}` was not found. Run `hermes moa list`.")
+        return _reject(f"MoA preset `{req.requested}` was not found. Run `oria moa list`.")
     except Exception as exc:
         return _reject(f"Could not read MoA presets: {exc}")
 
@@ -210,7 +210,7 @@ def _validate_ollama_native(req: _Request) -> Optional[dict[str, Any]]:
     if models is None:
         return _soft_accept(
             f"Note: could not reach this Ollama endpoint's `/api/tags` model listing to validate `{req.requested}`. "
-            "Hermes will save the model name, but local Ollama model discovery could not verify it."
+            "Oria will save the model name, but local Ollama model discovery could not verify it."
         )
     match = _match_in_catalog(req.lookup, models, suggest_label="Similar local Ollama models")
     if match.exact:
@@ -339,7 +339,7 @@ def _validate_minimax(req: _Request) -> Optional[dict[str, Any]]:
     return match.verdict(req) or _soft_accept(
         f"Note: `{req.requested}` was not found in the MiniMax catalog."
         f"{match.suggestion_text}"
-        "\n  MiniMax does not expose a /models endpoint, so Hermes cannot verify the model name."
+        "\n  MiniMax does not expose a /models endpoint, so Oria cannot verify the model name."
         "\n  The model may still work if it exists on the server."
     )
 

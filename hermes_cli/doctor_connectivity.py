@@ -123,7 +123,7 @@ _OPENROUTER_STATUS = {
     401: ("(invalid API key)", "Check OPENROUTER_API_KEY in .env"),
     402: ("(out of credits — payment required)",
           "OpenRouter account has insufficient credits. "
-          "Fix: run 'hermes config set model.provider <provider>' "
+          "Fix: run 'oria config set model.provider <provider>' "
           "to switch providers, or fund your OpenRouter account "
           "at https://openrouter.ai/settings/credits"),
     429: ("(rate limited)", "OpenRouter rate limit hit — consider switching to a different provider or waiting"),

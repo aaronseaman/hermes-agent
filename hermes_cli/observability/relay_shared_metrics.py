@@ -147,7 +147,7 @@ class _Runtime:
     def __init__(self, host: relay_runtime.RelayRuntime | None = None) -> None:
         resolved_host = host or relay_runtime.get_runtime()
         if resolved_host is None:
-            raise RuntimeError("Hermes core Relay runtime is unavailable")
+            raise RuntimeError("Oria core Relay runtime is unavailable")
         self.host: relay_runtime.RelayRuntime = resolved_host
         self.relay = self.host.relay
         self._active = True
@@ -442,7 +442,7 @@ class _Runtime:
                 session, _text(event, "task_id"), event
             )
         if finished:
-            self._flush_and_export("Hermes shared-metrics task flush failed")
+            self._flush_and_export("Oria shared-metrics task flush failed")
 
     def close_session(self, event: dict[str, Any]) -> None:
         session = self._session(event)
@@ -473,7 +473,7 @@ class _Runtime:
             self._safe(self.close_session, {"session_id": session_id})
         if not self._registered:
             return
-        self._flush_and_export("Hermes shared-metrics shutdown flush failed")
+        self._flush_and_export("Oria shared-metrics shutdown flush failed")
         self._deregister()
         self._release()
 
@@ -677,7 +677,7 @@ class _Runtime:
             fallback_duration_ms=_elapsed_ms(tool_call.started_ns),
         )
         self._guarded(
-            "Hermes shared-metrics tool call close failed",
+            "Oria shared-metrics tool call close failed",
             lambda: self._run_in_task(
                 task, self.relay.tools.call_end, tool_call.handle,
                 self.relay.ToolExecutionResult(fields),
@@ -698,7 +698,7 @@ class _Runtime:
         if model_call is None:
             return
         self._guarded(
-            "Hermes shared-metrics model call close failed",
+            "Oria shared-metrics model call close failed",
             self._run_scoped, session, session.tasks.get(model_call.task_id),
             self.relay.llm.call_end, model_call.handle, model_call.fields,
             metadata=self._event_metadata(),
@@ -739,7 +739,7 @@ class _Runtime:
         )
         try:
             self._guarded(
-                "Hermes shared-metrics task close failed",
+                "Oria shared-metrics task close failed",
                 self._run_in_task, task, relay_runtime.pop_relay_scope, self.relay, task.handle,
                 output=fields, metadata=self._event_metadata(),
             )
@@ -813,7 +813,7 @@ class _Runtime:
 
     @classmethod
     def _safe(cls, callback: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
-        return cls._guarded("Hermes shared metrics operation failed", callback, *args, **kwargs)
+        return cls._guarded("Oria shared metrics operation failed", callback, *args, **kwargs)
 
 
 def _raw_config() -> dict[str, Any]:

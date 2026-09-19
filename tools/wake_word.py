@@ -313,7 +313,7 @@ def _resample_audio_frame(np, frame, output_length: int):
 def silent_audio_hint(details: Dict[str, Any]) -> str:
     """Platform-specific remediation for an armed stream delivering silence."""
     if sys.platform == "darwin":
-        return ("Microphone delivers only silence. Grant the Hermes backend "
+        return ("Microphone delivers only silence. Grant the Oria backend "
                 "microphone access in System Settings > Privacy & Security > "
                 "Microphone, then toggle the wake word.")
     fix = ("Set wake_word.input_device to a different PortAudio input device"
@@ -394,7 +394,7 @@ def check_wake_word_requirements(cfg: Optional[Dict[str, Any]] = None) -> Dict[s
          lambda: "The wake word needs the tflite runtime on this Mac: pip install ai-edge-litert"),
         (deps_ok and not audio_ok and capture_mode == "local",
          lambda: "Microphone capture needs sounddevice + numpy and a working audio device."),
-        (bool(missing), lambda: (f"Wake word needs {missing} configured — run `hermes tools` "
+        (bool(missing), lambda: (f"Wake word needs {missing} configured — run `oria tools` "
                                  f"(Voice section) or see the voice-mode docs.")),
     )
     hint = next((make() for cond, make in ladder if cond), "")

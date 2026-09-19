@@ -535,7 +535,7 @@ def interactive_setup() -> None:
     if declines_reconfigure("Raft", "Reconfigure Raft?", "RAFT_PROFILE"):
         print_info(f"Keeping RAFT_PROFILE={existing_profile}.")
         return
-    for line in ("Connect Hermes to Raft as an external agent.", "Create the External Agent in Raft first, then run:",
+    for line in ("Connect Oria to Raft as an external agent.", "Create the External Agent in Raft first, then run:",
                  "  raft agent login --server <server-url> --agent <agent-id> --profile-slug <slug>"):
         print_info(line)
     print()
@@ -546,7 +546,7 @@ def interactive_setup() -> None:
     save_env_value("RAFT_PROFILE", profile.strip())
     print()
     print_success("Raft configuration saved")
-    print_info("Restart the gateway for changes to take effect: hermes gateway restart")
+    print_info("Restart the gateway for changes to take effect: oria gateway restart")
 
 
 def register(ctx) -> None:

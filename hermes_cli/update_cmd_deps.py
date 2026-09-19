@@ -240,7 +240,7 @@ def _restore_active_tool_dependencies(
         return
 
     print()
-    print(f"→ Restoring {len(missing)} Hermes Tools dependency set(s)...")
+    print(f"→ Restoring {len(missing)} Oria Tools dependency set(s)...")
     restored: list[str] = []
     failed: list[tuple[str, str]] = []
     for name, install_args in missing:
@@ -326,7 +326,7 @@ def _refresh_active_lazy_features(
         print(f"  ⚠ {feature} failed to refresh: {_clip(status.split(': ', 1)[-1])}")
 
     if install_cmd_prefix is None:
-        print("  ⚠ Lazy refresh failed; rerun `hermes update` once resolved.")
+        print("  ⚠ Lazy refresh failed; rerun `oria update` once resolved.")
         return False
 
     # Import-based recovery: metadata-only verifiers miss dist-info intact but import files
@@ -338,7 +338,7 @@ def _refresh_active_lazy_features(
         return True
     if status == "healthy":
         print("  Lazy backend(s) keep their previous version; probed packages look intact.")
-        print("  Rerun `hermes update` once the upstream issue is resolved.")
+        print("  Rerun `oria update` once the upstream issue is resolved.")
         return True
     if status == "indeterminate":
         print("  ⚠ Leaving `.lazy-refresh-incomplete` until import probes can confirm health.")
@@ -526,7 +526,7 @@ def _repair_node_deps_on_current_checkout(
     node_failures = _update_node_dependencies()
     if node_failures:
         print(f"  ⚠ Node.js refresh failed for: {', '.join(node_failures)}")
-        print("    Fix npm and re-run `hermes update`.")
+        print("    Fix npm and re-run `oria update`.")
         print_completion("⚠ Checkout is current, but Node.js dependencies could not be repaired.")
         return False
     # Pair with the web build like every other call site; it staleness-checks internally.
@@ -575,7 +575,7 @@ def _update_node_dependencies() -> list[str]:
             print("→ Updating Node.js dependencies...")
             print("  ⚠ Skipped: only a Windows npm is reachable from this WSL shell.")
             print("    Install Node.js inside the WSL distro (nvm, or your distro's")
-            print("    package manager), then re-run `hermes update`.")
+            print("    package manager), then re-run `oria update`.")
             has_workspace = any(
                 (_m().PROJECT_ROOT / ws / "package.json").exists() for ws in ("ui-tui", "web"))
             return ["ui-tui, web workspaces"] if has_workspace else []
@@ -629,7 +629,7 @@ def _update_node_dependencies() -> list[str]:
     print()
     print("  ⚠ Node.js dependency refresh did not complete cleanly; the")
     print("    installation may be in a mixed state (updated code, stale Node")
-    print("    deps). Fix npm and re-run `hermes update`.")
+    print("    deps). Fix npm and re-run `oria update`.")
     return ["ui-tui, web workspaces"]
 
 
@@ -803,7 +803,7 @@ def _defer_update_for_self_lock(loaded: list[str]) -> None:
     print()
     print("  On Windows a mapped extension cannot be replaced by the process")
     print("  holding it. The code update has been applied; only the dependency")
-    print("  sync has been deferred: the next `hermes` launch will complete it")
+    print("  sync has been deferred: the next `oria` launch will complete it")
     print("  in a fresh process before anything imports these modules.")
     _m()._write_update_incomplete_marker()
 
@@ -857,7 +857,7 @@ def _rebuild_desktop_after_update(
         if build_result.returncode == 0:
             break
     if build_result.returncode != 0:
-        print("  ⚠ Desktop build failed (run `hermes desktop` to retry)")
+        print("  ⚠ Desktop build failed (run `oria desktop` to retry)")
         tail = "\n".join((build_result.stdout or "").strip().splitlines()[-15:])
         if tail:
             print(tail)
@@ -954,13 +954,13 @@ def _refuse_update_if_venv_foreign_owned(project_root) -> None:
     if not foreign:
         return
     print("\n✗ Update stopped: this install's venv contains files owned by another user.")
-    print("  Updating now would fail midway (Permission denied) and leave Hermes broken.")
+    print("  Updating now would fail midway (Permission denied) and leave Oria broken.")
     print("  This usually happens after running hermes or pip with sudo. Offending paths:")
     for p, uid in foreign:
         print(f"    - {p} (owner uid {uid})")
     print("\n  Fix ownership, then re-run the update:")
     print(f"    sudo chown -R $(id -un): {project_root}")
-    print("    hermes update")
+    print("    oria update")
     print("\n  Nothing in the venv was modified.")
     sys.exit(1)
 
@@ -1040,7 +1040,7 @@ def _sync_python_dependencies_after_pull(
         _m()._clear_lazy_refresh_incomplete_marker()
     else:
         print(
-            "  ⚠ Lazy-refresh recovery incomplete — run `hermes` again "
+            "  ⚠ Lazy-refresh recovery incomplete — run `oria` again "
             "to finish import-based venv repair.")
 
     _m()._restore_active_tool_dependencies(active_tool_dependencies, install_prefix, env=lazy_env)
@@ -1055,5 +1055,5 @@ def _sync_python_dependencies_after_pull(
         print()
         print(f"  ⚠ {failing_module} still fails to import after updating:")
         print(f"      {import_error}")
-        print("    Run `hermes update` again — if it persists, reinstall:")
+        print("    Run `oria update` again — if it persists, reinstall:")
         print("    https://hermes-agent.nousresearch.com")

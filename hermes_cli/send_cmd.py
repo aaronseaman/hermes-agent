@@ -36,17 +36,17 @@ def _read_message_body(positional: Optional[str], file_path: Optional[str]) -> O
             return Path(file_path).read_text(encoding="utf-8")
         except UnicodeDecodeError:
             _fail(
-                f"hermes send: {file_path} is not a text file. --file reads the "
+                f"oria send: {file_path} is not a text file. --file reads the "
                 "message *body* (logs, reports, markdown).\n"
                 "To send an image/document/audio file as a native attachment, "
                 "reference it with MEDIA: in the message text instead:\n"
-                f'  hermes send --to telegram "MEDIA:{file_path}"\n'
-                f'  hermes send --to telegram "optional caption MEDIA:{file_path}"\n'
+                f'  oria send --to telegram "MEDIA:{file_path}"\n'
+                f'  oria send --to telegram "optional caption MEDIA:{file_path}"\n'
                 "Add [[as_document]] to deliver an image as an uncompressed file:\n"
-                f'  hermes send --to telegram "[[as_document]] MEDIA:{file_path}"',
+                f'  oria send --to telegram "[[as_document]] MEDIA:{file_path}"',
                 _USAGE_EXIT)
         except OSError as exc:
-            _fail(f"hermes send: cannot read {file_path}: {exc}", _USAGE_EXIT)
+            _fail(f"oria send: cannot read {file_path}: {exc}", _USAGE_EXIT)
 
     # Reading from a TTY would block the user in a half-broken "type your message" state.
     return (sys.stdin.read() or None) if not sys.stdin.isatty() else None
@@ -64,7 +64,7 @@ def _emit_result(result_json: str, *, json_mode: bool, quiet: bool) -> int:
         print(json.dumps(payload, indent=2))
     elif not quiet:
         if payload.get("error"):
-            print(f"hermes send: {payload['error']}", file=sys.stderr)
+            print(f"oria send: {payload['error']}", file=sys.stderr)
         elif payload.get("success"):
             print(payload.get("note") or "sent")
         else:
@@ -80,11 +80,11 @@ def _list_targets(platform_filter: Optional[str], *, json_mode: bool) -> int:
     try:
         from gateway.channel_directory import format_directory_for_display, load_directory
     except Exception as exc:
-        return _fail(f"hermes send: failed to load channel directory: {exc}")
+        return _fail(f"oria send: failed to load channel directory: {exc}")
     try:
         raw = load_directory()
     except Exception as exc:
-        return _fail(f"hermes send: failed to read channel directory: {exc}")
+        return _fail(f"oria send: failed to read channel directory: {exc}")
     platforms = dict(raw.get("platforms") or {})
 
     # Merge in configured-but-undiscovered platforms (e.g. a fresh SimpleX setup used only for
@@ -102,7 +102,7 @@ def _list_targets(platform_filter: Optional[str], *, json_mode: bool) -> int:
         filtered = {k: v for k, v in platforms.items() if k.lower() == key}
         if not filtered:
             return _fail(
-                f"hermes send: no targets found for platform '{platform_filter}'. "
+                f"oria send: no targets found for platform '{platform_filter}'. "
                 f"Configured: {', '.join(sorted(platforms)) or '(none)'}")
         platforms = filtered
     if json_mode:
@@ -110,7 +110,7 @@ def _list_targets(platform_filter: Optional[str], *, json_mode: bool) -> int:
         return _SUCCESS_EXIT
     if not platforms:
         print("No messaging platforms configured or no channels discovered yet.")
-        print("Set one up with `hermes gateway setup`, or run the gateway once so")
+        print("Set one up with `oria gateway setup`, or run the gateway once so")
         print("channel discovery can populate ~/.hermes/channel_directory.json.")
         return _SUCCESS_EXIT
 
@@ -188,16 +188,16 @@ def cmd_send(args: argparse.Namespace) -> None:
     target = (getattr(args, "to", None) or "").strip()
     if not target:
         _fail(
-            "hermes send: --to PLATFORM[:channel[:thread]] is required\n"
+            "oria send: --to PLATFORM[:channel[:thread]] is required\n"
             "Examples:\n"
-            "  hermes send --to telegram \"hello\"\n"
-            "  hermes send --to discord:#ops --file report.md\n"
-            "  hermes send --list      # list available targets",
+            "  oria send --to telegram \"hello\"\n"
+            "  oria send --to discord:#ops --file report.md\n"
+            "  oria send --list        # list available targets",
             _USAGE_EXIT)
     message = _read_message_body(getattr(args, "message", None), getattr(args, "file", None))
     if message is None or not message.strip():
         _fail(
-            "hermes send: no message provided. Pass text as a positional "
+            "oria send: no message provided. Pass text as a positional "
             "argument, use --file PATH, or pipe data via stdin.",
             _USAGE_EXIT)
 
@@ -228,7 +228,7 @@ _SEND_ARGUMENTS = (
         "To send an image/document as an attachment, use MEDIA:<path> in the message text instead."))),
     (("-s", "--subject"), dict(metavar="LINE", default=None, help="Prepend a subject/header line before the message body.")),
     (("-l", "--list"), dict(dest="list_targets", action="store_true", default=False,
-                            help="List available targets. Optional positional filter: `hermes send --list telegram`.")),
+                            help="List available targets. Optional positional filter: `oria send --list telegram`.")),
     (("-q", "--quiet"), dict(action="store_true", default=False, help="Suppress stdout on success (exit code only).")),
     (("--json",), dict(action="store_true", default=False, help="Emit raw JSON result instead of human-readable output.")),
 )
@@ -240,7 +240,7 @@ def register_send_subparser(subparsers) -> argparse.ArgumentParser:
         "send",
         help="Send a message to a configured platform (scripts, cron jobs, CI).",
         description=(
-            "Pipe text from any shell script to any messaging platform Hermes "
+            "Pipe text from any shell script to any messaging platform Oria "
             "is already configured for. Reuses the gateway's platform "
             "credentials (~/.hermes/.env + ~/.hermes/config.yaml) — no LLM, "
             "no agent loop, no running gateway required for bot-token "
@@ -248,13 +248,13 @@ def register_send_subparser(subparsers) -> argparse.ArgumentParser:
         ),
         epilog=(
             "Examples:\n"
-            "  hermes send --to telegram \"deploy finished\"\n"
-            "  echo \"RAM 92%\" | hermes send --to telegram:-1001234567890\n"
-            "  hermes send --to discord:#ops --file /tmp/report.md\n"
-            "  hermes send --to slack:#eng --subject \"[CI]\" --file build.log\n"
-            "  hermes send --to telegram \"MEDIA:/tmp/chart.png\"   # send a media attachment\n"
-            "  hermes send --list                  # all platforms\n"
-            "  hermes send --list telegram         # filter by platform\n"
+            "  oria send --to telegram \"deploy finished\"\n"
+            "  echo \"RAM 92%\" | oria send --to telegram:-1001234567890\n"
+            "  oria send --to discord:#ops --file /tmp/report.md\n"
+            "  oria send --to slack:#eng --subject \"[CI]\" --file build.log\n"
+            "  oria send --to telegram \"MEDIA:/tmp/chart.png\"     # send a media attachment\n"
+            "  oria send --list                    # all platforms\n"
+            "  oria send --list telegram           # filter by platform\n"
             "\n"
             "Exit codes: 0 ok, 1 delivery/backend error, 2 usage error."
         ),

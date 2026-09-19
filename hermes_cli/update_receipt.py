@@ -392,6 +392,6 @@ def print_fleet_version_matrix(fleet: list[dict[str, Any]]) -> bool:
         print()
         print(
             f"✗ Update not complete: {stale_or_down} gateway(s) still running the old code (or stopped).")
-        print("  Run `hermes gateway restart` (or `hermes -p <profile> gateway restart` for a named")
-        print("  profile), then `hermes gateway status` to confirm.")
+        print("  Run `oria gateway restart` (or `oria -p <profile> gateway restart` for a named")
+        print("  profile), then `oria gateway status` to confirm.")
     return stale_or_down > 0

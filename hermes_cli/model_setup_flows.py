@@ -108,7 +108,7 @@ def _model_flow_moa(config, current_model=""):
     moa = normalize_moa_config(config.get("moa") if isinstance(config, dict) else {})
     presets = moa.get("presets") or {}
     if not presets:
-        print("No MoA presets configured. Run `hermes moa configure <name>` first.")
+        print("No MoA presets configured. Run `oria moa configure <name>` first.")
         return
 
     names = list(presets.keys())
@@ -292,7 +292,7 @@ def _model_flow_nous(config, current_model="", args=None):
     from hermes_cli.model_switch_providers import _free_tier_nous_row
     tier_row = _free_tier_nous_row({"name": "Nous Portal", "models": []})
     if tier_row is None:
-        print("The Nous free tier is off for this install; sign in with `hermes auth upgrade` to use Nous models.")
+        print("The Nous free tier is off for this install; sign in with `oria auth upgrade` to use Nous models.")
         return
     if tier_row["models"]:
         # Free-tier identity: the welcome host serves the single pinned model; no Portal catalog,
@@ -589,9 +589,9 @@ def _model_flow_copilot_acp(config, current_model=""):
     resolved_command = status.get("resolved_command") or status.get("command") or "copilot"
     effective_base = status.get("base_url") or pconfig.inference_base_url
 
-    _say("  GitHub Copilot ACP delegates Hermes turns to `copilot --acp`.",
-         "  Hermes currently starts its own ACP subprocess for each request.",
-         "  Hermes uses your selected model as a hint for the Copilot ACP session.",
+    _say("  GitHub Copilot ACP delegates Oria turns to `copilot --acp`.",
+         "  Oria currently starts its own ACP subprocess for each request.",
+         "  Oria uses your selected model as a hint for the Copilot ACP session.",
          f"  Command: {resolved_command}", f"  Backend marker: {effective_base}", "")
     try:
         creds = resolve_external_process_provider_credentials(provider_id)
@@ -786,10 +786,10 @@ def _select_zai_endpoint(current_base: str) -> str:
 
 _GEMINI_FREE_TIER_NOTICE = (
     "", "❌ This Google API key is on the free tier (<= 250 requests/day for gemini-2.5-flash).",
-    "   Hermes typically makes 3-10 API calls per user turn (tool iterations + auxiliary tasks),",
+    "   Oria typically makes 3-10 API calls per user turn (tool iterations + auxiliary tasks),",
     "   so the free tier is exhausted after a handful of messages and cannot sustain",
     "   an agent session.", "",
-    "   To use Gemini with Hermes, enable billing on your Google Cloud project and regenerate",
+    "   To use Gemini with Oria, enable billing on your Google Cloud project and regenerate",
     "   the key in a billing-enabled project: https://aistudio.google.com/apikey", "",
     "   Alternatives with workable free usage: DeepSeek, OpenRouter (free models), Groq, Nous.", "",
     "Not saving Gemini as the default provider.")

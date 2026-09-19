@@ -310,7 +310,7 @@ def disable_reason(manifest, *, today: Optional[_dt.date] = None) -> Optional[st
     hits = plugin_hits(manifest)
     if not hits:
         return None
-    return (f"uses {len(hits)} import path(s) removed on {COMPAT_REMOVAL}; run `hermes plugins compat` "
+    return (f"uses {len(hits)} import path(s) removed on {COMPAT_REMOVAL}; run `oria plugins compat` "
             f"for the list, update the plugin, or set plugins.{ALLOW_KEY}: true to force-load")
 
 
@@ -323,15 +323,15 @@ def summary_lines(report: Dict[str, List[Hit]], *, today: Optional[_dt.date] = N
     if removal_in_effect(today) and allow_deprecated_imports():
         head = (f"{n} plugin{'s' if n != 1 else ''} force-loaded via plugins.{ALLOW_KEY}: they import paths "
                 f"removed on {COMPAT_REMOVAL}: {names}")
-        tail = "Update the plugin(s); the old paths no longer exist. Details: hermes plugins compat"
+        tail = "Update the plugin(s); the old paths no longer exist. Details: oria plugins compat"
     elif removal_in_effect(today):
         head = (f"{n} plugin{'s' if n != 1 else ''} DISABLED: they import paths removed on {COMPAT_REMOVAL}: {names}")
-        tail = f"Update the plugin(s) or set plugins.{ALLOW_KEY}: true to force-load. Details: hermes plugins compat"
+        tail = f"Update the plugin(s) or set plugins.{ALLOW_KEY}: true to force-load. Details: oria plugins compat"
     else:
         d = days_until_removal(today)
         head = (f"{n} plugin{'s' if n != 1 else ''} use{'s' if n == 1 else ''} import paths that stop working on "
                 f"{COMPAT_REMOVAL} ({d} day{'s' if d != 1 else ''}): {names}")
-        tail = "Check for plugin updates or notify the author before then. Details: hermes plugins compat"
+        tail = "Check for plugin updates or notify the author before then. Details: oria plugins compat"
     return [head, tail]
 
 

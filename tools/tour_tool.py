@@ -22,7 +22,7 @@ def tour_tool(action: str = "", surface: Optional[str] = None, selector: Optiona
               callback: Optional[Callable] = None) -> str:
     """Dispatch one tour action to the desktop renderer and return its outcome."""
     if callback is None:
-        return tool_error("tour is only available in the Hermes desktop app.")
+        return tool_error("tour is only available in the Oria desktop app.")
     verb = (action or "").strip().lower()
     if verb not in ACTIONS:
         return tool_error(f"action must be one of: {', '.join(ACTIONS)}.")
@@ -82,7 +82,7 @@ TOUR_SCHEMA = {
     # See #95681.
     "description": (
         "Guided tour in the desktop GUI: dim the screen, highlight an "
-        "element, attach a titled popover. Surfaces: 'app' (Hermes itself) "
+        "element, attach a titled popover. Surfaces: 'app' (Oria itself) "
         "or 'preview' (the page in the preview pane). ALWAYS call "
         "action='targets' first — prefer targets marked stable:true (their "
         "selectors survive re-renders); re-scan if one stops matching. Then "

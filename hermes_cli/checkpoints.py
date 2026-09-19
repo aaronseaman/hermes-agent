@@ -54,7 +54,7 @@ def cmd_status(args: argparse.Namespace) -> int:
         print(f"Legacy archives ({len(legacy)}):")
         _print_archives(sorted(legacy, key=lambda a: a.get("mtime", 0), reverse=True))
         print()
-        print("Clear with: hermes checkpoints clear-legacy")
+        print("Clear with: oria checkpoints clear-legacy")
     return 0
 
 

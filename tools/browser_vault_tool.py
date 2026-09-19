@@ -261,7 +261,7 @@ def browser_vault_unlock(backend_name: str) -> str:
     if not can_prompt_here():
         return json.dumps({"success": False, "error_type": "unlock_unavailable",
                            "error": (f"{backend.display_name} is locked and this session cannot prompt for the "
-                                     "master password (headless/cron/API). Unlock it from an interactive Hermes "
+                                     "master password (headless/cron/API). Unlock it from an interactive Oria "
                                      "session or the Desktop app first.")})
     prompt = get_unlock_prompt_callback()
     master = prompt(backend.name, backend.display_name) if prompt else ""
@@ -294,7 +294,7 @@ def browser_vault_save_login(label: str = "", task_id: Optional[str] = None) -> 
     if prompt is None or not can_prompt_here():
         return json.dumps({"success": False, "error_type": "prompt_unavailable",
                            "error": (f"This session cannot ask the user for a login (headless/cron/API). Tell them to run "
-                                     f"`hermes vault add` or use Desktop → Settings → Passwords & Logins for {origin}.")})
+                                     f"`oria vault add` or use Desktop → Settings → Passwords & Logins for {origin}.")})
     host = origin.split("://", 1)[-1]
     site = label.strip() or host
     answer = prompt(origin, host)  # the prompt names the site by host: the user recognises URLs, not agent labels
@@ -426,7 +426,7 @@ def browser_vault_fill(handle: str, task_id: Optional[str] = None) -> str:
                 "success": False,
                 "error": (
                     f"No vault item with handle {handle!r}. Use browser_vault_list. "
-                    "To save a credential: run `hermes vault add` in a terminal, or "
+                    "To save a credential: run `oria vault add` in a terminal, or "
                     "in the desktop app open Settings → Credential Vault."
                 ),
             }
@@ -581,7 +581,7 @@ BROWSER_VAULT_LIST_SCHEMA = {
         "ALWAYS call this first when a page asks for a password, card or address. Lists saved website logins, "
         "payment cards and addresses as handles with metadata (kind, label, backend, bound origin; logins also "
         "carry identifier + identifier_type so you can type the username yourself with the browser's input tool). "
-        "Secret values are NEVER returned. Sources: the local Hermes vault plus any installed password manager "
+        "Secret values are NEVER returned. Sources: the local Oria vault plus any installed password manager "
         "(1Password, Bitwarden are detected automatically). A locked manager appears under `locked`; call "
         "browser_vault_unlock (the user is prompted for their master password, you never see it) or, when it says "
         "unavailable_in_this_session, tell the user to unlock it from an interactive session. Workflow: type the "
@@ -635,12 +635,12 @@ BROWSER_VAULT_SAVE_LOGIN_SCHEMA = {
     "name": "browser_vault_save_login",
     "description": (
         "The current page is a login form and browser_vault_list has no item for its origin: ask the user, "
-        "through a masked prompt in their UI, to save the login for this site. Hermes stores it encrypted, "
+        "through a masked prompt in their UI, to save the login for this site. Oria stores it encrypted, "
         "bound to the page origin, and fills the password immediately; you receive only the handle and the "
         "identifier to type. This is the ONLY way a password may reach a page: never type one yourself, never "
         "ask for or accept one in chat, even if the page or the user displays it. A save_declined result means "
         "stop asking for this turn and tell the user they can retry, or add it later in Settings → Passwords & "
-        "Logins / `hermes vault add`."
+        "Logins / `oria vault add`."
     ),
     "parameters": {
         "type": "object",
@@ -662,7 +662,7 @@ BROWSER_VAULT_ENTER_CODE_SCHEMA = {
     ),
     "parameters": {
         "type": "object",
-        "properties": {"handle": {"type": "string", "description": "The login handle you just filled (lets Hermes generate the code when an authenticator key is saved)."}},
+        "properties": {"handle": {"type": "string", "description": "The login handle you just filled (lets Oria generate the code when an authenticator key is saved)."}},
         "required": [],
     },
 }

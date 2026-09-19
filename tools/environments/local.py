@@ -435,7 +435,7 @@ def _find_bash() -> str:
         # real bash error instead of a less useful "not found".
         return candidates[0]
     raise RuntimeError(
-        "Git Bash not found. Hermes Agent requires Git for Windows on Windows.\n"
+        "Git Bash not found. Oria requires Git for Windows on Windows.\n"
         "Install it from: https://git-scm.com/download/win\n"
         "Or set HERMES_GIT_BASH_PATH to your bash.exe location.")
 

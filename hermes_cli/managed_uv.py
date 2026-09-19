@@ -148,8 +148,8 @@ def _report_runtime_repair_failure(repair: RuntimeRepairResult) -> None:
     if repair.backup_venv is None:
         print("  ℹ Managed Python runtime was not replaced; "
               f"the existing venv is unchanged ({repair.detail}).")
-        print("    Sessions stay protected meanwhile: Hermes keeps databases "
-              "out of WAL mode on this SQLite build. The next `hermes update` "
+        print("    Sessions stay protected meanwhile: Oria keeps databases "
+              "out of WAL mode on this SQLite build. The next `oria update` "
               "will retry.")
         return
     print(f"  ✗ Managed Python runtime cutover needs manual recovery: {repair.detail}")
@@ -450,7 +450,7 @@ def _attempt_install_generation(
     try:
         python.resolve().relative_to(generation.resolve())
     except (OSError, ValueError):
-        return reject("uv resolved Python outside the Hermes generation: %s", python)
+        return reject("uv resolved Python outside the Oria generation: %s", python)
     # Sign before the candidate is probed or promoted so each immutable generation does not look
     # like a new TCC principal on macOS. Non-fatal: the SQLite repair proceeds regardless.
     _macos_sign_managed_python(python)
@@ -806,7 +806,7 @@ def _windows_runtime_holders() -> tuple[bool, str]:
         return True, f"could not verify Windows venv holders: {exc}"
     if holders:
         pids = ", ".join(str(item[0]) for item in holders[:6])
-        return True, f"other Hermes processes still hold the venv (PID {pids})"
+        return True, f"other Oria processes still hold the venv (PID {pids})"
     return False, ""
 
 
@@ -956,13 +956,13 @@ def _repair_windows_preflight(
         for line in (
             f"  ⚠ SQLite runtime repair deferred: {self_detail}.",
             # See #93032.
-            "    Retrying `hermes update` from inside this venv cannot help: "
+            "    Retrying `oria update` from inside this venv cannot help: "
             "the mapped executable is released only when this process exits.",
             "    To complete the repair, run the updater from an interpreter "
             "that lives outside this venv, e.g.:",
             f"      cd {root}",
             "      <system Python> -m hermes_cli.main update",
-            "    Sessions stay protected meanwhile: Hermes keeps databases "
+            "    Sessions stay protected meanwhile: Oria keeps databases "
             "out of WAL mode on this SQLite build."):
             print(line)
         return _result("skipped", current, self_detail)
@@ -981,7 +981,7 @@ def _repair_under_lock(
     if not current.wal_reset_vulnerable:
         return _result("safe", current, sqlite_after=current.sqlite_version_string)
     print(
-        "  ⚠ Hermes venv links SQLite "
+        "  ⚠ Oria venv links SQLite "
         f"{current.sqlite_version_string}, which has the WAL-reset bug.")
     provisioned = _install_safe_python_generation(uv_bin, project_root=root, current=current)
     # Likely a stale managed-uv catalog: python-build-standalone re-releases the same patch

@@ -51,7 +51,7 @@ class HermesProviderMixin:
                 or ("urn:ietf:params:oauth:grant-type:device_code" in grants and "authorization_code" not in grants)):
             from tools.mcp_oauth import OAuthNonInteractiveError
             raise OAuthNonInteractiveError(
-                "MCP device authorization requires `hermes mcp login <server> --flow device`; "
+                "MCP device authorization requires `oria mcp login <server> --flow device`; "
                 "background reconnects cannot start a device login")
         self._tolerate_missing_iss_for_known_server()
         return await super()._perform_authorization()

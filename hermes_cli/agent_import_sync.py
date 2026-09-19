@@ -140,7 +140,7 @@ def sync_imported_agents(args) -> None:
     if not agents:
         print()
         print_info("No import sources registered yet.")
-        print_info("Run 'hermes import-agent' first — successful imports are "
+        print_info("Run 'oria import-agent' first — successful imports are "
                    "registered for sync automatically.")
         return
 

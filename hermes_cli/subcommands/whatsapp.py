@@ -19,6 +19,6 @@ def build_whatsapp_cloud_parser(subparsers, *, cmd_whatsapp_cloud: Callable) -> 
         "whatsapp-cloud", help="Set up WhatsApp Business Cloud API integration",
         description="Configure the official Meta WhatsApp Business Cloud API "
             "adapter (Business account required, public webhook URL "
-            "required). Distinct from `hermes whatsapp` which sets up "
+            "required). Distinct from `oria whatsapp` which sets up "
             "the Baileys bridge for personal accounts.")
     whatsapp_cloud_parser.set_defaults(func=cmd_whatsapp_cloud)

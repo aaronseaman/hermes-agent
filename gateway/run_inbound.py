@@ -1153,7 +1153,7 @@ class GatewayInboundMixin:
                 if _skill_name and _skill_name in _plat_disabled:
                     return (
                         f"The **{_skill_name}** skill is disabled for {_plat}.\n"
-                        f"Enable it with: `hermes skills config`"
+                        f"Enable it with: `oria skills config`"
                     )
                 _disabled_extra = [
                     skill_cmds.get(k, {}).get("name", "")
@@ -1164,7 +1164,7 @@ class GatewayInboundMixin:
                     return (
                         f"The **{', '.join(_disabled_extra)}** skill(s) in this "
                         f"stacked invocation are disabled for {_plat}.\n"
-                        f"Enable them with: `hermes skills config`"
+                        f"Enable them with: `oria skills config`"
                     )
             if extra_keys and _build_stacked is not None:
                 stacked_result = _build_stacked(

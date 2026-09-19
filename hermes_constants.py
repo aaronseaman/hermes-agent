@@ -494,7 +494,7 @@ def _print_managed_node_in_use_notice() -> None:
     _managed_node_in_use_notice_printed = True
     print(
         "→ Hermes-managed Node.js is in use by a running app; deferring its "
-        "upgrade until the app is closed (re-run `hermes update` afterwards).", flush=True,
+        "upgrade until the app is closed (re-run `oria update` afterwards).", flush=True,
     )
 
 
@@ -1288,7 +1288,7 @@ def partial_update_hint(exc: BaseException) -> list[str]:
         "This looks like a partially-updated install: one module was refreshed "
         "and a related one was not.",
         "Re-run the update to bring the whole tree to the same version:",
-        "    hermes update",
+        "    oria update",
         "If that also fails, reinstall: https://hermes-agent.nousresearch.com",
     ]
 

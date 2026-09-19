@@ -475,7 +475,7 @@ class CLIModelSwitchMixin:
         if warning is None:
             return True
         choices = [
-            ("once", "Switch anyway", "Use this model for the current Hermes session."),
+            ("once", "Switch anyway", "Use this model for the current Oria session."),
             ("cancel", "Cancel", "Keep the current model.")]
         raw = self._prompt_text_input_modal(
             title=f"!!! {warning.title} !!!", detail=warning.message, choices=choices, timeout=120)

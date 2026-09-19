@@ -59,28 +59,30 @@ def _skin_color(key: str, fallback: str) -> str:
 
 from hermes_cli import __version__ as VERSION, __release_date__ as RELEASE_DATE
 
-HERMES_AGENT_LOGO = """[bold #FFD700]██╗  ██╗███████╗██████╗ ███╗   ███╗███████╗███████╗       █████╗  ██████╗ ███████╗███╗   ██╗████████╗[/]
-[bold #FFD700]██║  ██║██╔════╝██╔══██╗████╗ ████║██╔════╝██╔════╝      ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝[/]
-[#FFBF00]███████║█████╗  ██████╔╝██╔████╔██║█████╗  ███████╗█████╗███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║[/]
-[#FFBF00]██╔══██║██╔══╝  ██╔══██╗██║╚██╔╝██║██╔══╝  ╚════██║╚════╝██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║[/]
-[#CD7F32]██║  ██║███████╗██║  ██║██║ ╚═╝ ██║███████╗███████║      ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║[/]
-[#CD7F32]╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚══════╝      ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝[/]"""
+# The Oria wordmark and ring (constant names predate the rename; skins override both via
+# banner_logo / banner_hero). The ring is coloured per cell to follow the logo's hue sweep.
+HERMES_AGENT_LOGO = """[bold #F5F5F5] ██████╗ ██████╗ ██╗ █████╗ [/]
+[bold #F5F5F5]██╔═══██╗██╔══██╗██║██╔══██╗[/]
+[#D4D4D4]██║   ██║██████╔╝██║███████║[/]
+[#D4D4D4]██║   ██║██╔══██╗██║██╔══██║[/]
+[#A3A3A3]╚██████╔╝██║  ██║██║██║  ██║[/]
+[#A3A3A3] ╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝[/]"""
 
-HERMES_CADUCEUS = """[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡀⠀⣀⣀⠀⢀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⣿⣿⣇⠸⣿⣿⠇⣸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⢀⣠⣴⣶⠿⠋⣩⡿⣿⡿⠻⣿⡇⢠⡄⢸⣿⠟⢿⣿⢿⣍⠙⠿⣶⣦⣄⡀⠀[/]
-[#FFBF00]⠀⠀⠉⠉⠁⠶⠟⠋⠀⠉⠀⢀⣈⣁⡈⢁⣈⣁⡀⠀⠉⠀⠙⠻⠶⠈⠉⠉⠀⠀[/]
-[#FFD700]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⡿⠛⢁⡈⠛⢿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFD700]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠿⣿⣦⣤⣈⠁⢠⣴⣿⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠻⢿⣿⣦⡉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢷⣦⣈⠛⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣴⠦⠈⠙⠿⣦⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣤⡈⠁⢤⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠷⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠑⢶⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠁⢰⡆⠈⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⠈⣡⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]"""
+HERMES_CADUCEUS = """⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[#1AC6FF]⢀⣀[/][#1AFFFF]⣀⣀⣀⣀[/][#1AFFC6]⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
+⠀⠀⠀⠀⠀⠀[#1A8CFF]⣀⣤⣶[/][#1AC6FF]⣿⣿⣿[/][#1AFFFF]⣿⣿⣿[/][#1AFFC6]⣿⣿⣿⣿[/][#1AFF8C]⣶⣤⣀⠀⠀⠀⠀⠀⠀[/]
+⠀⠀⠀⠀[#1A53FF]⣠⣾[/][#1A8CFF]⣿⣿⣿⣿[/][#1AC6FF]⣿⣿[/][#1AFFFF]⣿⣿⣿[/][#1AFFC6]⣿⣿⣿[/][#1AFF8C]⣿⣿⣿[/][#1AFF53]⣿⣷⣄⠀⠀⠀⠀[/]
+⠀⠀[#1A1AFF]⢠[/][#1A53FF]⣾⣿⣿⣿⣿[/][#1A8CFF]⣿⣿[/][#1AC6FF]⣿⡿⠿[/][#1AFFFF]⠿⠿[/][#1AFFC6]⠿⢿[/][#1AFF8C]⣿⣿⣿[/][#1AFF53]⣿⣿⣿⣿[/][#1AFF1A]⣷⡄⠀⠀[/]
+⠀[#1A1AFF]⢠⣿⣿⣿⣿[/][#1A53FF]⣿⣿⡿[/][#1A8CFF]⠋⠀⠀⠀⠀⠀⠀⠀⠀[/][#1AFF53]⠙⢿⣿⣿[/][#1AFF1A]⣿⣿⣿⣿⡄⠀[/]
+[#531AFF]⢀⣿⣿⣿[/][#1A1AFF]⣿⣿⣿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/][#1AFF1A]⠙⣿⣿[/][#53FF1A]⣿⣿⣿⣿⡀[/]
+[#531AFF]⢸⣿⣿⣿⣿⣿⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/][#53FF1A]⢹⣿⣿⣿⣿⣿⡇[/]
+[#8C1AFF]⢸⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/][#8CFF1A]⢸⣿⣿⣿⣿⣿⡇[/]
+[#C61AFF]⢸⣿⣿⣿⣿⣿⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/][#C6FF1A]⣸⣿⣿⣿⣿⣿⡇[/]
+[#C61AFF]⠈⣿⣿⣿[/][#FF1AFF]⣿⣿⣿⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/][#FFFF1A]⣠⣿⣿[/][#C6FF1A]⣿⣿⣿⣿⠁[/]
+⠀[#FF1AFF]⠘⣿⣿⣿⣿[/][#FF1AC6]⣿⣿⣷[/][#FF1A8C]⣄⠀⠀⠀⠀⠀⠀⠀⠀[/][#FFC61A]⣠⣾⣿⣿[/][#FFFF1A]⣿⣿⣿⣿⠃⠀[/]
+⠀⠀[#FF1AFF]⠘[/][#FF1AC6]⢿⣿⣿⣿⣿[/][#FF1A8C]⣿⣿[/][#FF1A53]⣿⣷⣶[/][#FF1A1A]⣶⣶[/][#FF531A]⣶⣾[/][#FF8C1A]⣿⣿⣿[/][#FFC61A]⣿⣿⣿⣿[/][#FFFF1A]⡿⠃⠀⠀[/]
+⠀⠀⠀⠀[#FF1AC6]⠙⢿[/][#FF1A8C]⣿⣿⣿⣿[/][#FF1A53]⣿⣿[/][#FF1A1A]⣿⣿⣿[/][#FF531A]⣿⣿⣿[/][#FF8C1A]⣿⣿⣿[/][#FFC61A]⣿⡿⠋⠀⠀⠀⠀[/]
+⠀⠀⠀⠀⠀⠀[#FF1A8C]⠉⠛⠿[/][#FF1A53]⣿⣿⣿[/][#FF1A1A]⣿⣿⣿[/][#FF531A]⣿⣿⣿⣿[/][#FF8C1A]⠿⠛⠉⠀⠀⠀⠀⠀⠀[/]
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[#FF1A53]⠈⠉[/][#FF1A1A]⠉⠉⠉⠉[/][#FF531A]⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]"""
 
 # === Skills scanning ===
 
@@ -485,7 +487,7 @@ def get_latest_release_tag(repo_dir: Optional[Path] = None) -> Optional[tuple]:
 
 def format_banner_version_label() -> str:
     """Return the version label shown in the startup banner title."""
-    base = f"Hermes Agent v{VERSION} ({RELEASE_DATE})"
+    base = f"Oria v{VERSION} ({RELEASE_DATE})"
     state = get_git_banner_state()
     if not state:
         return base
@@ -770,8 +772,8 @@ def _mcp_failed_line(name: str, transport: str, error: Optional[str]) -> str:
     exact next command, so 'failed' is never the whole story."""
     from rich.markup import escape
     reason = escape(" ".join(str(error or "").split())[:120]) or "no details recorded"
-    next_cmd = (f"hermes mcp login {name}" if re.search(r"\b401\b|unauthori[sz]ed", reason, re.I)
-                else f"hermes mcp test {name}")
+    next_cmd = (f"oria mcp login {name}" if re.search(r"\b401\b|unauthori[sz]ed", reason, re.I)
+                else f"oria mcp test {name}")
     return (f"[red]{name}[/] [dim]({transport})[/] [red]— could not connect:[/] {reason} "
             f"[dim]— run `{next_cmd}`[/]")
 
@@ -878,7 +880,7 @@ def _banner_left_lines(model: str, cwd: str, session_id, context_length, provide
         lines.append(f"[{accent}]MoA: {_short_label(model)}[/]{agg_str}{ctx_str}{nous_str}")
     elif not (model or "").strip() or (model or "").strip().lower() == "unknown":
         # Unconfigured install: the clearest place to say what is wrong and how to fix it.
-        lines.append(f"[bold red]no model configured[/] [dim {dim}]— run /model or hermes setup[/]")
+        lines.append(f"[bold red]no model configured[/] [dim {dim}]— run /model or oria setup[/]")
     else:
         model_short = model.split("/")[-1].removesuffix(".gguf")
         lines.append(f"[{accent}]{_short_label(model_short)}[/]{ctx_str}{nous_str}")

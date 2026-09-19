@@ -43,10 +43,10 @@ _ROLLBACK_SKIP_LINES = (("skipped_user_edits", "gateway.rollback.kept_user_edits
 
 # /busy input modes -> (status-card behavior, set-confirmation behavior).
 _BUSY_MODE_BEHAVIOR = {
-    "queue": ("queues for next turn", "Messages will be queued for the next turn while Hermes is busy."),
+    "queue": ("queues for next turn", "Messages will be queued for the next turn while Oria is busy."),
     "steer": ("steers into current run (after next tool call)",
               "Messages will be steered into the current run (after the next tool call)."),
-    "interrupt": ("interrupts current run", "Messages will interrupt the current run while Hermes is busy."),
+    "interrupt": ("interrupts current run", "Messages will interrupt the current run while Oria is busy."),
 }
 
 # /diff argument -> diff mode (unknown args leave the mode unchanged).
@@ -495,7 +495,7 @@ class GatewaySlashCommandsMixin(
             if paused:
                 return f"{name} is already paused."
             self._pause_failed_platform(platform, reason="paused via /platform pause")
-            return f"✓ {name} paused. Resume with `/platform resume {name}` or `hermes gateway restart` to reset."
+            return f"✓ {name} paused. Resume with `/platform resume {name}` or `oria gateway restart` to reset."
         if not queued:
             return f"{name} is not in the retry queue — nothing to resume."
         if not paused:
@@ -1110,7 +1110,7 @@ class GatewaySlashCommandsMixin(
         bundles = reply.data["bundles"]
         if not bundles:
             return ("No skill bundles installed.\nCreate one on the host with:\n"
-                    "  `hermes bundles create <name> --skill <s1> --skill <s2>`\n"
+                    "  `oria bundles create <name> --skill <s1> --skill <s2>`\n"
                     f"Directory: `{reply.data['dir']}`")
         lines = [f"**Skill Bundles** ({len(bundles)} installed):", ""]
         for info in bundles:
@@ -1225,7 +1225,7 @@ class GatewaySlashCommandsMixin(
             except Exception:
                 return t("gateway.update.platform_not_messaging")
         if is_managed():
-            return f"✗ {format_managed_message('update Hermes Agent')}"
+            return f"✗ {format_managed_message('update Oria')}"
         if not (Path(__file__).parent.parent.resolve() / '.git').exists():
             return t("gateway.update.not_git_repo")
         hermes_cmd = _resolve_hermes_bin()

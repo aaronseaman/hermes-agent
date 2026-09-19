@@ -23,7 +23,7 @@ from typing import Callable, Iterator, Optional
 logger = logging.getLogger(__name__)
 
 MANIFEST_NAME = "gateway_migration.json"
-MIGRATE_COMMAND = "hermes gateway migrate --multiplex"
+MIGRATE_COMMAND = "oria gateway migrate --multiplex"
 _SERVED_WAIT_SECONDS = 90.0
 
 
@@ -412,7 +412,7 @@ def _check_secondary_port_binders(plan: MigrationPlan, configs: dict[str, object
                     f"Profile '{profile.name}' enables {platform.value}, which binds its own port and has no "
                     f"/p/{profile.name}/ ingress on the default listener yet; the multiplexer would skip "
                     f"the whole profile. Disable it there (platforms.{platform.value}.enabled: false) or "
-                    f"keep '{profile.name}' on a standalone gateway (hermes -p {profile.name} gateway start --force)."
+                    f"keep '{profile.name}' on a standalone gateway (oria -p {profile.name} gateway start --force)."
                 )
 
 
@@ -459,7 +459,7 @@ def build_migration_plan() -> MigrationPlan:
     from hermes_cli.gateway_migrate_guards import auto_migration_blockers
     # Notices, not blockers: the explicit command is the operator's decision; only the update hook
     # refuses to cross these boundaries on its own.
-    plan.notices.extend(f"Not migrated automatically by `hermes update`: {b}" for b in auto_migration_blockers(plan))
+    plan.notices.extend(f"Not migrated automatically by `oria update`: {b}" for b in auto_migration_blockers(plan))
     plan.notices.append(
         "Profiles created after the migration are served by the running multiplexer as soon as "
         "they exist (it rescans profiles/ on create/delete and every 30s)."
@@ -502,7 +502,7 @@ def format_plan(plan: MigrationPlan, *, dry_run: bool) -> list[str]:
     target = plan.target_service_kind()
     lines.append(f"  - default: {'restart' if plan.default.has_gateway else 'start'} the gateway"
                  + (f" via {target[0]}" if target else " (detached)") + f", verify it serves {len(plan.profiles)} profiles")
-    lines.append(f"  - record the previous state in {plan.default_home / MANIFEST_NAME} (rollback: hermes gateway migrate --standalone)")
+    lines.append(f"  - record the previous state in {plan.default_home / MANIFEST_NAME} (rollback: oria gateway migrate --standalone)")
     return lines + _plan_tail(plan)
 
 
@@ -519,7 +519,7 @@ def _plan_tail(plan: MigrationPlan) -> list[str]:
 
 def _no_manifest_lines(default_home: Path) -> list[str]:
     return [f"✗ No migration manifest at {_manifest_path(default_home)}; nothing to roll back.",
-            "  To leave multiplex mode by hand: hermes config set gateway.multiplex_profiles false && hermes gateway restart"]
+            "  To leave multiplex mode by hand: oria config set gateway.multiplex_profiles false && oria gateway restart"]
 
 
 def _manifest_secondaries(manifest: dict) -> Optional[list[dict]]:
@@ -593,7 +593,7 @@ def format_update_warning(plan: MigrationPlan, auto_blockers: list[str]) -> list
         "  setup, but this install cannot be migrated automatically yet:",
         *[f"    • {b}" for b in (*plan.blockers, *auto_blockers)],
         f"  After fixing the above, run:  {MIGRATE_COMMAND}",
-        "  (`hermes update` will migrate automatically once nothing blocks it.)",
+        "  (`oria update` will migrate automatically once nothing blocks it.)",
     ]
 
 
@@ -716,7 +716,7 @@ def apply_migration(plan: MigrationPlan, *, served_wait: float = _SERVED_WAIT_SE
         # Flag off + manifest present = a rollback that did not finish. Overwriting the manifest would
         # discard the only record of the units that rollback still has to restore.
         _print([f"✗ A previous migration's manifest is still at {_manifest_path(plan.default_home)} (its rollback did not finish).",
-                "  Finish it with: hermes gateway migrate --standalone   (or delete the manifest to start over)"])
+                "  Finish it with: oria gateway migrate --standalone     (or delete the manifest to start over)"])
         return False
     else:
         manifest = {
@@ -738,20 +738,20 @@ def apply_migration(plan: MigrationPlan, *, served_wait: float = _SERVED_WAIT_SE
                 "  ↩ Rolling back to per-profile gateways so no profile is left without one..."])
         rolled_back = rollback_migration(plan.default_home)
         if not rolled_back:
-            print(f"  Re-run {MIGRATE_COMMAND} to resume, or hermes gateway migrate --standalone to roll back.")
+            print(f"  Re-run {MIGRATE_COMMAND} to resume, or oria gateway migrate --standalone to roll back.")
         return False
 
     expected = {p.name for p in plan.profiles}
     served = _wait_for_served(plan.default_home, expected, served_wait)
     if served is not None and expected <= set(served):
         _print(["", f"✓ Migrated: the default gateway now serves {len(served)} profiles: {', '.join(served)}",
-                "  Rollback any time with: hermes gateway migrate --standalone",
+                "  Rollback any time with: oria gateway migrate --standalone",
                 *[f"  • {n}" for n in plan.notices]])
         return True
     missing = sorted(expected - set(served or []))
     _print(["", f"⚠ Migration applied, but the default gateway has not confirmed serving: {', '.join(missing)}",
-            "  Check `hermes gateway status` and the gateway log; the flag and manifest are in place.",
-            "  Rollback: hermes gateway migrate --standalone"])
+            "  Check `oria gateway status` and the gateway log; the flag and manifest are in place.",
+            "  Rollback: oria gateway migrate --standalone"])
     return False
 
 
@@ -829,7 +829,7 @@ def rollback_migration(default_home: Optional[Path] = None) -> bool:
                     print(f"  ✗ default: could not restore rollback manifest ({manifest_exc})")
             ok = False
             print(f"  ✗ default: could not restart its standalone gateway ({exc})")
-            print("    The default gateway is still multiplexing; stop it by hand (hermes gateway stop) and re-run.")
+            print("    The default gateway is still multiplexing; stop it by hand (oria gateway stop) and re-run.")
     if ok:
         print("✓ Rolled back to per-profile gateways.")
     else:
@@ -846,7 +846,7 @@ def _host_supports_migration() -> Optional[str]:
     if gw._running_under_s6():
         return "s6-supervised container: per-profile gateways are s6 slots; set gateway.multiplex_profiles on the default profile and restart the container instead."
     if gw.is_windows():
-        return "Windows Scheduled Tasks are not migrated automatically; set gateway.multiplex_profiles true, stop the per-profile tasks, and `hermes gateway restart`."
+        return "Windows Scheduled Tasks are not migrated automatically; set gateway.multiplex_profiles true, stop the per-profile tasks, and `oria gateway restart`."
     return None
 
 

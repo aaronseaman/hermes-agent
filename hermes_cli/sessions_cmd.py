@@ -46,7 +46,7 @@ def _confirm_prompt(prompt: str) -> bool:
 
 
 def _not_found(session_id) -> int:
-    print(f"No session '{session_id}'. Run: hermes sessions list to find the id.")
+    print(f"No session '{session_id}'. Run: oria sessions list to find the id.")
     return 1
 
 
@@ -132,11 +132,11 @@ def _cmd_repair(args):
     print(
         "  Keep state.db and the backup; do not delete them.\n"
         "\n  Next step — offline recovery (never modifies the source):\n"
-        f"    hermes sessions recover --source {source_hint} \\\n"
+        f"    oria sessions recover --source {source_hint} \\\n"
         "        --inspect-only\n"
         "  If that reports the data is recoverable, rebuild it into\n"
         "  a NEW database (the active one is left untouched):\n"
-        f"    hermes sessions recover --source {source_hint} \\\n"
+        f"    oria sessions recover --source {source_hint} \\\n"
         "        --output recovered-state.db"
     )
 
@@ -627,9 +627,9 @@ def _note_pinned_skipped(db, filters, action):
     suffix = "" if skipped == 1 else "s"
     if action == "prune":
         verb = "deleted"
-        optin = "Pass --include-pinned to delete them anyway, or unpin first with `hermes sessions unpin <id>`."
+        optin = "Pass --include-pinned to delete them anyway, or unpin first with `oria sessions unpin <id>`."
     else:
-        verb, optin = "archived", "Unpin first with `hermes sessions unpin <id>` to include them."
+        verb, optin = "archived", "Unpin first with `oria sessions unpin <id>` to include them."
     print(f"Note: {skipped} pinned session{suffix} also match these filters but will NOT be {verb} "
           f"(pin is a keep flag). {optin}")
 
@@ -665,7 +665,7 @@ def _cmd_prune_or_archive(db, args, action):
     skipped_open = db.count_open_prune_matches(**filters) if prune else 0
     if skipped_open:
         print(f"Note: {skipped_open} open session{'' if skipped_open == 1 else 's'} also match these filters but "
-              "will be skipped because prune only deletes ended sessions. Use `hermes sessions delete <id>` "
+              "will be skipped because prune only deletes ended sessions. Use `oria sessions delete <id>` "
               "to remove one explicitly.")
     if not candidates:
         print(f"No sessions match ({describe_filters(filters)}).")
@@ -749,7 +749,7 @@ def _cmd_pinned(db, args):
         print(json.dumps([{"id": s["id"], **{k: s.get(k) for k in keys}} for s in pinned_rows], indent=2))
         return
     if not pinned_rows:
-        print("No pinned sessions. Pin one with: hermes sessions pin <session_id>")
+        print("No pinned sessions. Pin one with: oria sessions pin <session_id>")
         return
     print(f"{'Title':<32} {'Last Active':<13} {'Src':<9} {'ID'}\n" + "─" * 100)
     for s in pinned_rows:
@@ -915,7 +915,7 @@ def _cmd_optimize_storage(db, args):
     print("\n✓ Search index optimized.")
     _print_size_change(db, before_mb, prefix="  ")
     if result.get("vacuumed") is False:
-        print("  (VACUUM was skipped or failed — run `hermes sessions optimize` later to reclaim freed space.)")
+        print("  (VACUUM was skipped or failed — run `oria sessions optimize` later to reclaim freed space.)")
 
 
 def _cmd_repair_routing(db, args):
@@ -980,7 +980,7 @@ def _print_empty_store(action: str, args) -> None:
     if action == "stats":
         print("Total sessions: 0\nTotal messages: 0")
     elif action == "pinned":
-        print("[]" if getattr(args, "json", False) else "No pinned sessions. Pin one with: hermes sessions pin <session_id>")
+        print("[]" if getattr(args, "json", False) else "No pinned sessions. Pin one with: oria sessions pin <session_id>")
     else:
         print("No sessions found.")
 
@@ -999,7 +999,7 @@ def cmd_sessions(args, sessions_parser=None):
         if observational and not _default_db_path().exists():
             return _print_empty_store(action, args)
         print("Could not open your session history database. "
-              "Run: hermes sessions repair to fix it (a backup is made first).")
+              "Run: oria sessions repair to fix it (a backup is made first).")
         print(f"Details: {e}")
         return 1
     try:

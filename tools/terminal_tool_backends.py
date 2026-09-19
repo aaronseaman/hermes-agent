@@ -287,7 +287,7 @@ def _ssh_pre(config: Dict[str, Any]) -> bool:
     if config.get("ssh_host") and config.get("ssh_user"):
         return True
     return _reject("the SSH host and user are not configured (TERMINAL_SSH_HOST / TERMINAL_SSH_USER); "
-                   "run `hermes setup terminal` to enter them or pick the 'local' backend")
+                   "run `oria setup terminal` to enter them or pick the 'local' backend")
 
 
 def _daytona_post(config: Dict[str, Any]) -> bool:

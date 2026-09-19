@@ -35,7 +35,7 @@ _TOPIC_RESTORE_STEPS = (
 
 
 def _collapse_title(title: str) -> str:
-    return re.sub(r"\s+", " ", str(title or "")).strip() or "Hermes Chat"
+    return re.sub(r"\s+", " ", str(title or "")).strip() or "Oria Chat"
 
 
 class GatewayTopicThreadsMixin:
@@ -128,24 +128,24 @@ class GatewayTopicThreadsMixin:
     def _telegram_topic_root_lobby_message(self) -> str:
         return (
             "This main chat is reserved for system commands.\n\n"
-            "To start a new Hermes chat, open the All Messages topic at the top "
+            "To start a new Oria chat, open the All Messages topic at the top "
             "of this bot interface and send any message there. Telegram will "
             "create a new topic for that message; each topic works as an "
-            "independent Hermes session."
+            "independent Oria session."
         )
 
     def _telegram_topic_root_new_message(self) -> str:
         return (
-            "To start a new parallel Hermes chat, open the All Messages topic "
+            "To start a new parallel Oria chat, open the All Messages topic "
             "at the top of this bot interface and send any message there. "
             "Telegram will create a new topic for it.\n\n"
-            "Each topic is an independent Hermes session. Use /new inside an "
+            "Each topic is an independent Oria session. Use /new inside an "
             "existing topic only if you want to replace that topic's current session."
         )
 
     def _telegram_topic_new_header(self, source: SessionSource) -> Optional[str]:
         return (
-            "Started a new Hermes session in this topic.\n\n"
+            "Started a new Oria session in this topic.\n\n"
             "Tip: for parallel work, open All Messages and send a message there "
             "to create a separate topic instead of using /new here. /new replaces "
             "the session attached to the current topic."
@@ -162,11 +162,11 @@ class GatewayTopicThreadsMixin:
             "  /topic <id>        Inside a topic: restore a previous session by ID\n"
             "\n"
             "How it works:\n"
-            "1. Run /topic once in this DM — Hermes checks BotFather Threads\n"
+            "1. Run /topic once in this DM — Oria checks BotFather Threads\n"
             "   Settings are enabled and flips on multi-session mode.\n"
             "2. Tap All Messages at the top of the bot and send any message.\n"
             "   Telegram creates a new topic for that message; each topic is\n"
-            "   an independent Hermes session (fresh history, fresh context).\n"
+            "   an independent Oria session (fresh history, fresh context).\n"
             "3. The root DM becomes a system lobby — send /topic, /status,\n"
             "   /help, /usage there. Normal prompts go in a topic.\n"
             "4. /new inside a topic resets just that topic's session.\n"
@@ -266,7 +266,7 @@ class GatewayTopicThreadsMixin:
             return
         try:
             send_result = await adapter.send(
-                source.chat_id, "System topic for Hermes commands and status.", metadata={"thread_id": str(thread_id)},
+                source.chat_id, "System topic for Oria commands and status.", metadata={"thread_id": str(thread_id)},
             )
             message_id = getattr(send_result, "message_id", None)
         except Exception:
@@ -578,14 +578,14 @@ class GatewayTopicThreadsMixin:
             "Multi-session topic mode is now OFF for this chat.\n\n"
             "Existing topics in Telegram aren't removed — they'll just stop "
             "being gated as independent sessions. The root DM works as a "
-            "normal Hermes chat again. Run /topic to re-enable later."
+            "normal Oria chat again. Run /topic to re-enable later."
         )
 
     async def _telegram_topic_root_status_message(self, source: SessionSource) -> str:
         lines = [
             "Telegram multi-session topics are enabled.",
             "",
-            "To create a new Hermes chat, open All Messages at the top of this "
+            "To create a new Oria chat, open All Messages at the top of this "
             "bot interface and send any message there. Telegram will create a "
             "new topic for it.",
             "",
@@ -652,4 +652,4 @@ class GatewayTopicThreadsMixin:
                     last_assistant = str(projected.get("content"))
                     break
         response = f"Session restored: {title}"
-        return response + (f"\n\nLast Hermes message:\n{last_assistant}" if last_assistant else "")
+        return response + (f"\n\nLast Oria message:\n{last_assistant}" if last_assistant else "")

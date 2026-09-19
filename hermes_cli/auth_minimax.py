@@ -180,7 +180,7 @@ def _minimax_oauth_login(*, region: str = "global", open_browser: bool = True, t
     if _is_remote_session():
         open_browser = False
 
-    print(f"Starting Hermes login via MiniMax ({region}) OAuth...")
+    print(f"Starting Oria login via MiniMax ({region}) OAuth...")
     print(f"Portal: {portal_base_url}")
 
     with httpx.Client(timeout=httpx.Timeout(timeout_seconds), headers={"Accept": "application/json"},
@@ -283,7 +283,7 @@ def _minimax_fresh_state() -> Dict[str, Any]:
     state = get_provider_auth_state("minimax-oauth")
     if not state or not state.get("access_token"):
         raise _minimax_err(
-            "Not logged into MiniMax OAuth. Run `hermes model` and select MiniMax (OAuth).", "not_logged_in", relogin=True,
+            "Not logged into MiniMax OAuth. Run `oria model` and select MiniMax (OAuth).", "not_logged_in", relogin=True,
         )
     try:
         return _refresh_minimax_oauth_state(state)

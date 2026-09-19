@@ -46,7 +46,7 @@ _CUA_INSTALL_PS1_URL = (
 _CUA_INSTALL_SH_URL = (
     "https://raw.githubusercontent.com/trycua/cua/main/libs/cua-driver/scripts/install.sh")
 _CUA_MANUAL_README = "https://github.com/trycua/cua/blob/main/libs/cua-driver/README.md"
-_UPGRADE_CMD = "hermes computer-use install --upgrade"
+_UPGRADE_CMD = "oria computer-use install --upgrade"
 
 
 def _run_text(cmd: list, *, timeout, capture_output: bool = True,
@@ -246,7 +246,7 @@ def _report_repair_or_upgrade(ok: bool, *, repair_existing: bool, binary, before
         if not repaired.get("ready"):
             return _fail("    cua-driver was reinstalled, but its runtime contract is still "
                          f"unusable: {repaired.get('reason') or 'unknown error'}.",
-                         "    Run: hermes computer-use doctor")
+                         "    Run: oria computer-use doctor")
     if ok and before:
         after = _cua_driver_version(binary)
         if after and after != before:
@@ -308,7 +308,7 @@ def install_cua_driver(upgrade: bool = False, require_confirmed_update: bool = F
         return True
     if repair_existing:
         _print_warning(f"    Found cua-driver {contract.get('version') or 'unknown version'}, but "
-                       "Hermes cannot use its current runtime contract: "
+                       "Oria cannot use its current runtime contract: "
                        f"{contract.get('reason') or 'required runtime features are missing'}.")
         if override:
             return _fail("    Update the binary selected by HERMES_CUA_DRIVER_CMD, or unset the "
@@ -557,7 +557,7 @@ def _print_cua_platform_notes(is_windows: bool, is_linux: bool, *, fresh_install
         _print_info("      System Settings > Privacy & Security > Accessibility")
         _print_info("      System Settings > Privacy & Security > Screen Recording")
         if fresh_install:
-            _print_info("    Both must allow the terminal / Hermes process.")
+            _print_info("    Both must allow the terminal / Oria process.")
 
 
 def _kill_installer_tree(proc, *, is_windows: bool) -> None:

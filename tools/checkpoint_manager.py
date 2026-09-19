@@ -65,7 +65,7 @@ _MB = 1024 * 1024
 # Inherited GIT_* vars that would redirect the shadow store's git calls.
 _GIT_LEAK_VARS = ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_NAMESPACE", "GIT_ALTERNATE_OBJECT_DIRECTORIES")
 # Per-store config: isolated by env vars already, but belt-and-suspenders.
-_STORE_GIT_CONFIG = (("user.email", "hermes@local"), ("user.name", "Hermes Checkpoint"),
+_STORE_GIT_CONFIG = (("user.email", "hermes@local"), ("user.name", "Oria Checkpoint"),
                      ("commit.gpgsign", "false"), ("tag.gpgSign", "false"), ("gc.auto", "0"))
 _PROJECT_MARKERS = {".git", "pyproject.toml", "package.json", "Cargo.toml", "go.mod", "Makefile", "pom.xml", ".hg", "Gemfile"}
 
@@ -1197,8 +1197,8 @@ def checkpoint_footprint_notice() -> Optional[str]:
         from hermes_cli.sizefmt import format_bytes
         return (f"Filesystem checkpoints (/rollback) are on: {format_bytes(size)} across "
                 f"{status['project_count']} project(s), above the {cap_mb} MB cap (one snapshot per project is "
-                f"always kept). Not using /rollback? `hermes config set checkpoints.enabled false` then "
-                f"`hermes checkpoints clear`; or lower `checkpoints.retention_days`.")
+                f"always kept). Not using /rollback? `oria config set checkpoints.enabled false` then "
+                f"`oria checkpoints clear`; or lower `checkpoints.retention_days`.")
     except Exception as exc:
         logger.debug("checkpoint footprint notice skipped: %s", exc)
         return None

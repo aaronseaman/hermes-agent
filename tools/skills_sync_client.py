@@ -394,7 +394,7 @@ def _resolve_push_conflict(client: SyncClient, identity: Dict[str, Any], actual_
             client.cas_ref(conflict_ref, None, our_commit)
         return {"ok": False, "conflict": True, "conflict_ref": conflict_ref, "overlapping_skills": sorted(overlaps),
                 "actual_head": actual_head, "message": (f"{len(overlaps)} skill(s) changed on both sides; wrote "
-                                                        f"{conflict_ref}. Resolve out-of-band (hermes sync / NAS UI).")}
+                                                        f"{conflict_ref}. Resolve out-of-band (oria sync / NAS UI).")}
     # Merge commit (parents: actual, ours); re-add our objects so the merge push is self-contained.
     merge_objects = ObjectSet()
     merge_objects.objects |= objects.objects

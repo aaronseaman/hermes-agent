@@ -436,7 +436,7 @@ def clone_channels_refusal(source_dir: Path, source_label: str) -> Optional[str]
         f"--clone-channels would copy {', '.join(platforms)} from '{source_label}', which the running "
         "multiplexed gateway already serves: the bot can only belong to one profile, so the copy would be "
         "parked as a duplicate credential. Clone without --clone-channels and give the new profile its own bot "
-        "(hermes -p <name> setup), or route its chats with gateway.profile_routes instead."
+        "(oria -p <name> setup), or route its chats with gateway.profile_routes instead."
     )
 
 
@@ -476,9 +476,9 @@ def shared_channel_credentials(profile_dir: Path, source_dir: Path) -> List[str]
 def shared_credential_warning(profile: str, platforms: List[str], source: str = "default") -> str:
     return (
         f"⚠ Profile '{profile}' shares its {', '.join(platforms)} credential with {source}: the bot can "
-        f"only belong to one profile. Give '{profile}' its own bot (hermes -p {profile} setup, or the "
+        f"only belong to one profile. Give '{profile}' its own bot (oria -p {profile} setup, or the "
         f"dashboard Messaging page) or remove the token from '{profile}'; a multiplexed gateway parks "
-        f"the duplicate and `hermes gateway migrate --multiplex` refuses until it is gone."
+        f"the duplicate and `oria gateway migrate --multiplex` refuses until it is gone."
     )
 
 
@@ -490,6 +490,6 @@ def format_stripped_notice(profile: str, platforms: List[str], clone_flag: str =
     return [
         f"Messaging channels were NOT cloned ({', '.join(platforms)}): a copied bot token or allowlist "
         "would make two gateways fight over one bot.",
-        f"  Configure this profile's own bots:  hermes -p {profile} setup   (or the dashboard Messaging page)",
-        f"  To copy the source's channels anyway:  hermes profile create {profile} {clone_flag} --clone-channels",
+        f"  Configure this profile's own bots:  oria -p {profile} setup     (or the dashboard Messaging page)",
+        f"  To copy the source's channels anyway:  oria profile create {profile} {clone_flag} --clone-channels",
     ]

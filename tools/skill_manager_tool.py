@@ -301,12 +301,12 @@ def _skill_not_found_error(name: str, suffix: str = "") -> str:
         other_profile, other_path = others[0]
         base += (
             f" A skill by that name exists in profile '{other_profile}' ({other_path}). To edit "
-            f"it, switch profiles (`hermes -p {other_profile}`) or edit the file directly "
+            f"it, switch profiles (`oria -p {other_profile}`) or edit the file directly "
             f"(file tools / terminal).")
     elif others:
         names = ", ".join(f"'{p}'" for p, _ in others)
         base += (
-            f" Skills by that name exist in other profiles: {names}. Switch profiles (`hermes -p "
+            f" Skills by that name exist in other profiles: {names}. Switch profiles (`oria -p "
             f"<name>`) to edit there, or edit the files directly (file tools / terminal).")
     else:
         base += " Use skills_list() to see available skills."
@@ -405,7 +405,7 @@ def _attach_lint_findings(result: Dict[str, Any], skill_md: Path) -> None:
         {"severity": f.severity, "rule": f.rule, "message": f.message} for f in findings]
     result["lint_hint"] = (
         "The skill was created. These are advisory authoring-convention findings (not blockers) "
-        "— fix them with skill_manage(action='patch') to match Hermes skill standards.")
+        "— fix them with skill_manage(action='patch') to match Oria skill standards.")
 
 
 def _clip(text: str, n: int, ellipsis: str) -> str:

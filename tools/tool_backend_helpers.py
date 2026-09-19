@@ -41,7 +41,7 @@ def nous_tool_gateway_unavailable_message(capability: str = "the Nous Tool Gatew
             return message
     except Exception:
         pass
-    return (f"{capability} is unavailable. Run `hermes model` to refresh your "
+    return (f"{capability} is unavailable. Run `oria model` to refresh your "
             "Nous Portal login and billing status.")
 
 
@@ -250,7 +250,7 @@ def selection_error(section: str, selection_name: str, failure: str) -> str:
     """The uniform honest-error contract for a selected-but-broken provider."""
     failure = removed_backend_note(section, selection_name) or failure
     return (f"{section} is configured to use {selection_name} (set via hermes "
-            f"tools), but {failure}. Run 'hermes tools' to change it.")
+            f"tools), but {failure}. Run 'oria tools' to change it.")
 
 
 def fal_key_is_configured() -> bool:

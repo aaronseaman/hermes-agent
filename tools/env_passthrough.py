@@ -59,7 +59,7 @@ def register_env_passthrough(var_names: Iterable[str]) -> None:
     are rejected (GHSA-rhgp-j443-p4rf) — such skills should use the main-process tools
     (web_search, web_extract, …); third-party keys pass normally."""
     for name in _accepted((n.strip() for n in var_names), (
-        "env passthrough: refusing to register Hermes provider "
+        "env passthrough: refusing to register Oria provider "
         "credential %r (blocked by _HERMES_PROVIDER_ENV_BLOCKLIST). "
         "Skills must not override the execute_code sandbox's "
         "credential scrubbing; see GHSA-rhgp-j443-p4rf."
@@ -99,7 +99,7 @@ def _load_config_passthrough() -> frozenset[str]:
         passthrough = cfg_get(read_raw_config(), "terminal", "env_passthrough")
         items = passthrough if isinstance(passthrough, list) else ()
         result.update(_accepted((i.strip() for i in items if isinstance(i, str)), (
-            "env passthrough: refusing to register Hermes "
+            "env passthrough: refusing to register Oria "
             "provider credential %r from config.yaml (blocked "
             "by _HERMES_PROVIDER_ENV_BLOCKLIST). Operator "
             "configuration must not override the execute_code "

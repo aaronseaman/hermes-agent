@@ -16,7 +16,7 @@ def missing_optional_deps_message(surface: str, what: str, extra: str) -> str:
 
     return (
         f"The {surface} can't start: {what} are missing from this install.\n"
-        "Run `hermes update` to reinstall dependencies. If that fails, run manually:\n"
+        "Run `oria update` to reinstall dependencies. If that fails, run manually:\n"
         f"  cd {PROJECT_ROOT} && {sys.executable} -m pip install -e '.[{extra}]'\n"
         f"  (no pip in this venv: uv pip install -e '.[{extra}]')"
     )

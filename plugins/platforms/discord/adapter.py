@@ -95,7 +95,7 @@ _DISCORD_MAX_APP_COMMANDS = 100
 _REQUIRED = object()
 _NATIVE_SLASH_COMMANDS: tuple = (
     ("new", "Start a new conversation", (), "/reset", "New conversation started~"),
-    ("reset", "Reset your Hermes session", (), "/reset", "Session reset~"),
+    ("reset", "Reset your Oria session", (), "/reset", "Session reset~"),
     ("model", "Show or change the model",
      (("name", str, "", "Model name (e.g. anthropic/claude-sonnet-4). Leave empty to see current.", None),),
      "/model {name}", None),
@@ -112,9 +112,9 @@ _NATIVE_SLASH_COMMANDS: tuple = (
      "/personality {name}", None),
     ("retry", "Retry your last message", (), "/retry", "Retrying~"),
     ("undo", "Remove the last exchange", (), "/undo", None),
-    ("status", "Show Hermes session status", (), "/status", "Status sent~"),
+    ("status", "Show Oria session status", (), "/status", "Status sent~"),
     ("sethome", "Set this chat as the home channel", (), "/sethome", None),
-    ("stop", "Stop the running Hermes agent", (), "/stop", "Stop requested~"),
+    ("stop", "Stop the running Oria agent", (), "/stop", "Stop requested~"),
     ("steer", "Inject a message after the next tool call (no interrupt)",
      (("prompt", str, _REQUIRED, "Text to inject into the agent's next tool result", None),),
      "/steer {prompt}", None),
@@ -143,8 +143,8 @@ _NATIVE_SLASH_COMMANDS: tuple = (
         ("tts — voice reply to all messages", "tts"), ("off — text only", "off"),
         ("status — show current mode", "status"))),),
      "/voice {mode}", None),
-    ("update", "Update Hermes Agent to the latest version", (), "/update", "Update initiated~"),
-    ("restart", "Gracefully restart the Hermes gateway", (), "/restart", "Restart requested~"),
+    ("update", "Update Oria to the latest version", (), "/update", "Update initiated~"),
+    ("restart", "Gracefully restart the Oria gateway", (), "/restart", "Restart requested~"),
     ("approve", "Approve a pending dangerous command",
      (("scope", str, "", "Optional: 'all', 'session', 'always', 'all session', 'all always'", None),),
      "/approve {scope}", None),
@@ -152,7 +152,7 @@ _NATIVE_SLASH_COMMANDS: tuple = (
      (("scope", str, "", "Optional: 'all' to deny all pending commands", None),),
      "/deny {scope}", None),
     # /thread: template None -> registered by _register_thread_slash (auth-gated defer).
-    ("thread", "Create a new thread and start a Hermes session in it", (), None, None),
+    ("thread", "Create a new thread and start an Oria session in it", (), None, None),
     ("queue", "Queue a prompt for the next turn (doesn't interrupt)",
      (("prompt", str, _REQUIRED, "The prompt to queue", None),),
      "/queue {prompt}", "Queued for the next turn."),
@@ -192,7 +192,7 @@ _DISCORD_NONCONVERSATIONAL_HISTORY_MESSAGE_PATTERNS = (
         re.IGNORECASE,
     ),
     re.compile(
-        r"^\s*(?:✅|❌)\s+Hermes update\s+"
+        r"^\s*(?:✅|❌)\s+Oria update\s+"
         r"(?:finished|failed|timed out)[\s\S]*$",
         re.IGNORECASE,
     ),
@@ -370,7 +370,7 @@ def _format_privileged_intents_guidance(*, needs_members: bool) -> str:
     lines = [
         "Discord rejected the connection because privileged Gateway Intents "
         "are not enabled for this bot in the Developer Portal.",
-        "Hermes is requesting:",
+        "Oria is requesting:",
         "  - Message Content Intent (required to read message text)",
     ]
     if needs_members:
@@ -4275,7 +4275,7 @@ class DiscordAdapter(DiscordMediaMixin, BasePlatformAdapter):
     def _register_thread_slash(self, tree, name: str, description: str) -> None:
         @tree.command(name=name, description=description)
         @discord.app_commands.describe(
-            name="Thread name", message="Optional first message to send to Hermes in the thread",
+            name="Thread name", message="Optional first message to send to Oria in the thread",
             auto_archive_duration="Auto-archive in minutes (60, 1440, 4320, 10080)",
         )
         async def slash_thread(
@@ -4455,7 +4455,7 @@ class DiscordAdapter(DiscordMediaMixin, BasePlatformAdapter):
                 _desc, cmd_key = entry
                 await self._run_simple_slash(interaction, f"{cmd_key} {args}".strip())
             cmd = discord.app_commands.Command(
-                name="skill", description="Run a Hermes skill", callback=_skill_handler,
+                name="skill", description="Run an Oria skill", callback=_skill_handler,
             )
             tree.add_command(cmd)
             logger.info(
@@ -5068,7 +5068,7 @@ class DiscordAdapter(DiscordMediaMixin, BasePlatformAdapter):
             return self._thread_created(thread, name)
         except Exception as direct_error:
             try:
-                seed_content = starter_message or f"\U0001f9f5 Thread created by Hermes: **{name}**"
+                seed_content = starter_message or f"\U0001f9f5 Thread created by Oria: **{name}**"
                 seed_msg = await parent_channel.send(seed_content)
                 thread = await seed_msg.create_thread(
                     name=name, auto_archive_duration=auto_archive_duration, reason=reason,
@@ -5104,7 +5104,7 @@ class DiscordAdapter(DiscordMediaMixin, BasePlatformAdapter):
         content = re.sub(r"<@[!&]?\d+>", "", content)
         content = re.sub(r"<#\d+>", "", content)
         content = re.sub(r"\s+", " ", content).strip()
-        thread_name = content[:80] if content else "Hermes"
+        thread_name = content[:80] if content else "Oria"
         if len(content) > 80:
             thread_name = thread_name[:77] + "..."
         return thread_name
@@ -5138,7 +5138,7 @@ class DiscordAdapter(DiscordMediaMixin, BasePlatformAdapter):
                 last_direct_error = direct_error
                 try:
                     seed_msg = await message.channel.send(
-                        f"\U0001f9f5 Thread created by Hermes: **{thread_name}**"
+                        f"\U0001f9f5 Thread created by Oria: **{thread_name}**"
                     )
                     thread = await seed_msg.create_thread(name=thread_name, auto_archive_duration=1440, reason=reason)
                     return self._stamp_auto_thread_name(thread, thread_name)
@@ -5191,7 +5191,7 @@ class DiscordAdapter(DiscordMediaMixin, BasePlatformAdapter):
         if edit is None:
             return False
         try:
-            await edit(name=cleaned, reason="Hermes semantic session title")
+            await edit(name=cleaned, reason="Oria semantic session title")
             logger.info(
                 "[%s] Renamed Discord thread %s from %r to %r",
                 self.name, thread_id, current_name, cleaned,
@@ -5227,7 +5227,7 @@ class DiscordAdapter(DiscordMediaMixin, BasePlatformAdapter):
             )
             return None
         thread_name = (name or "handoff").strip()[:80] or "handoff"
-        reason = "Hermes session handoff"
+        reason = "Oria session handoff"
         try:
             create = getattr(parent, "create_thread", None)
             if create is not None:
@@ -5242,7 +5242,7 @@ class DiscordAdapter(DiscordMediaMixin, BasePlatformAdapter):
             send = getattr(parent, "send", None)
             if send is None:
                 return None
-            seed_msg = await send(f"\U0001f9f5 Hermes handoff: **{thread_name}**")
+            seed_msg = await send(f"\U0001f9f5 Oria handoff: **{thread_name}**")
             thread = await seed_msg.create_thread(
                 name=thread_name, auto_archive_duration=1440, reason=reason,
             )
@@ -5308,7 +5308,7 @@ class DiscordAdapter(DiscordMediaMixin, BasePlatformAdapter):
 
     # Payload lives in plain content: embeds can be invisible/detached on web/mobile.
     _EA_HEADER = (f"⚠️ **{EA_HEADER_TEXT}**\n\n"
-                  "Do you want Hermes to run this command?\n\n"
+                  "Do you want Oria to run this command?\n\n"
                   "**Requested command:**\n")
     _EA_CODE_OPEN = "```bash\n"
     _EA_CODE_CLOSE = "\n```\n"
@@ -5397,7 +5397,7 @@ class DiscordAdapter(DiscordMediaMixin, BasePlatformAdapter):
 
         def _build(_channel):
             embed = discord.Embed(
-                title="❓ Hermes needs your input",
+                title="❓ Oria needs your input",
                 description=self._embed_body(str(question or "").strip()),
                 color=discord.Color.orange(),
             )
@@ -5416,7 +5416,7 @@ class DiscordAdapter(DiscordMediaMixin, BasePlatformAdapter):
                 embed.add_field(name="Reply", value=hint, inline=False)
                 view = None
             content = self._self_contained_prompt_content(
-                "❓ **Hermes needs your input**", str(question or "").strip(), tail=f"\n\n{hint}",
+                "❓ **Oria needs your input**", str(question or "").strip(), tail=f"\n\n{hint}",
             )
             send_kwargs = {"content": content, "embed": embed}
             if view:
@@ -5817,7 +5817,7 @@ class DiscordAdapter(DiscordMediaMixin, BasePlatformAdapter):
                         # channel. Surface a short visible error so the user can retry once Discord
                         # recovers, and skip agent invocation for this message. See #20243.
                         await message.channel.send(
-                            "⚠️ Hermes could not create a Discord thread for "
+                            "⚠️ Oria could not create a Discord thread for "
                             "this message, so the request was not processed. Please retry."
                         )
                     except Exception as notify_error:
@@ -6980,7 +6980,7 @@ def interactive_setup() -> None:
         )
     print()
     _info_lines(
-        "📬 Home Channel: where Hermes delivers cron job results,",
+        "📬 Home Channel: where Oria delivers cron job results,",
         "   cross-platform messages, and notifications.",
         "   To get a channel ID: right-click a channel → Copy Channel ID",
         "   (requires Developer Mode in Discord settings)",
@@ -7116,7 +7116,7 @@ def register(ctx) -> None:
         ensure_deps_fn=check_discord_requirements,
         is_connected=_is_connected,
         required_env=["DISCORD_BOT_TOKEN"],
-        install_hint="Run `hermes setup` to install Discord support.",
+        install_hint="Run `oria setup` to install Discord support.",
         setup_fn=interactive_setup,
         # YAML→env bridge: ``discord:`` config keys → ``DISCORD_*`` env vars read via os.getenv().
         # YAML→env config bridge — owns the translation of ``config.yaml`` ``discord:`` keys

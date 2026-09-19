@@ -164,12 +164,12 @@ def _login_retry_context(args) -> tuple[str, str]:
     exists). Falls back to ``hermes model`` when no provider config is in play."""
     pconfig = next((a for a in args if hasattr(a, "id") and hasattr(a, "portal_base_url")), None)
     if pconfig is None:
-        return "hermes model", "the sign-in service"
+        return "oria model", "the sign-in service"
     provider_id = str(getattr(pconfig, "id", "") or "")
     host = urlparse(str(getattr(pconfig, "portal_base_url", "") or "")).hostname or "the sign-in service"
     if provider_id == "nous":
-        return "hermes portal", host
-    return (f"hermes auth add {provider_id}" if provider_id else "hermes model"), host
+        return "oria portal", host
+    return (f"oria auth add {provider_id}" if provider_id else "oria model"), host
 
 
 def _run_login(login_fn, *args, **kwargs) -> bool:

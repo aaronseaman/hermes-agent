@@ -689,7 +689,7 @@ class RelayAdapter(BasePlatformAdapter):
         chat_id: str,
         tasks: list,
         *,
-        title: str = "Hermes is working",
+        title: str = "Oria is working",
         reply_to: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
         fallback_text: Optional[str] = None,

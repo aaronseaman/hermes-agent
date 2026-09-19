@@ -108,8 +108,8 @@ def _preflight_check_provider_key(job: dict, cfg: dict) -> Optional[str]:
     except AuthError as exc:
         return (
             f"provider credential missing: {exc}. "
-            "Set the provider API key in .env (or `hermes setup`), or pin a "
-            "working provider via `hermes cron edit "
+            "Set the provider API key in .env (or `oria setup`), or pin a "
+            "working provider via `oria cron edit "
             f"{job.get('id')} --provider <p>`."
         )
     except Exception:
@@ -270,7 +270,7 @@ def _preflight_check_delivery(job: dict) -> Optional[str]:
             return (
                 f"delivery platform '{platform_name}' has no gateway "
                 "credentials configured (not connected). Configure it via "
-                "`hermes setup` or change the job's `deliver` target."
+                "`oria setup` or change the job's `deliver` target."
             )
     return None
 

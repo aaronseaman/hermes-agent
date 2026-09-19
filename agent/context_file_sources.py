@@ -29,7 +29,7 @@ _STATUS_DISPLAY = {
     "blocked": ("✗", "not loaded — blocked by the prompt-injection scan"),
     "empty": ("○", "not loaded — empty file"),
     "unreadable": ("✗", "not loaded — could not be read"),
-    "suppressed": ("○", "not loaded — cwd fell back to the Hermes install tree"),
+    "suppressed": ("○", "not loaded — cwd fell back to the Oria install tree"),
 }
 
 

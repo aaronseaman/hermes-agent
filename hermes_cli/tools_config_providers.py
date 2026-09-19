@@ -1001,7 +1001,7 @@ def _configure_vision_provider_model(config: dict, vision_cfg: dict) -> None:
 
     if not providers:
         _print_warning("  No authenticated providers found. Configure a provider first "
-                       "with `hermes model`, then re-run this.")
+                       "with `oria model`, then re-run this.")
         return
 
     provider_labels = [label for _slug, label, _models in format_aux_picker_entries(

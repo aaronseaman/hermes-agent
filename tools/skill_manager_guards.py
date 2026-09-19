@@ -148,7 +148,7 @@ def _pinned_guard(name: str) -> Optional[str]:
         from agent.skill_utils import ESSENTIAL_SKILLS
         if name in ESSENTIAL_SKILLS:
             return (
-                f"Skill '{name}' is essential to Hermes (the agent's own "
+                f"Skill '{name}' is essential to Oria (the agent's own "
                 f"operating manual referenced by the system prompt) and "
                 f"cannot be deleted. Patches and edits are still allowed.")
     except Exception:
@@ -156,7 +156,7 @@ def _pinned_guard(name: str) -> Optional[str]:
     if _is_pinned(name, "pinned-guard"):
         return (
             f"Skill '{name}' is pinned and cannot be deleted by skill_manage. Ask the user to "
-            f"run `hermes curator unpin {name}` if they want to delete it. Patches and edits "
+            f"run `oria curator unpin {name}` if they want to delete it. Patches and edits "
             f"are allowed on pinned skills; only deletion is blocked.")
     return None
 
@@ -171,7 +171,7 @@ def _background_review_write_guard(
     if _is_pinned(name, "pinned skill guard"):
         return _refusal(
             f"{refuse} pinned skill '{name}': pinned skills "
-            f"are off-limits to autonomous maintenance. Ask the user to run `hermes curator "
+            f"are off-limits to autonomous maintenance. Ask the user to run `oria curator "
             f"unpin {name}` if they want it changed.")
     try:
         from agent.skill_utils import is_external_skill_path
@@ -208,7 +208,7 @@ def _background_review_write_guard(
             return _refusal(
                 f"{refuse} skill '{name}': the skill is not "
                 f"curator-managed ({_detail}). User-owned skills are off-limits to autonomous "
-                f"curation. Run `hermes curator adopt {name}` to opt it in.")
+                f"curation. Run `oria curator adopt {name}` to opt it in.")
     except Exception:
         logger.warning("owned skill guard lookup failed for %s", name, exc_info=True)
         return _refusal(
@@ -278,7 +278,7 @@ def _maybe_auto_propose_org_edit(name: str, skill_path: Path) -> Optional[str]:
             return (
                 f"This skill is shared by your organisation. Your edit is "
                 f"saved locally and will not be overwritten by org updates. "
-                f"Run `hermes sync propose {name}` to share it back.")
+                f"Run `oria sync propose {name}` to share it back.")
         from tools.skills_sync_client_org import propose_skill
         result = propose_skill(name)
         if result.get("proposal_pending"):
@@ -290,7 +290,7 @@ def _maybe_auto_propose_org_edit(name: str, skill_path: Path) -> Optional[str]:
         logger.debug("auto-propose skipped for %s: %s", name, e)
         return (
             f"Edit saved locally. Could not submit it to your organisation "
-            f"right now — run `hermes sync propose {name}` to retry.")
+            f"right now — run `oria sync propose {name}` to retry.")
 
 
 def _org_mirror_write_guard(name: str, skill_path: Path, action: str) -> Optional[Dict[str, Any]]:
@@ -306,7 +306,7 @@ def _org_mirror_write_guard(name: str, skill_path: Path, action: str) -> Optiona
                 f"Cannot {action} '{name}' locally: it is shared by your organisation, so a local "
                 f"delete would just come back on the next sync. Ask an org admin to remove it for "
                 f"everyone. (Editing it IS allowed — your changes are kept and can be proposed "
-                f"back with `hermes sync propose {name}`.)")
+                f"back with `oria sync propose {name}`.)")
     except Exception:
         logger.debug("org mirror guard lookup failed for %s", name, exc_info=True)
     return None

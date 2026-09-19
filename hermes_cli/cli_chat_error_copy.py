@@ -11,8 +11,8 @@ _SUMMARY_LIMIT = 120
 
 # FailoverReason.value -> plain copy. ``{provider}`` / ``{model}`` are filled at render time.
 _REASON_COPY: dict[str, str] = {
-    "auth": "Your {provider} key was rejected. Run `hermes model` to re-enter it.",
-    "auth_permanent": "Your {provider} key was rejected. Run `hermes model` to re-enter it.",
+    "auth": "Your {provider} key was rejected. Run `oria model` to re-enter it.",
+    "auth_permanent": "Your {provider} key was rejected. Run `oria model` to re-enter it.",
     "billing": "Your {provider} account is out of credit. Top up at the provider, or run /model to switch.",
     "model_not_found": "'{model}' isn't available on {provider}. Run /model to pick a valid model.",
     "rate_limit": "Rate limited by {provider}; wait a minute or /model to switch.",
@@ -21,7 +21,7 @@ _REASON_COPY: dict[str, str] = {
     "server_error": "{provider} had an internal error. Send /retry in a moment, or /model to switch.",
     "timeout": "{provider} did not answer in time. Send /retry, or /model to switch.",
 }
-_UNKNOWN_COPY = "The model request failed. Run /model to switch or `hermes doctor` to check the setup."
+_UNKNOWN_COPY = "The model request failed. Run /model to switch or `oria doctor` to check the setup."
 
 
 def _short(text: str, limit: int = _SUMMARY_LIMIT) -> str:
@@ -59,7 +59,7 @@ def chat_error_response(
 def agent_init_failure_message(error: BaseException) -> str:
     """Copy for a failed AIAgent build on first message: the user's turn was dropped."""
     return (
-        f"Hermes couldn't start the model connection: {_short(str(error)) or type(error).__name__}. "
-        "Your message was not sent. Run `hermes doctor` to check the setup, "
+        f"Oria couldn't start the model connection: {_short(str(error)) or type(error).__name__}. "
+        "Your message was not sent. Run `oria doctor` to check the setup, "
         "or /model to pick a different provider."
     )

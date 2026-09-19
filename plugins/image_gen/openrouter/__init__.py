@@ -757,7 +757,7 @@ class OpenRouterCompatImageProvider(ImageGenProvider):
         if not api_key or not base_url:
             return fail(
                 f"No {self._display} credentials found. "
-                f"Configure {self._display} in `hermes tools` → Image Generation.",
+                f"Configure {self._display} in `oria tools` → Image Generation.",
                 "missing_api_key")
 
         model_chain = self._resolve_model_chain(kwargs.get("model"))

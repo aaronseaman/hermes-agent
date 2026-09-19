@@ -128,7 +128,7 @@ def cmd_fallback_list(args) -> None:  # noqa: ARG001
     """Print the current fallback chain."""
     config, chain = _load_chain("  No fallback providers configured.")
     if chain is None:
-        print("  Add one with:  hermes fallback add\n")
+        print("  Add one with:  oria fallback add\n")
         return
     print()
     if primary := _describe_primary(config):
@@ -148,7 +148,7 @@ def cmd_fallback_add(args) -> None:
     model_before = copy.deepcopy(load_config().get("model"))
     active_provider_before = _snapshot_auth_active_provider()
     print("\n  Adding a fallback provider.  The picker below is the same one used by\n"
-          "  `hermes model` — select the provider + model you want as a fallback.\n")
+          "  `oria model` — select the provider + model you want as a fallback.\n")
 
     try:
         select_provider_and_model(args=args)
@@ -191,7 +191,7 @@ def cmd_fallback_add(args) -> None:
     save_config(final_cfg)
     print(f"\n  Added fallback: {_format_entry(new_entry)}")
     print(f"  Chain is now {_entries(len(chain))} long.\n")
-    print("  Run `hermes fallback list` to view, or `hermes fallback remove` to delete.")
+    print("  Run `oria fallback list` to view, or `oria fallback remove` to delete.")
 
 
 def cmd_fallback_remove(args) -> None:  # noqa: ARG001

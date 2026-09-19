@@ -78,7 +78,7 @@ def unauthorized_owner_hint(
         f"Dropped a message from unrecognized {platform_name} user {who}. If that is you or someone "
         f"you trust, {allowlist}; or set `unauthorized_dm_behavior: pair` for {platform_name} in "
         f"{hermes_home}/config.yaml so unknown senders receive a pairing code you can approve with "
-        f"`hermes pairing approve {platform_name} <code>`."
+        f"`oria pairing approve {platform_name} <code>`."
     )
 
 

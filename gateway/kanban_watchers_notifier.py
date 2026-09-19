@@ -394,8 +394,8 @@ def _fmt_gave_up(ev, n) -> tuple:
     count = f"it failed {int(failures)} times in a row" if failures else "it kept failing"
     last = _clip(ev, "error", " (last: {})", 160)
     return (
-        f"⛔ {n.head} is now blocked: {count}{last}. Fix the cause, then `hermes kanban unblock "
-        f"{n.task_id}` (or `hermes kanban reassign {n.task_id}`). Logs: `hermes kanban log {n.task_id}`.",
+        f"⛔ {n.head} is now blocked: {count}{last}. Fix the cause, then `oria kanban unblock "
+        f"{n.task_id}` (or `oria kanban reassign {n.task_id}`). Logs: `oria kanban log {n.task_id}`.",
         None, None,
     )
 

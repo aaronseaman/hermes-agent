@@ -38,7 +38,7 @@ MAX_REFERENCE_IMAGES = 7
 _REMOTE_PREFIXES = ("http://", "https://")
 _TERMINAL_POLL_STATUSES = {"done", "failed", "error", "expired", "cancelled"}
 _IMAGE_TO_VIDEO_COMPAT_MODEL_IDS = {"grok-imagine-video-1.5-preview", "grok-imagine-video-1.5-2026-05-30"}
-_AUTH_REQUIRED_MSG = ("No xAI credentials found. Sign in via `hermes auth add xai-oauth` "
+_AUTH_REQUIRED_MSG = ("No xAI credentials found. Sign in via `oria auth add xai-oauth` "
                       "(SuperGrok / Premium+) or set XAI_API_KEY from https://console.x.ai/.")
 _PUBLIC_URL_HINT = "(e.g. the `image`/`public_url` from a prior Imagine result)"
 _MODELS: Dict[str, Dict[str, Any]] = {

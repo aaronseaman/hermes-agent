@@ -278,7 +278,7 @@ class OnePasswordSource(SecretSource):
     # override_existing defaults True: an explicit VAR→op:// binding is the
     # strongest user intent; a stale .env line must not silently defeat it.
     override_existing_default = True
-    _AUTH_HINT = ("Run `hermes secrets onepassword token` to paste a fresh service-account token "
+    _AUTH_HINT = ("Run `oria secrets onepassword token` to paste a fresh service-account token "
                   "({token_env}), or `op signin` for an interactive session.")
     remediation_hints = {ErrorKind.AUTH_FAILED: _AUTH_HINT, ErrorKind.AUTH_EXPIRED: _AUTH_HINT,
                          ErrorKind.BINARY_MISSING: _MISSING_BINARY_HINT}

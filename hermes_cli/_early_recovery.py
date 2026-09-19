@@ -485,7 +485,7 @@ def _complete_pending_core_install(root: Path, core_marker: Path) -> bool:
         if not _claim_recovery_lock(root):
             return False
         try:
-            print("⚠ A previous `hermes update` was interrupted mid-install — "
+            print("⚠ A previous `oria update` was interrupted mid-install — "
                   "finishing dependency installation now (before any native "
                   "extensions load)...", file=sys.stderr)
             ir.run_core_install(root)

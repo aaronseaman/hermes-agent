@@ -134,12 +134,12 @@ def describe_holder(holder: UpdateHolder) -> str:
     minutes, seconds = divmod(int(max(holder.age_seconds, 0)), 60)
     elapsed = f"{minutes}m {seconds}s" if minutes else f"{seconds}s"
     return (
-        f"✗ Another Hermes update is already running (started {elapsed} ago, "
+        f"✗ Another Oria update is already running (started {elapsed} ago, "
         f"process {holder.pid}).\n"
         "\n"
         "  Running two at once would corrupt the install. Wait for it to finish\n"
-        "  (watch `hermes logs`), or close the Desktop/dashboard window that\n"
-        "  started it, then run `hermes update` again."
+        "  (watch `oria logs`), or close the Desktop/dashboard window that\n"
+        "  started it, then run `oria update` again."
     )
 
 

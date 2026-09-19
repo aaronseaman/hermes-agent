@@ -87,7 +87,7 @@ def _render_state_db_stats(stats: dict, holders=None) -> list:
             lines.append(("warn", f"state.db FTS repair is blocked after {deferral.get('attempts') or '?'} deferral(s) "
                           f"by PID(s) {pids}",
                           "(stop the listed processes; the gateway's own retry then rebuilds, or run "
-                          "'hermes sessions optimize-storage' with every holder stopped)"))
+                          "'oria sessions optimize-storage' with every holder stopped)"))
     # Oversized DB: suggest auto_prune, plus the offline optimize-storage pass when the FTS rebuild is
     # pending OR the DB predates the current trigram layout (fts_storage_version < FTS_STORAGE_VERSION).
     if logical is not None and logical > STATE_DB_SIZE_WARN_BYTES:
@@ -95,7 +95,7 @@ def _render_state_db_stats(stats: dict, holders=None) -> list:
         stale_trigram = (fts is not None and fts.get("messages_fts_trigram")
                          and (stats.get("fts_storage_version") or 0) < FTS_STORAGE_VERSION)
         if stats.get("fts_rebuild_pending") or stale_trigram:
-            detail += "; run 'hermes sessions optimize-storage' offline (with the gateway stopped) to compact FTS storage"
+            detail += "; run 'oria sessions optimize-storage' offline (with the gateway stopped) to compact FTS storage"
         lines.append(("warn", f"state.db is large ({_human_bytes(logical)})", f"({detail})"))
     # WAL runaway is deliberately NOT warned here: _state_db_wal already warns above 50 MB and offers --fix.
     return lines
@@ -127,11 +127,11 @@ def _check_directory_structure(should_fix: bool, f: Finding) -> None:
         else:  # template comments only (no real content)
             check_info(f"{_DHH}/SOUL.md exists but is empty — edit it to customize personality")
     else:
-        check_warn(f"{_DHH}/SOUL.md not found", "(create it to give Hermes a custom personality)")
+        check_warn(f"{_DHH}/SOUL.md not found", "(create it to give Oria a custom personality)")
         if should_fix:
             soul_path.parent.mkdir(parents=True, exist_ok=True)
-            soul_path.write_text("# Hermes Agent Persona\n\n<!-- Edit this file to customize how Hermes communicates. -->\n\n"
-                                 "You are Hermes, a helpful AI assistant.\n", encoding="utf-8")
+            soul_path.write_text("# Oria Persona\n\n<!-- Edit this file to customize how Oria communicates. -->\n\n"
+                                 "You are Oria, a helpful AI assistant.\n", encoding="utf-8")
             check_ok(f"Created {_DHH}/SOUL.md with basic template")
             f.fixed += 1
     # Only enabled built-in stores: users can disable either legacy file target, and stale migration files
@@ -172,7 +172,7 @@ def _write_health_reason(state_db_path: Path, *, should_fix: bool):
         return _db_opens_cleanly(state_db_path)
     if not should_fix and state_db_path.stat().st_size > _WRITE_PROBE_SNAPSHOT_MAX_BYTES:
         check_info("state.db write-health probe skipped: store is held by a live writer and larger than 1 GB "
-                   "(run 'hermes doctor --fix' to probe it)")
+                   "(run 'oria doctor --fix' to probe it)")
         return None
     import sqlite3
     import tempfile
@@ -197,11 +197,11 @@ _STATE_DB_REPAIRS = {
     "fts": ("Repaired state.db FTS write health",
             "state.db FTS write-health repair did not recover automatically",
             "state.db FTS write corruption and auto-repair failed — restore from the backup copy beside state.db",
-            "state.db FTS write corruption — run 'hermes doctor --fix' (or 'hermes sessions repair') to rebuild the FTS index"),
+            "state.db FTS write corruption — run 'oria doctor --fix' (or 'oria sessions repair') to rebuild the FTS index"),
     "schema": ("Repaired state.db schema ({count} sessions recovered)",
                "state.db schema repair did not recover automatically",
                "state.db schema malformed and auto-repair failed — restore from the backup copy beside state.db",
-               "state.db schema malformed — run 'hermes doctor --fix' (or 'hermes sessions repair') to recover hidden sessions"),
+               "state.db schema malformed — run 'oria doctor --fix' (or 'oria sessions repair') to recover hidden sessions"),
 }
 _STATE_DB_STRUCTURAL_ISSUE = (
     "state.db structural corruption (canonical tables/indexes damaged, not the FTS index) — an FTS rebuild "
@@ -288,7 +288,7 @@ def _state_db_stats(issues: list, state_db_path: Path) -> None:
             check_warn(_text, _detail)
             if "auto_prune" in _detail:
                 issues.append("state.db is large — enable sessions.auto_prune in config.yaml"
-                              + (" and run 'hermes sessions optimize-storage' offline (gateway stopped)" if "optimize-storage" in _detail else ""))
+                              + (" and run 'oria sessions optimize-storage' offline (gateway stopped)" if "optimize-storage" in _detail else ""))
 
 
 def _state_db_wal(f: Finding, should_fix: bool, state_db_path: Path) -> None:
@@ -300,7 +300,7 @@ def _state_db_wal(f: Finding, should_fix: bool, state_db_path: Path) -> None:
         if size > 50 * 1024 * 1024:  # 50 MB
             check_warn(f"WAL file is large ({size // (1024*1024)} MB)", "(may indicate missed checkpoints)")
             if not should_fix:
-                return f.issues.append("Large WAL file — run 'hermes doctor --fix' to checkpoint")
+                return f.issues.append("Large WAL file — run 'oria doctor --fix' to checkpoint")
             # Checkpoint-lock premise (#40177, #103339): a bare connect runs WAL recovery and the checkpoint
             # joins the live WAL — under a running gateway that second-writer handling corrupts state.db.
             # Holder scan first (any other process holding the DB, or an unknown, fails closed), then run the
@@ -308,18 +308,18 @@ def _state_db_wal(f: Finding, should_fix: bool, state_db_path: Path) -> None:
             from hermes_state_holders import live_writer_holds_db
             from hermes_state_repair import _connect_repair_durable, _exclusive_repair_db_guard
             _SKIP = ("Large WAL file — cannot prove state.db is quiet (stop the profile's gateway first, then "
-                     "re-run 'hermes doctor --fix' to checkpoint)")
+                     "re-run 'oria doctor --fix' to checkpoint)")
             if live_writer_holds_db(state_db_path, connect_repair_durable=_connect_repair_durable):
                 # Honest disjunction (gate C1): a True here means "held OR unprovable" — never assert a live
                 # writer as fact.
                 check_warn("WAL checkpoint skipped: cannot prove state.db is quiet",
                            "(another process holds it, or it is unreadable — stop the profile's gateway "
-                           "and re-run 'hermes doctor --fix')")
+                           "and re-run 'oria doctor --fix')")
                 return f.issues.append(_SKIP)
             with _exclusive_repair_db_guard(state_db_path) as (guard, guard_error):
                 if guard is None:
                     check_warn("WAL checkpoint skipped: could not take exclusive ownership of state.db",
-                               f"({guard_error}; stop the profile's gateway and re-run 'hermes doctor --fix')")
+                               f"({guard_error}; stop the profile's gateway and re-run 'oria doctor --fix')")
                     return f.issues.append(_SKIP)
                 guard.execute("PRAGMA wal_checkpoint(PASSIVE)")
             check_ok(f"WAL checkpoint performed ({size // 1024}K → {wal_size() // 1024}K)")
@@ -368,7 +368,7 @@ def _gh_authenticated() -> bool:
 def _check_skills_hub(should_fix: bool, f: Finding) -> None:
     from hermes_cli.doctor import HERMES_HOME, _DHH
     hub_dir = HERMES_HOME / "skills" / ".hub"
-    if check_bool(hub_dir.exists(), "Skills Hub directory exists", ("Skills Hub directory not initialized", "(run: hermes skills list)")):
+    if check_bool(hub_dir.exists(), "Skills Hub directory exists", ("Skills Hub directory not initialized", "(run: oria skills list)")):
         lock_file = hub_dir / "lock.json"
         if lock_file.exists():
             with warn_on_error("Lock file", "(corrupted or unreadable)"):
@@ -395,12 +395,12 @@ def _memory_provider_honcho(issues: list) -> None:
         # Config file missing — env-var fallback may still have resolved it.
         check_bool(hcfg.api_key or hcfg.base_url,
                    ("Honcho configured via environment variables", f"config file {cfg_path} not found, using HONCHO_API_KEY env var"),
-                   ("Honcho config not found", "run: hermes memory setup"))
+                   ("Honcho config not found", "run: oria memory setup"))
     elif not hcfg.enabled:
         check_info(f"Honcho disabled (set enabled: true in {cfg_path} to activate)")
     elif not (hcfg.api_key or hcfg.base_url):
-        _fail_and_issue("Honcho API key or base URL not set", "run: hermes memory setup",
-                        "No Honcho API key — run 'hermes memory setup'", issues)
+        _fail_and_issue("Honcho API key or base URL not set", "run: oria memory setup",
+                        "No Honcho API key — run 'oria memory setup'", issues)
     else:
         from plugins.memory.honcho.client import get_honcho_client, reset_honcho_client
         reset_honcho_client()
@@ -418,7 +418,7 @@ def _memory_provider_mem0(issues: list) -> None:
         check_ok("Mem0 API key configured")
         check_info(f"user_id={mem0_cfg.get('user_id', '?')}  agent_id={mem0_cfg.get('agent_id', '?')}")
     else:
-        _fail_and_issue("Mem0 API key not set", "(set MEM0_API_KEY in .env or run hermes memory setup)",
+        _fail_and_issue("Mem0 API key not set", "(set MEM0_API_KEY in .env or run oria memory setup)",
                         "Mem0 is set as memory provider but API key is missing", issues)
 
 
@@ -438,9 +438,9 @@ def _memory_provider_generic(name: str) -> None:
     if _provider and _provider.is_available():
         check_ok(f"{name} provider active")
     elif _provider:
-        check_warn(f"{name} configured but not available", "run: hermes memory status")
+        check_warn(f"{name} configured but not available", "run: oria memory status")
     else:
-        check_warn(f"{name} plugin not found", "run: hermes memory setup")
+        check_warn(f"{name} plugin not found", "run: oria memory setup")
 
 
 @doctor_check()

@@ -7,7 +7,7 @@
 # DEFAULT_AGENT_IDENTITY only serves sessions with no SOUL.md at all (e.g. skip_context_files), which is not
 # the common case. See #95681.
 DEFAULT_SOUL_MD = (
-    "You are Hermes Agent, built by Nous Research. Be direct: match the length of your reply to the weight of "
+    "You are Oria, built by Nous Research. Be direct: match the length of your reply to the weight of "
     "the ask — a one-line question gets a one-line answer, and finished work gets a short report of what "
     "changed, what's verified, and what's left, never a replay of the process. No filler (\"Great question,\" "
     "\"I'd be happy to\"), no restating the request back, no re-summarizing what you already said, no narrating "
@@ -16,6 +16,9 @@ DEFAULT_SOUL_MD = (
     "the stakes demand it, not by default."
 )
 
+_PRE_ORIA_DEFAULT_SOUL_MD = DEFAULT_SOUL_MD.replace("You are Oria,", "You are Hermes Agent,", 1)
+
+# Scaffold text older installers wrote (legacy detection only; keep byte-identical).
 _SCAFFOLD_HEAD = (
     "# Hermes Agent Persona\n\n<!--\nThis file defines the agent's personality and tone.\n"
     "The agent will embody whatever you write here.\nEdit this to customize how Hermes communicates with you.\n\n"
@@ -51,6 +54,10 @@ _LEGACY_TEMPLATE_SOULS = (
     # ASCII-dashed variant seeded by scripts/install.ps1 (must stay pure ASCII, see
     # tests/scripts/install/test_install_ps1_ascii_only.py); upgrading converges Windows installs on the em-dash text.
     DEFAULT_SOUL_MD.replace("\u2014", "--"),
+    # The same default under the pre-rename product name, and its install.ps1 ASCII variant: installs
+    # seeded before the Oria rename upgrade to the current identity.
+    _PRE_ORIA_DEFAULT_SOUL_MD,
+    _PRE_ORIA_DEFAULT_SOUL_MD.replace("\u2014", "--"),
 )
 
 

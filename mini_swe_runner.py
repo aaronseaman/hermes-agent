@@ -371,7 +371,7 @@ def main(
         timeout: Command timeout in seconds (default: 60)
         verbose: Enable verbose logging
     """
-    print("🚀 Mini-SWE Runner with Hermes Trajectory Format")
+    print("🚀 Mini-SWE Runner with Oria Trajectory Format")
     print("=" * 60)
     # Configure root logging at the entry point (not in library __init__).
     logging.basicConfig(level=logging.DEBUG if verbose else logging.INFO,

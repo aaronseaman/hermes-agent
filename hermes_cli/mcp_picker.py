@@ -78,7 +78,7 @@ def _enable_disable(name: str, *, enable: bool) -> None:
     save_config(cfg)
     _say(
         f"  ✓ '{name}' {'enabled' if enable else 'disabled'}. "
-        "Start a new Hermes session for changes to take effect."
+        "Start a new Oria session for changes to take effect."
     )
 
 
@@ -173,13 +173,13 @@ def _print_rows_text(rows: List[_Row]) -> None:
     for row in rows:
         print(f"  {_format_row(row)}")
     print()
-    _say("  Install: hermes mcp install <name>    Picker: hermes mcp", Colors.DIM)
+    _say("  Install: oria mcp install <name>    Picker: oria mcp", Colors.DIM)
     # Manifest-version warnings: the user's Hermes is too old to install everything listed.
     future = [d for d in catalog_diagnostics() if d[1] == "future_manifest"]
     if future:
         print()
         for name, _, _msg in future:
-            _say(f"  ⚠ '{name}' requires a newer Hermes — run `hermes update` to install this entry.", Colors.YELLOW)
+            _say(f"  ⚠ '{name}' requires a newer Oria — run `oria update` to install this entry.", Colors.YELLOW)
         print()
     print()
 
@@ -213,7 +213,7 @@ def install_by_name(identifier: str) -> int:
     entry = get_entry(identifier)
     if entry is None:
         _say(
-            f"  ✗ '{identifier}' is not in the catalog. Run `hermes mcp catalog` to see available entries.",
+            f"  ✗ '{identifier}' is not in the catalog. Run `oria mcp catalog` to see available entries.",
             Colors.RED,
         )
         return 1

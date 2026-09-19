@@ -254,7 +254,7 @@ class XAIImageGenProvider(StaticImageGenProvider):
         provider_name = str(creds.get("provider") or "xai").strip() or "xai"
         if not api_key:
             return error_factory(provider_name, aspect_ratio)(
-                "No xAI credentials found. Configure xAI OAuth in `hermes model` or set XAI_API_KEY.",
+                "No xAI credentials found. Configure xAI OAuth in `oria model` or set XAI_API_KEY.",
                 "missing_api_key")
 
         model_id, meta = _resolve_model(kwargs.get("model"))

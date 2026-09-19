@@ -849,9 +849,9 @@ class GatewayShutdownMixin:
                 continue
             job_name = job.get("name") or job_id
             msg = (
-                f"⚠️ Scheduled job '{job_name}' was cut short because Hermes is {action}; "
+                f"⚠️ Scheduled job '{job_name}' was cut short because Oria is {action}; "
                 "no result this run. It will run again on schedule, or run it now with "
-                f"`hermes cron run {job_name}` once Hermes is back."
+                f"`oria cron run {job_name}` once Oria is back."
             )
             for target in targets or ():
                 try:
@@ -933,12 +933,12 @@ class GatewayShutdownMixin:
         """
         restart_source = self._restart_command_source if self._restart_requested else None
         msg = (
-            "⚠️ Hermes is shutting down — your current task will be interrupted. "
+            "⚠️ Oria is shutting down — your current task will be interrupted. "
             "When it is back online, send any message and I'll try to pick up where we left off."
         )
         if self._restart_requested:
             msg = (
-                "⚠️ Hermes is restarting — your current task will be interrupted. "
+                "⚠️ Oria is restarting — your current task will be interrupted. "
                 "Send any message after the restart and I'll try to resume where you left off."
             )
         restart_key = None
@@ -1537,7 +1537,7 @@ class GatewayShutdownMixin:
         if not watchdog.start():
             return False
         self._systemd_watchdog = watchdog
-        watchdog.ready("Hermes Gateway running")
+        watchdog.ready("Oria Gateway running")
         return True
 
     async def _stop_systemd_watchdog(self) -> None:

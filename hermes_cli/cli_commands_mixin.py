@@ -171,9 +171,9 @@ _BUSY_MODE_SHORT = {
     "queue": "queues for next turn", "steer": "steers into current run (after next tool call)",
     "interrupt": "redirects current run immediately"}
 _BUSY_MODE_LONG = {
-    "queue": "Enter will queue follow-up input while Hermes is busy.",
+    "queue": "Enter will queue follow-up input while Oria is busy.",
     "steer": "Enter will steer your message into the current run (after the next tool call).",
-    "interrupt": "Enter will redirect the current run while Hermes is busy; /stop still cancels it.",
+    "interrupt": "Enter will redirect the current run while Oria is busy; /stop still cancels it.",
 }
 
 # /fast argument -> (service_tier value, persisted config value)
@@ -379,11 +379,11 @@ def _print_side_result_panel(cli, *, header_lines, body, title_suffix, empty_not
     try:
         from hermes_cli.skin_engine import get_active_skin
         _skin = get_active_skin()
-        label = _skin.get_branding("response_label", "☤ Hermes")
+        label = _skin.get_branding("response_label", "☤ Oria")
         _resp_color = _maybe_remap_for_light_mode(_skin.get_color("response_border", "#CD7F32"))
         _resp_text = _maybe_remap_for_light_mode(_skin.get_color("banner_text", "#FFF8DC"))
     except Exception:
-        label, _resp_color, _resp_text = "☤ Hermes", "#CD7F32", "#FFF8DC"
+        label, _resp_color, _resp_text = "☤ Oria", "#CD7F32", "#FFF8DC"
     rich_console.print(Panel(
         _render_final_assistant_content(body, mode=cli.final_response_markdown),
         title=f"[{_resp_color} bold]{label} {title_suffix}[/]", title_align="left",
@@ -623,7 +623,7 @@ class CLICommandsMixin:
         A restore also undoes the last chat turn; ``--all`` overwrites user hand-edits too."""
         from tools.checkpoint_manager import format_checkpoint_list
         mgr = self._checkpoint_manager((
-            "  Checkpoints are not enabled.", "  Enable with: hermes --checkpoints",
+            "  Checkpoints are not enabled.", "  Enable with: oria --checkpoints",
             "  Or in config.yaml: checkpoints: { enabled: true }"))
         if mgr is None:
             return
@@ -753,7 +753,7 @@ class CLICommandsMixin:
         """Print the cumulative checkpoint-baseline diff (/diff session)."""
         mgr = self._checkpoint_manager((
             "  Checkpoints are not enabled, so there's no session baseline.",
-            "  Enable with: hermes --checkpoints",
+            "  Enable with: oria --checkpoints",
             "  Or in config.yaml: checkpoints: { enabled: true }",
             "  (Plain /diff still works — it uses git directly.)"))
         if mgr is None:
@@ -763,7 +763,7 @@ class CLICommandsMixin:
             return print(f"  {result.get('error', 'Could not generate diff')}")
         stat, diff = result.get("stat", ""), result.get("diff", "")
         if result.get("empty") or (not stat and not diff):
-            return print("  No changes — Hermes hasn't edited any files here yet.")
+            return print("  No changes — Oria hasn't edited any files here yet.")
         if stat:
             self._print_diff_text(f"\n{stat}")
         if diff and not stat_only:
@@ -868,7 +868,7 @@ class CLICommandsMixin:
         try:
             result = export_profile(name, output or str(get_profile_export_path(name)))
             _pr(f"  ✓ Exported '{name}' to {result}",
-                "  Share it: the other user runs /import or `hermes profile import <archive>`.")
+                "  Share it: the other user runs /import or `oria profile import <archive>`.")
         except (ValueError, FileNotFoundError, OSError) as e:
             print(f"  Error: {e}")
 
@@ -890,7 +890,7 @@ class CLICommandsMixin:
                 wrapper_path = create_wrapper_script(imported)
                 if wrapper_path:
                     print(f"  Wrapper created: {wrapper_path}")
-        print(f"  Use it: hermes -p {imported}")
+        print(f"  Use it: oria -p {imported}")
 
     # ---- /stop, /agents -------------------------------------------------------------------
     def _handle_stop_command(self):
@@ -1051,7 +1051,7 @@ class CLICommandsMixin:
             _cp(_dim_line(f'Now type your prompt (or use --image in single-query mode): {_remainder}'))
         elif _is_termux_environment():
             example = _termux_example_image_path(image_path.name)
-            tip = f'Tip: type your next message, or run hermes chat -q --image {example} "What do you see?"'
+            tip = f'Tip: type your next message, or run oria chat -q --image {example} "What do you see?"'
             _cp(_dim_line(tip))
 
     # ---- /tools, /profile -----------------------------------------------------------------
@@ -1255,7 +1255,7 @@ class CLICommandsMixin:
         except Exception:
             pass
         return self._handoff_keep(
-            "  Timed out waiting for the gateway. Is `hermes gateway` running?",
+            "  Timed out waiting for the gateway. Is `oria gateway` running?",
             "  Your CLI session is intact.")
 
     # ---- /resume, /sessions, /branch ------------------------------------------------------
@@ -1277,7 +1277,7 @@ class CLICommandsMixin:
                 # _list_recent_sessions(limit=10). See #34584.
                 self._pending_resume_sessions = self._list_recent_sessions(limit=10)
                 return
-            return _cp("  Tip:   Use /history or `hermes sessions list` to find sessions.")
+            return _cp("  Tip:   Use /history or `oria sessions list` to find sessions.")
         # Any explicit /resume <target> supersedes a previously-armed bare numbered prompt.
         self._pending_resume_sessions = None
         if not self._session_db:
@@ -1339,7 +1339,7 @@ class CLICommandsMixin:
         session_meta = self._session_db.get_session(target_id)
         if not session_meta:
             return _cp(f"  Session not found: {target}",
-                       "  Use /sessions or `hermes sessions list` to see available sessions.")
+                       "  Use /sessions or `oria sessions list` to see available sessions.")
         try:
             # If the target is the empty head of a compression chain, redirect to the descendant that
             # actually holds the transcript. See #15000.
@@ -2106,7 +2106,7 @@ class CLICommandsMixin:
         bundles = reply.data["bundles"]
         if not bundles:
             return _cp("  No skill bundles installed.",
-                       _dim_line('Create one with: hermes bundles create <name> --skill <s1> --skill <s2>'),
+                       _dim_line('Create one with: oria bundles create <name> --skill <s1> --skill <s2>'),
                        _dim_line(f"Directory: {reply.data['dir']}"))
         _cp(f"\n  ▣ {_BOLD}Skill Bundles{_RST} ({len(bundles)} installed):")
         for info in bundles:
@@ -2117,7 +2117,7 @@ class CLICommandsMixin:
                 f"[dim]-[/] {_escape(desc)} [dim]({skill_count} skills)[/]")
             for s in info.get("skills", []):
                 ChatConsole().print(f"        [dim]· {_escape(s)}[/]")
-        _cp("\n" + _dim_line("Invoke a bundle with /<slug>. Manage with `hermes bundles`."))
+        _cp("\n" + _dim_line("Invoke a bundle with /<slug>. Manage with `oria bundles`."))
 
     def _handle_browser_command(self, cmd: str):
         """Handle /browser connect|disconnect|status|use — manage the live Chromium-family CDP connection."""
@@ -2204,7 +2204,7 @@ class CLICommandsMixin:
         _cp(f"  ♥ Heartbeat set (every {format_interval(state.interval_seconds)}): {state.prompt}",
             _dim_line("Fires as a normal turn whenever the session is idle and the interval has "
                       "elapsed. /heartbeat pause | resume | clear to manage; lives only while this "
-                      "Hermes process runs — use `hermes cron` for durable schedules."))
+                      "Oria process runs — use `oria cron` for durable schedules."))
 
     def _handle_refine_command(self, cmd: str) -> None:
         """Dispatch /refine — run the memory/skill review fork on demand (same machinery as the
@@ -2650,14 +2650,14 @@ class CLICommandsMixin:
         prompt_toolkit restores terminal modes), False when cancelled."""
         from hermes_cli.config import is_managed, format_managed_message
         if is_managed():
-            print(f"  ✗ {format_managed_message('update Hermes Agent')}")
+            print(f"  ✗ {format_managed_message('update Oria')}")
             return False
         # prompt_toolkit-native modal: renders above the composer, no raw input() races.
-        choices = [("once", "Update Now", "exit the current session and update Hermes Agent"),
+        choices = [("once", "Update Now", "exit the current session and update Oria"),
                    ("cancel", "Cancel", "keep the current session")]
         raw = self._prompt_text_input_modal(
-            title="☤  Update Hermes Agent",
-            detail="This will exit the current session and run `hermes update`.", choices=choices)
+            title="☤  Update Oria",
+            detail="This will exit the current session and run `oria update`.", choices=choices)
         if raw is None or self._normalize_slash_confirm_choice(raw, choices) != "once":
             print("  🟡 /update cancelled.")
             return False

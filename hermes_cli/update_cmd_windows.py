@@ -270,11 +270,11 @@ def _format_venv_python_holders_message(matches: list[tuple[int, str, str]]) -> 
     See #90778.
     """
     hint_by_subcommand = {
-        "serve": "  ← Hermes backend (if the Desktop app is open, close it)",
-        "dashboard": "  ← hermes dashboard (stop it: hermes dashboard stop, or close that terminal)",
+        "serve": "  ← Oria backend (if the Desktop app is open, close it)",
+        "dashboard": "  ← oria dashboard (stop it: oria dashboard stop, or close that terminal)",
         "gateway": "  ← gateway",
     }
-    lines = ["✗ Other Hermes processes are running from this install's venv:"]
+    lines = ["✗ Other Oria processes are running from this install's venv:"]
     for pid, name, cmdline in matches[:6]:
         hint = hint_by_subcommand.get(_hermes_holder_subcommand(cmdline) or "", "")
         lines.append(f"  PID {pid}  {name}  {cmdline[:120]}{hint}")
@@ -283,8 +283,8 @@ def _format_venv_python_holders_message(matches: list[tuple[int, str, str]]) -> 
     lines.append(
         "\n  On Windows these keep native extension files (.pyd) locked, so the\n"
         "  dependency update would fail partway and leave a broken install.\n"
-        "  Close the Hermes desktop app / other Hermes terminals, then re-run:\n    hermes update\n"
-        "  (or use `hermes update --force-venv` to proceed anyway at your own risk)"
+        "  Close the Oria desktop app / other Oria terminals, then re-run:\n    oria update\n"
+        "  (or use `oria update --force-venv` to proceed anyway at your own risk)"
     )
     return "\n".join(lines)
 
@@ -354,7 +354,7 @@ def _refuse_gateway_ancestor_tree_kill(pids: list[int], *, gateway_mode: bool) -
         "✗ Refusing to stop the gateway process tree because this updater "
         f"is running inside it (gateway PID(s): {', '.join(str(pid) for pid in ancestors)}).\n"
         "  On Windows, taskkill /T would terminate the updater before the update can run.\n"
-        "  From a chat platform, use `/update` instead.\n  Otherwise, run `hermes update` from a separate terminal."
+        "  From a chat platform, use `/update` instead.\n  Otherwise, run `oria update` from a separate terminal."
     )
     return True
 
@@ -417,7 +417,7 @@ def _relaunch_stopped_serves(token: dict) -> None:
         print("  ⟲ Relaunching stopped serve/dashboard backend(s)")
         failed = _m()._respawn_dashboard_processes(commands)
     if skipped or failed:
-        print("  ⚠ Some stopped backends could not be relaunched automatically; restart them manually (hermes serve --host <ip> --port <port>).")
+        print("  ⚠ Some stopped backends could not be relaunched automatically; restart them manually (oria serve --host <ip> --port <port>).")
     _record_update_step(
         "serve_relaunch", not failed and not skipped,
         f"relaunched={len(commands) - len(failed)} failed={len(failed)} skipped={skipped}",
@@ -897,7 +897,7 @@ def _pause_windows_gateways_for_update() -> dict | None:
     # Resolve venv-side launchers BEFORE draining: a dead worker's parent cannot be recovered (NoSuchProcess).
     # The launcher keeps ``.pyd`` mapped and would trip the venv-holder guard; it is killed with the survivors.
     launcher_pids = _m()._venv_launcher_ancestors(mapped_pids)
-    print("→ Stopping Windows gateway process(es) before updating Hermes...")
+    print("→ Stopping Windows gateway process(es) before updating Oria...")
     drain_timeout = _gateway_drain_timeout(socket_acks)
     survivors = _m()._wait_for_windows_update_gateway_exit(mapped_pids, timeout=drain_timeout)
     unmapped_pids = [pid for pid in running_pids if pid not in profile_processes and pid not in service_gateway_pids]
@@ -922,7 +922,7 @@ def _pause_windows_gateways_for_update() -> dict | None:
     if unmapped_pids:
         print(f"  → Stopped {len(unmapped_pids)} gateway process(es) without profile mapping")
         if any(not u.get("argv") for u in unmapped):  # no recoverable cmdline (psutil missing, denied, gone)
-            print("    Restart manually after update: hermes gateway run")
+            print("    Restart manually after update: oria gateway run")
     token = {"resume_needed": True, "profiles": profiles, "unmapped_pids": unmapped_pids, "unmapped": unmapped}
     # Every profile with ANY live gateway at discovery counts as running: service-supervised ones skip the
     # socket pause (absent from ``profiles``) but the SCM restart brings them back, not a cold-start.
@@ -1197,7 +1197,7 @@ def _verify_relaunched_gateways_alive(token: dict, profiles: dict, unmapped: lis
         print(
             "\n  ⚠ Windows gateway restart could not be verified — no stable gateway process appeared after relaunch.\n"
             "    (The respawned gateway may have been killed by a parent Job Object during updater teardown, #48820.)\n"
-            "    Recover with: hermes gateway restart"
+            "    Recover with: oria gateway restart"
         )
         raise RuntimeError("Windows gateway relaunch after update was not verified alive")
     with suppress(Exception):
@@ -1335,7 +1335,7 @@ def _clear_windows_venv_holders_or_exit(args, gateway_mode: bool, _windows_gatew
     # provably dead; no PPID archaeology). Orphan rung = Desktop `serve` whose app is GONE (nothing
     # respawns an orphan); live-Desktop backends return None and keep the refusal.
     for classifier, message in (
-        (_m()._ledger_reapable_backend_pids, "ledger-identified orphaned Hermes backend process(es) hold the venv"),
+        (_m()._ledger_reapable_backend_pids, "ledger-identified orphaned Oria backend process(es) hold the venv"),
         (_m()._orphaned_desktop_backend_pids, "orphaned Desktop backend process(es) still hold the venv"),
     ):
         if holders and (backends := classifier(holders)):
@@ -1359,7 +1359,7 @@ def _clear_windows_venv_holders_or_exit(args, gateway_mode: bool, _windows_gatew
     # even with a live parent (which made the orphan-only rung bail and hang) — reap by cmdline.
     if holders and _in_handoff_without_live_shim(args) and (handoff_backends := _m()._handoff_reapable_backend_pids(holders)):
         holders = _reap_and_rescan(
-            f"  ⚠ {len(handoff_backends)} Hermes backend process(es) "
+            f"  ⚠ {len(handoff_backends)} Oria backend process(es) "
             "still hold the venv after the Desktop hand-off; stopping their trees", handoff_backends,
         )
     if holders:

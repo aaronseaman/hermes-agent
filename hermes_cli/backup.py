@@ -40,7 +40,7 @@ _QUICK_SNAPSHOTS_DIR = "state-snapshots"
 def _snapshot_recovery_hint() -> str:
     """How to restore a state snapshot. There is no `hermes snapshot` subcommand — only the /snapshot
     slash command inside a `hermes` session (hermes_cli/commands.py)."""
-    return ("To restore a newer snapshot, start `hermes` in a terminal and run `/snapshot list`, then "
+    return ("To restore a newer snapshot, start `oria` in a terminal and run `/snapshot list`, then "
             "`/snapshot restore <id>` (CLI only).")
 
 # Directory names to skip (matched against each path component). ``hermes-agent`` only matches at
@@ -175,7 +175,7 @@ def _backup_operation_lock(hermes_home: Path, timeout_seconds: float = 0.25):
                 acquired = True
             except OSError:
                 if time.monotonic() >= deadline:
-                    raise BackupInProgressError("another Hermes backup is already running")
+                    raise BackupInProgressError("another Oria backup is already running")
                 time.sleep(0.05)
         yield
     finally:
@@ -668,7 +668,7 @@ def run_backup(args) -> None:
     hermes_root = get_default_hermes_root()
 
     if not hermes_root.is_dir():
-        print(f"Error: Hermes home directory not found at {hermes_root}")
+        print(f"Error: Oria home directory not found at {hermes_root}")
         sys.exit(1)
 
     try:
@@ -738,7 +738,7 @@ def _run_backup_locked(args, hermes_root: Path) -> None:
     if errors:
         _print_capped(f"\n  Warnings ({len(errors)} files skipped):", errors, "  ")
     else:
-        print(f"\nRestore with: hermes import {out_path.name}")
+        print(f"\nRestore with: oria import {out_path.name}")
     keep = getattr(args, "keep", 0)  # 0 / absent: never prune (non-CLI callers)
     if keep and out_path.name.startswith(_RUN_BACKUP_PREFIX):
         pruned = _prune_prefixed_zips(out_path.parent, _RUN_BACKUP_PREFIX, keep, "backup")
@@ -755,7 +755,7 @@ def _validate_backup_zip(zf: zipfile.ZipFile) -> tuple[bool, str]:
         return False, "zip archive is empty"
     # Telltale files a hermes home has — at the root or one level deep (zipped directory).
     if not any(Path(n).name in {"config.yaml", ".env", "state.db"} for n in names):
-        return False, "zip does not appear to be a Hermes backup (no config.yaml, .env, or state databases found)"
+        return False, "zip does not appear to be an Oria backup (no config.yaml, .env, or state databases found)"
     return True, ""
 
 
@@ -880,7 +880,7 @@ def _confirm_import_overwrite(hermes_root: Path) -> bool:
     """Prompt before importing over an existing installation; True when import may proceed."""
     if not any((hermes_root / m).exists() for m in ("config.yaml", ".env")):
         return True
-    print("\nWarning: Target directory already has Hermes configuration.\n"
+    print("\nWarning: Target directory already has Oria configuration.\n"
           "Importing will overwrite existing files with backup contents.\n")
     try:
         answer = input("Continue? [y/N] ").strip().lower()
@@ -1019,13 +1019,13 @@ def run_import(args) -> None:
         print()
         if not (hermes_root / "hermes-agent").is_dir():
             print("Note: The hermes-agent codebase was not included in the backup.\n"
-                  "  If this is a fresh install, run: hermes update")
+                  "  If this is a fresh install, run: oria update")
         if restored_profiles:
             print("\nTo re-enable gateway services for profiles:")
             for pname in restored_profiles:
-                print(f"  hermes -p {pname} gateway install")
+                print(f"  oria -p {pname} gateway install")
         _revive_gateway_after_import(hermes_root)
-        print("Done. Your Hermes configuration has been restored.")
+        print("Done. Your Oria configuration has been restored.")
 
 
 def _restore_profile_wrappers(hermes_root: Path) -> List[str]:
@@ -1060,7 +1060,7 @@ def _restore_profile_wrappers(hermes_root: Path) -> List[str]:
     except ImportError:  # hermes_cli.profiles unavailable (fresh install)
         if any(profiles_dir.iterdir()):
             print("\n  Profiles detected but aliases could not be created.\n"
-                  "  Run: hermes profile list  (after installing hermes)")
+                  "  Run: oria profile list    (after installing hermes)")
     return [n for n, _ in restored_profiles]
 
 
@@ -1077,7 +1077,7 @@ def _revive_gateway_after_import(hermes_root: Path) -> None:
             (native_default / marker).exists() for marker in ("config.yaml", ".env", "state.db")):
         print("\nRestored into a non-default home; leaving the gateway service alone to avoid clashing "
               f"with the install at {native_default}.\n"
-              "To start a gateway for this home, run:  hermes gateway install")
+              "To start a gateway for this home, run:  oria gateway install")
         return
     try:
         from hermes_cli.gateway import ensure_gateway_service, _is_service_running
@@ -1085,7 +1085,7 @@ def _revive_gateway_after_import(hermes_root: Path) -> None:
             print()
             ensure_gateway_service(context="import")
     except Exception:
-        print("\nStart the gateway to activate cron jobs and messaging:\n  hermes gateway install")
+        print("\nStart the gateway to activate cron jobs and messaging:\n  oria gateway install")
 
 
 # --- Quick state snapshots (used by /snapshot slash command and hermes backup --quick) ---

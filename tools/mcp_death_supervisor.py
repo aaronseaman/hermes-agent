@@ -182,7 +182,7 @@ def main(argv=None) -> int:
         "--parent-pgid",
         type=int,
         required=True,
-        help="Process group of the spawning Hermes process; never signalled.",
+        help="Process group of the spawning Oria process; never signalled.",
     )
     args = parser.parse_args(argv)
 

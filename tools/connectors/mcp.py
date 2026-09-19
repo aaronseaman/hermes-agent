@@ -24,7 +24,7 @@ _OUTCOME_STATES = {
     "error": TargetState.failed, "failed": TargetState.failed,
 }
 
-UNAVAILABLE_HINT = "hermes mcp install {name} / hermes mcp login {name}"
+UNAVAILABLE_HINT = "oria mcp install {name} / oria mcp login {name}"
 
 NOTE = (
     "Settled once; do not re-ask for any target the user skipped or that timed out — continue "

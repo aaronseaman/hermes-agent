@@ -89,7 +89,7 @@ _corrupt_store_warned_at: Dict[str, float] = {}  # {db path: monotonic}
 
 CORRUPT_STORE_DETAIL = {
     "error": "state_db_corrupt",
-    "message": "state.db corrupt — run `hermes doctor` (then `hermes doctor --fix` or `hermes sessions repair`).",
+    "message": "state.db corrupt — run `oria doctor` (then `oria doctor --fix` or `oria sessions repair`).",
 }
 
 

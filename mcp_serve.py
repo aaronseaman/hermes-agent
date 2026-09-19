@@ -694,7 +694,7 @@ def create_mcp_server(event_bridge: Optional[EventBridge] = None) -> "MCPServer"
     if not _MCP_SERVER_AVAILABLE:
         raise ImportError(f"MCP server requires the 'mcp' package. Install with: {sys.executable} -m pip install 'mcp'")
     mcp = MCPServer("hermes", instructions=(
-        "Hermes Agent messaging bridge. Use these tools to interact with "
+        "Oria messaging bridge. Use these tools to interact with "
         "conversations across Telegram, Discord, Slack, WhatsApp, Signal, "
         "Matrix, and other connected platforms."
     ))

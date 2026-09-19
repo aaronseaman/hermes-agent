@@ -308,7 +308,7 @@ def _render_text(proposals: list[Proposal], days: int) -> None:
             print(f"       e.g. {ex}")
     print(
         "\nNothing has been changed. Apply selected entries with:\n"
-        "  hermes approvals suggest --apply 1,3\n"
+        "  oria approvals suggest --apply 1,3\n"
         "Entries are merged into command_allowlist in ~/.hermes/config.yaml."
     )
 
@@ -375,7 +375,7 @@ def approvals_command(args) -> int:
         from hermes_cli.approvals_test import approvals_test_command
         return approvals_test_command(args)
     print(
-        "usage: hermes approvals <subcommand>\n"
+        "usage: oria approvals <subcommand>\n"
         "\n"
         "subcommands:\n"
         "  suggest    Mine past approval decisions into a proposed\n"
@@ -383,6 +383,6 @@ def approvals_command(args) -> int:
         "  test       Dry-run the approval verdict for a command without\n"
         "             executing it (exit 0 allow / 2 ask / 3 deny)\n"
         "\n"
-        "Run `hermes approvals <subcommand> -h` for details."
+        "Run `oria approvals <subcommand> -h` for details."
     )
     return 1

@@ -310,15 +310,15 @@ def _refuse_update_for_contended_shims(exc: BaseException) -> None:
 
     See #87331.
     """
-    print("✗ Cannot continue the update: live Hermes launcher(s) could not be")
+    print("✗ Cannot continue the update: live Oria launcher(s) could not be")
     print("  moved aside:")
     for name in getattr(exc, "failed_shims", []) or ["hermes.exe"]:
         print(f"    {name}")
-    print("  Another process is holding this install's venv — typically Hermes")
+    print("  Another process is holding this install's venv — typically Oria")
     print("  Desktop, a gateway, or another hermes REPL — and mutating the venv")
     print("  now would strand it half-updated.")
     print("  The dependency install has been deferred: close the process(es)")
-    print("  above, then run any `hermes` command to finish it automatically.")
+    print("  above, then run any `oria` command to finish it automatically.")
     # Idempotent (git path already dropped it); covers ZIP/repair paths so the deferral is never silent.
     _write_update_incomplete_marker()
     sys.exit(2)
@@ -391,8 +391,8 @@ def _format_concurrent_instances_message(matches: list[tuple[int, str]], scripts
         f"  Updating now would fail to overwrite {shim} because",
         "  Windows blocks REPLACE on a running executable.",
         "",
-        "  Close Hermes Desktop, exit any open `hermes` REPLs, and",
-        "  stop the gateway (`hermes gateway stop`) before retrying.",
+        "  Close Oria Desktop, exit any open `oria` REPLs, and",
+        "  stop the gateway (`oria gateway stop`) before retrying.",
         ""]
     if matches:
         pid_args = " ".join(f"/PID {pid}" for pid, _ in matches)
@@ -402,7 +402,7 @@ def _format_concurrent_instances_message(matches: list[tuple[int, str]], scripts
             f"      taskkill {pid_args} /F",
             ""]
     lines += [
-        "  Override with `hermes update --force` if you've already",
+        "  Override with `oria update --force` if you've already",
         "  confirmed those processes will not write to the venv."]
     return "\n".join(lines)
 
@@ -629,7 +629,7 @@ def _repair_venv_on_current_checkout(
     healthy_after, detail_after = _venv_core_imports_healthy()
     if not healthy_after:
         print(f"⚠ Venv still unhealthy after repair: {detail_after}")
-        print("  Close all Hermes windows/gateways and re-run: hermes update")
+        print("  Close all Oria windows/gateways and re-run: oria update")
         return False
     print("✓ Dependencies repaired!")
     # The hand-off child never reaches the commits-pulled Node/web/Desktop
@@ -706,7 +706,7 @@ def _repair_current_checkout(
         print()
         print("⚠ Restart required to finish the managed Python runtime repair.")
         print(
-            "  Any running Hermes gateways, Desktop backends, or other "
+            "  Any running Oria gateways, Desktop backends, or other "
             "long-lived processes still use the previous runtime.")
         print("  Restart each of them to pick up the repaired runtime.")
     return current_checkout_complete
@@ -781,7 +781,7 @@ def _rollback_if_pulled_syntax_error(git_cmd, pre_pull_sha) -> None:
         rollback_result = _git_run(git_cmd, ["reset", "--hard", pre_pull_sha])
         if rollback_result.returncode == 0:
             print("  ✓ Rollback complete — your install is unchanged.")
-            print("  Try ``hermes update`` again later once a fix lands.")
+            print("  Try ``oria update`` again later once a fix lands.")
         else:
             print("  ✗ Rollback failed. Recover manually with:")
             print(f"    cd {_m().PROJECT_ROOT} && git reset --hard {pre_pull_sha}")
@@ -1121,7 +1121,7 @@ def _verify_head_after_pull(
             f"origin/{branch} advanced but the working tree stayed put.")
         print(
             "  Reattach to the branch and retry: "
-            f"git -C {_m().PROJECT_ROOT} checkout {branch} && hermes update")
+            f"git -C {_m().PROJECT_ROOT} checkout {branch} && oria update")
         _m()._resume_windows_gateways_after_update(_windows_gateway_resume)
         sys.exit(1)
 
@@ -1135,7 +1135,7 @@ def _verify_head_after_pull(
             f"'{post_pull_branch}' — not claiming success.")
         print(
             "  Switch to the target branch and retry: "
-            f"git -C {_m().PROJECT_ROOT} checkout {branch} && hermes update")
+            f"git -C {_m().PROJECT_ROOT} checkout {branch} && oria update")
         _m()._resume_windows_gateways_after_update(_windows_gateway_resume)
         sys.exit(1)
     return post_pull_sha
@@ -1163,10 +1163,10 @@ def _handle_update_called_process_error(
             print(f"✗ {stage} (the code update itself succeeded).")
             _print_called_process_error_tail(e)
             print()
-            print("  Hermes may not start until the dependencies are installed. Fix the error above")
-            print("  (usually network or disk space), then run `hermes update` again.")
+            print("  Oria may not start until the dependencies are installed. Fix the error above")
+            print("  (usually network or disk space), then run `oria update` again.")
             if _m()._is_windows():
-                print("  If `hermes update` itself will not start, retry through the venv interpreter:")
+                print("  If `oria update` itself will not start, retry through the venv interpreter:")
                 print(
                     '    venv\\Scripts\\python.exe -c '
                     '"from hermes_cli.main import main; main()" update --yes')
@@ -1320,7 +1320,7 @@ def _cmd_update_impl(args, gateway_mode: bool):
     opts = _resolve_update_options(args, gateway_mode)
     gw_input_fn, assume_yes = opts.gw_input_fn, opts.assume_yes
 
-    print("☤ Updating Hermes Agent...")
+    print("☤ Updating Oria...")
     print()
 
     _pre_update_plan = _begin_update_receipt_and_plan(args)

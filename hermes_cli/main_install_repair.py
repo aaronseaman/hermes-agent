@@ -245,7 +245,7 @@ def _recover_core_update_marker_locked() -> None:
     """
     from hermes_cli.main import PROJECT_ROOT
     print(
-        "⚠ A previous `hermes update` was interrupted mid-install — "
+        "⚠ A previous `oria update` was interrupted mid-install — "
         "finishing dependency installation now...")
 
     # Windows: a ``hermes.exe`` launch has the launcher as an ancestor; the quarantined full
@@ -277,8 +277,8 @@ def _recover_core_update_marker_locked() -> None:
         logger.debug("Interrupted-install recovery failed: %s", exc)
         print("✗ Could not auto-recover the interrupted install.")
         manual = (
-            "  Hermes is still running from the launcher that needs "
-            "replacing. Close other Hermes windows, restart from a "
+            "  Oria is still running from the launcher that needs "
+            "replacing. Close other Oria windows, restart from a "
             "different terminal, then run:",
             f'    cd /d "{PROJECT_ROOT}"',
             f'    "{sys.executable}" -m pip install -e ".[all]"',
@@ -568,8 +568,8 @@ def _quarantine_running_hermes_exe(
             f"  ⚠ Could not quarantine {shim.name} ({last_exc.__class__.__name__}: "
             f"another process is holding it open).")
         print(
-            "    Close Hermes Desktop, exit other `hermes` REPLs, stop the "
-            "gateway, or pause AV scanning, then re-run `hermes update`.")
+            "    Close Oria Desktop, exit other `oria` REPLs, stop the "
+            "gateway, or pause AV scanning, then re-run `oria update`.")
         if failed_out is not None:
             failed_out.append(shim.name)
 
@@ -882,7 +882,7 @@ def _repair_venv_via_import_probes(
         print("  ✓ Venv repair succeeded")
         return "repaired"
     manual = " ".join(shlex.quote(s) for s in _lazy_refresh_repair_specs(broken))
-    print("  ⚠ Venv repair incomplete. Run manually, then `hermes update`:")
+    print("  ⚠ Venv repair incomplete. Run manually, then `oria update`:")
     print(f"    {' '.join(install_cmd_prefix)} install --force-reinstall {manual}")
     return "failed"
 
@@ -1085,7 +1085,7 @@ def _verify_console_scripts_installed(
         env=env, scripts_dir=scripts_dir,
         log_msg="console script verification: repair install failed: %s",
         fail_msg=(
-            "  ⚠ Entry point repair failed; try `hermes update --force` after "
+            "  ⚠ Entry point repair failed; try `oria update --force` after "
             "closing other hermes processes.")):
         return
     _report_still_missing(
@@ -1161,7 +1161,7 @@ def _verify_core_dependencies_installed(
         _run_quarantined_install, install_cmd_prefix + ["install", "--reinstall", "-e", "."],
         env=env, scripts_dir=scripts_dir,
         log_msg="dep verification: repair install failed: %s",
-        fail_msg="  ⚠ Repair install failed; check `hermes update` output above."):
+        fail_msg="  ⚠ Repair install failed; check `oria update` output above."):
         return
     still_missing = _missing_deps()
     if not still_missing:
@@ -1178,10 +1178,10 @@ def _verify_core_dependencies_installed(
         log_msg="dep verification: per-package repair failed: %s",
         fail_msg=(
             f"  ⚠ Could not install: {', '.join(still_missing)}. "
-            "Run `hermes update --force` after closing other hermes processes.")):
+            "Run `oria update --force` after closing other hermes processes.")):
         return
     _report_still_missing(
-        _missing_deps(), "Run `hermes update --force` after closing other hermes processes.",
+        _missing_deps(), "Run `oria update --force` after closing other hermes processes.",
         ok="  ✓ All declared core dependencies now installed")
 
 

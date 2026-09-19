@@ -594,14 +594,14 @@ def _locked_profile_error(browser: str) -> str:
     if _real_profile_autoclose():
         msg = (
             f"{browser} is running and has its profile locked, so its login data can't be copied "
-            "yet. Hermes can close it for you (this quits the browser — you'll lose unsaved "
+            "yet. Oria can close it for you (this quits the browser — you'll lose unsaved "
             "tabs). Ask the user to confirm, then close it and retry; if it's still locked after "
             "that, they must fully quit it (including any background/tray instance).")
     else:
         msg = (
             f"{browser} is running and has its profile locked, so its login data can't be copied. "
             "Fully quit the browser (including any background/tray instance) and retry, or turn "
-            "browser.use_real_profile off. (Enable browser.real_profile_autoclose to let Hermes "
+            "browser.use_real_profile off. (Enable browser.real_profile_autoclose to let Oria "
             "offer to close it for you.)")
     return _PROFILE_LOCKED_PREFIX + msg
 

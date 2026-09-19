@@ -88,7 +88,7 @@ def cmd_setup(args: argparse.Namespace) -> int:
     console.print(
         Panel.fit(
             "[bold]1Password secret source setup[/bold]\n\n"
-            "Hermes resolves [cyan]op://vault/item/field[/cyan] references through your\n"
+            "Oria resolves [cyan]op://vault/item/field[/cyan] references through your\n"
             "already-installed, already-authenticated 1Password CLI (`op`).\n\n"
             f"Don't have it yet? Install + sign in: [cyan]{_DOCS_URL}[/cyan]",
             border_style="cyan",
@@ -151,10 +151,10 @@ def cmd_setup(args: argparse.Namespace) -> int:
     console.print()
     console.print("[green]✓ 1Password secret source is enabled.[/green]")
     console.print(
-        "  Map credentials:  [cyan]hermes secrets onepassword set OPENAI_API_KEY "
+        "  Map credentials:  [cyan]oria secrets onepassword set OPENAI_API_KEY "
         "\"op://Private/OpenAI/api key\"[/cyan]\n"
-        "  Preview:          [cyan]hermes secrets onepassword sync[/cyan]\n"
-        "  Status:           [cyan]hermes secrets onepassword status[/cyan]"
+        "  Preview:          [cyan]oria secrets onepassword sync[/cyan]\n"
+        "  Status:           [cyan]oria secrets onepassword status[/cyan]"
     )
     return 0
 
@@ -188,7 +188,7 @@ def cmd_status(args: argparse.Namespace) -> int:
                     ((name, str(references[name])) for name in sorted(references)))
 
     if not enabled:
-        console.print("\n  Run [cyan]hermes secrets onepassword setup[/cyan] to enable.")
+        console.print("\n  Run [cyan]oria secrets onepassword setup[/cyan] to enable.")
         return 0
     if binary and not token_set:
         who = _op_whoami(binary, account)
@@ -197,12 +197,12 @@ def cmd_status(args: argparse.Namespace) -> int:
         else:
             console.print(
                 f"\n  [yellow]No active op session and {token_env} is unset — "
-                "Hermes will warn and skip 1Password on next startup.[/yellow]"
+                "Oria will warn and skip 1Password on next startup.[/yellow]"
             )
     if not references:
         console.print(
             "\n  [yellow]No references mapped yet.[/yellow]  Add one: "
-            "[cyan]hermes secrets onepassword set ENV_VAR \"op://…\"[/cyan]"
+            "[cyan]oria secrets onepassword set ENV_VAR \"op://…\"[/cyan]"
         )
     return 0
 
@@ -226,7 +226,7 @@ def cmd_set(args: argparse.Namespace) -> int:
     if not op_cfg.get("enabled"):
         console.print(
             "  [yellow]Note: the integration is disabled — run "
-            "[cyan]hermes secrets onepassword setup[/cyan] to turn it on.[/yellow]"
+            "[cyan]oria secrets onepassword setup[/cyan] to turn it on.[/yellow]"
         )
     return 0
 
@@ -282,7 +282,7 @@ def cmd_token(args: argparse.Namespace) -> int:
         save=save_env_value, env_path=get_env_path, clear_caches=op_src.clear_caches,
         disabled_note=None if op_cfg.get("enabled") else (
             "[yellow]Note: the 1Password integration is currently disabled — "
-            "run `hermes secrets onepassword setup` to turn it on.[/yellow]"
+            "run `oria secrets onepassword setup` to turn it on.[/yellow]"
         ),
     )
 
@@ -297,7 +297,7 @@ def cmd_sync(args: argparse.Namespace) -> int:
     if not references:
         console.print(
             "[yellow]No op:// references configured.  Add one with "
-            "`hermes secrets onepassword set ENV_VAR \"op://…\"`.[/yellow]"
+            "`oria secrets onepassword set ENV_VAR \"op://…\"`.[/yellow]"
         )
         return 0
 
@@ -367,9 +367,9 @@ def cmd_disable(args: argparse.Namespace) -> int:
     return disable_secret_source(
         "onepassword",
         "[green]Disabled.[/green]  1Password references will NOT be resolved on the "
-        "next Hermes invocation.\n"
+        "next Oria invocation.\n"
         "  Your reference mappings are left in config.yaml — remove them with "
-        "[cyan]hermes secrets onepassword remove ENV_VAR[/cyan] if you no longer "
+        "[cyan]oria secrets onepassword remove ENV_VAR[/cyan] if you no longer "
         "need them.",
     )
 

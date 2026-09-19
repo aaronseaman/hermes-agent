@@ -193,7 +193,7 @@ def _xai_api_key_path():
         _setup.print_success("xAI TTS API key saved")
         return None
     from hermes_constants import display_hermes_home as _dhh
-    return ("No xAI API key provided for TTS. Configure XAI_API_KEY via hermes setup model "
+    return ("No xAI API key provided for TTS. Configure XAI_API_KEY via oria setup model "
             f"or {_dhh()}/.env to use xAI TTS. Falling back to Edge TTS.")
 
 

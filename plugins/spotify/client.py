@@ -101,13 +101,13 @@ def _extract_spotify_error_detail(response: httpx.Response, *, fallback: str) ->
 def _friendly_spotify_error_message(*, status_code: int, detail: str, path: str, retry_after: Optional[str]) -> str:
     is_playback_path = path.startswith("/me/player")
     if status_code == 401:
-        return "Spotify authentication failed or expired. Run `hermes auth spotify` again."
+        return "Spotify authentication failed or expired. Run `oria auth spotify` again."
     if status_code == 403:
         if is_playback_path:
             return ("Spotify rejected this playback request. Playback control usually requires a Spotify Premium account "
                     "and an active Spotify Connect device.")
         if "scope" in detail.lower() or "permission" in detail.lower():
-            return "Spotify rejected the request because the current auth scope is insufficient. Re-run `hermes auth spotify` to refresh permissions."
+            return "Spotify rejected the request because the current auth scope is insufficient. Re-run `oria auth spotify` to refresh permissions."
         return "Spotify rejected the request. The account may not have permission for this action."
     if status_code == 404:
         return "Spotify could not find an active playback device or player session for this request." if is_playback_path else "Spotify resource not found."

@@ -252,10 +252,10 @@ class CLILoopsMixin:
             bundled_count = len(entries) - len(user_entries)
             if not user_entries:
                 print("No user plugins installed.")
-                print("  Install one: hermes plugins install owner/repo")
+                print("  Install one: oria plugins install owner/repo")
                 print(f"  Or drop a plugin directory into {display_hermes_home()}/plugins/")
                 if bundled_count:
-                    print(f"  ({bundled_count} bundled plugins available — see: hermes plugins list)")
+                    print(f"  ({bundled_count} bundled plugins available — see: oria plugins list)")
                 return
             try:  # loaded-plugin details (tools/hooks/commands counts, errors) by name
                 from hermes_cli.plugins import get_plugin_manager
@@ -274,8 +274,8 @@ class CLILoopsMixin:
                 error = f" — {info['error']}" if info.get("error") else ""
                 print(f"  {glyph} {name}{ver}{label}{detail}{error}")
             if bundled_count:
-                print(f"  (+{bundled_count} bundled — see: hermes plugins list)")
-            print("  Enable/disable: hermes plugins enable/disable <name>")
+                print(f"  (+{bundled_count} bundled — see: oria plugins list)")
+            print("  Enable/disable: oria plugins enable/disable <name>")
         except Exception as e:
             print(f"Plugin system error: {e}")
 

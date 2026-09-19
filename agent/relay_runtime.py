@@ -189,7 +189,7 @@ class RelayOperationLease:
         """Run cleanup while this lease still owns the runtime lifetime."""
         with self._lock:
             if self._runtime is None:
-                raise RuntimeError("Hermes Relay operation lease is released")
+                raise RuntimeError("Oria Relay operation lease is released")
             return self._runtime._run_in_session_untracked(session, callback, *args, **kwargs)
 
     def release(self) -> None:
@@ -271,7 +271,7 @@ class _ProcessRelayPluginConfiguration:
                     raise RuntimeError("NeMo Relay dynamic plugin initialization returned no activation handle")
                 self._activation = activation
             except Exception as exc:
-                raise RuntimeError("Hermes Relay dynamic plugin activation failed") from exc
+                raise RuntimeError("Oria Relay dynamic plugin activation failed") from exc
         if self._activation is None:
             # Reached only after explicit opt-in. Relay 0.8 no longer layers repository-local
             # configuration onto this explicitly selected payload.
@@ -505,9 +505,9 @@ class RelayRuntime:
         """Copy the current context and overlay the session's saved Relay vars (a copy: re-entrant from callbacks)."""
         with session.lock:
             if session.closing and not allow_closing:
-                raise RuntimeError("Hermes Relay session is closing")
+                raise RuntimeError("Oria Relay session is closing")
             if session.context is None or session.handle is None:
-                raise RuntimeError("Hermes Relay session context is unavailable")
+                raise RuntimeError("Oria Relay session context is unavailable")
             relay_context = session.context.copy()
         context = contextvars.copy_context()
         for variable, value in relay_context.items():
@@ -577,7 +577,7 @@ class RelayRuntime:
         """Admit one Relay call while keeping process plugins alive."""
         with self._sessions_lock:
             if self._closing:
-                raise RuntimeError("Hermes Relay runtime is shutting down")
+                raise RuntimeError("Oria Relay runtime is shutting down")
             self._active_operations += 1
             self._operations_idle.clear()
 
@@ -931,7 +931,7 @@ class RelaySessionCoordinator:
         metadata: dict[str, Any] | None = None,
     ) -> RelayTurnContext:
         if lease.released:
-            raise RuntimeError("Hermes Relay conversation lease is released")
+            raise RuntimeError("Oria Relay conversation lease is released")
         turn = RelayTurnContext(lease=lease, turn_id=turn_id, task_id=task_id)
         key = (lease.profile_key, lease.session_id)
         with self._active_turns_lock:
@@ -1231,12 +1231,12 @@ def _configured_plugin_inputs(relay: Any) -> tuple[dict[str, Any], list[Any]] | 
         with config_path.open("rb") as config_file:
             config = tomllib.load(config_file)
         if "dynamic_plugins" in config:
-            raise ValueError("Hermes [[dynamic_plugins]] records are unsupported; use Relay [[plugins.dynamic]] records")
+            raise ValueError("Oria [[dynamic_plugins]] records are unsupported; use Relay [[plugins.dynamic]] records")
         dynamic_plugins = relay.plugin.load_dynamic_plugin_activation_specs(config_path) if "plugins" in config else []
         return {k: v for k, v in config.items() if k != "plugins"}, dynamic_plugins
     except Exception as exc:
         raise _RelayPluginConfigurationLoadError(
-            f"Hermes Relay plugin configuration could not be loaded from {config_path}; continuing without Relay plugins"
+            f"Oria Relay plugin configuration could not be loaded from {config_path}; continuing without Relay plugins"
         ) from exc
 
 
@@ -1327,12 +1327,12 @@ def run_in_session(
     """Run a scope, LLM, or tool API against a shared Hermes session."""
     runtime = get_runtime()
     if runtime is None:
-        raise RuntimeError("Hermes Relay runtime is unavailable")
+        raise RuntimeError("Oria Relay runtime is unavailable")
     session = runtime.get_session(session_id)
     if session is None:
         session = runtime.ensure_session({"session_id": session_id})
     if session is None:
-        raise RuntimeError("Hermes Relay session is unavailable")
+        raise RuntimeError("Oria Relay session is unavailable")
     return runtime.run_in_session(session, callback, *args, **kwargs)
 
 async def run_in_session_async(
@@ -1344,11 +1344,11 @@ async def run_in_session_async(
     """Await a Relay operation inside a shared Hermes session context."""
     runtime = get_runtime()
     if runtime is None:
-        raise RuntimeError("Hermes Relay runtime is unavailable")
+        raise RuntimeError("Oria Relay runtime is unavailable")
     session = runtime.get_session(session_id)
     if session is None:
         session = runtime.ensure_session({"session_id": session_id})
     if session is None:
-        raise RuntimeError("Hermes Relay session is unavailable")
+        raise RuntimeError("Oria Relay session is unavailable")
     return await runtime.run_in_session_async(session, callback, *args, **kwargs)
 # ---- END PLUGIN-COMPAT ----

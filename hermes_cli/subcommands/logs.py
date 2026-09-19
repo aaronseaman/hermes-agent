@@ -9,23 +9,23 @@ from typing import Callable
 def build_logs_parser(subparsers, *, cmd_logs: Callable) -> None:
     """Attach the ``logs`` subcommand to ``subparsers``."""
     logs_parser = subparsers.add_parser(
-        "logs", help="View and filter Hermes log files",
+        "logs", help="View and filter Oria log files",
         description="View, tail, and filter agent.log / errors.log / gateway.log / gui.log / desktop.log",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\
 Examples:
-    hermes logs                    Show last 50 lines of agent.log
-    hermes logs -f                 Follow agent.log in real time
-    hermes logs errors             Show last 50 lines of errors.log
-    hermes logs gateway -n 100     Show last 100 lines of gateway.log
-    hermes logs gui -f             Follow gui.log in real time
-    hermes logs desktop -f         Follow desktop.log (Electron app boot/backend)
-    hermes logs --level WARNING    Only show WARNING and above
-    hermes logs --session abc123   Filter by session ID
-    hermes logs --component tools  Only show tool-related lines
-    hermes logs --since 1h         Lines from the last hour
-    hermes logs --since 30m -f     Follow, starting from 30 min ago
-    hermes logs list               List available log files with sizes
+    oria logs                      Show last 50 lines of agent.log
+    oria logs -f                   Follow agent.log in real time
+    oria logs errors               Show last 50 lines of errors.log
+    oria logs gateway -n 100       Show last 100 lines of gateway.log
+    oria logs gui -f               Follow gui.log in real time
+    oria logs desktop -f           Follow desktop.log (Electron app boot/backend)
+    oria logs --level WARNING      Only show WARNING and above
+    oria logs --session abc123     Filter by session ID
+    oria logs --component tools    Only show tool-related lines
+    oria logs --since 1h           Lines from the last hour
+    oria logs --since 30m -f       Follow, starting from 30 min ago
+    oria logs list                 List available log files with sizes
 """)
     logs_parser.add_argument(
         "log_name", nargs="?", default="agent",

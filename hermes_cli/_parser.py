@@ -68,47 +68,47 @@ def _inherited_flag(parser, *args, **kwargs):
 
 _EPILOGUE = """
 Examples:
-    hermes                        Start interactive chat
-    hermes chat -q "Hello"        Single query mode
-    hermes --tui                  Launch the modern TUI (or set display.interface: tui)
-    hermes --cli                  Force the classic REPL (overrides display.interface: tui)
-    hermes -c                     Resume the most recent session
-    hermes -c "my project"        Resume a session by name (latest in lineage)
-    hermes --resume <session_id>  Resume a specific session by ID
-    hermes --resume latest        Resume the most recent session (same as -c)
-    hermes --tui --resume latest --in ./dir   Resume ./dir's latest session in the TUI
-    hermes setup                  Run setup wizard
-    hermes logout                 Clear stored authentication
-    hermes auth add <provider>    Add a pooled credential
-    hermes auth list              List pooled credentials
-    hermes auth remove <p> <t>    Remove pooled credential by index, id, or label
-    hermes auth reset <p> [t]     Clear exhaustion status for a provider, or one credential
-    hermes auth priority <p> <t> <n>  Move a pooled credential to priority n (0 = tried first)
-    hermes auth refresh <p> [t]   Refresh a pooled OAuth credential and clear its cooldown
-    hermes model                  Select default model
-    hermes fallback [list]        Show fallback provider chain
-    hermes fallback add           Add a fallback provider (same picker as `hermes model`)
-    hermes fallback remove        Remove a fallback provider from the chain
-    hermes config                 View configuration
-    hermes config edit            Edit config in $EDITOR
-    hermes config set model gpt-4 Set a config value
-    hermes gateway                Run messaging gateway
-    hermes -s hermes-agent-dev,github-auth
-    hermes -w                     Start in isolated git worktree
-    hermes gateway install        Install gateway background service
-    hermes sessions list          List past sessions
-    hermes sessions browse        Interactive session picker
-    hermes sessions rename ID T   Rename/title a session
-    hermes logs                   View agent.log (last 50 lines)
-    hermes logs -f                Follow agent.log in real time
-    hermes logs errors            View errors.log
-    hermes logs --since 1h        Lines from the last hour
-    hermes debug share             Upload debug report for support
-    hermes console                Open the safe Hermes command console
-    hermes update                 Update to latest version
-    hermes dashboard              Start web UI dashboard (port 9119)
-    hermes dashboard --stop       Stop running dashboard processes
-    hermes dashboard --status     List running dashboard processes
+    oria                          Start interactive chat
+    oria chat -q "Hello"          Single query mode
+    oria --tui                    Launch the modern TUI (or set display.interface: tui)
+    oria --cli                    Force the classic REPL (overrides display.interface: tui)
+    oria -c                       Resume the most recent session
+    oria -c "my project"          Resume a session by name (latest in lineage)
+    oria --resume <session_id>    Resume a specific session by ID
+    oria --resume latest          Resume the most recent session (same as -c)
+    oria --tui --resume latest --in ./dir     Resume ./dir's latest session in the TUI
+    oria setup                    Run setup wizard
+    oria logout                   Clear stored authentication
+    oria auth add <provider>      Add a pooled credential
+    oria auth list                List pooled credentials
+    oria auth remove <p> <t>      Remove pooled credential by index, id, or label
+    oria auth reset <p> [t]       Clear exhaustion status for a provider, or one credential
+    oria auth priority <p> <t> <n>    Move a pooled credential to priority n (0 = tried first)
+    oria auth refresh <p> [t]     Refresh a pooled OAuth credential and clear its cooldown
+    oria model                    Select default model
+    oria fallback [list]          Show fallback provider chain
+    oria fallback add           Add a fallback provider (same picker as `oria model`)
+    oria fallback remove          Remove a fallback provider from the chain
+    oria config                   View configuration
+    oria config edit              Edit config in $EDITOR
+    oria config set model gpt-4 Set a config value
+    oria gateway                  Run messaging gateway
+    oria -s hermes-agent-dev,github-auth
+    oria -w                       Start in isolated git worktree
+    oria gateway install          Install gateway background service
+    oria sessions list            List past sessions
+    oria sessions browse          Interactive session picker
+    oria sessions rename ID T     Rename/title a session
+    oria logs                     View agent.log (last 50 lines)
+    oria logs -f                  Follow agent.log in real time
+    oria logs errors              View errors.log
+    oria logs --since 1h          Lines from the last hour
+    oria debug share               Upload debug report for support
+    oria console                Open the safe Oria command console
+    oria update                   Update to latest version
+    oria dashboard                Start web UI dashboard (port 9119)
+    oria dashboard --stop         Stop running dashboard processes
+    oria dashboard --status       List running dashboard processes
 
 For more help on a command:
     hermes <command> --help
@@ -138,7 +138,7 @@ def _add_top_level_flags(parser: argparse.ArgumentParser) -> None:
     inherited(parser, "--provider", default=None, help=(
         "Provider override for this invocation (e.g. openrouter, anthropic). "
         "Applies to -z/--oneshot and --tui. The persistent provider lives in config.yaml "
-        "under model.provider — use `hermes setup` or edit the file to change it."))
+        "under model.provider — use `oria setup` or edit the file to change it."))
     inherited(parser, "--reasoning", default=None, metavar="LEVEL", help=(
         "Reasoning effort for this invocation: none, minimal, low, medium, "
         "high, xhigh, max, or ultra. Overrides agent.reasoning_effort in "
@@ -197,7 +197,7 @@ def _build_chat_parser(subparsers) -> argparse.ArgumentParser:
     """
     chat_parser = subparsers.add_parser(
         "chat", help="Interactive chat with the agent",
-        description="Start an interactive chat session with Hermes Agent")
+        description="Start an interactive chat session with Oria")
     add, inherited, SUPPRESS = chat_parser.add_argument, _inherited_flag, argparse.SUPPRESS
     _query_group = chat_parser.add_mutually_exclusive_group()
     _query_group.add_argument("-q", "--query", help=(
@@ -277,7 +277,7 @@ def _build_chat_parser(subparsers) -> argparse.ArgumentParser:
     inherited(chat_parser, "--ignore-rules", action="store_true", default=SUPPRESS,
               help="Skip auto-injection of AGENTS.md, SOUL.md, .cursorrules, memory, and preloaded skills. Combine with --ignore-user-config for a fully isolated run.")
     inherited(chat_parser, "--safe-mode", action="store_true", default=SUPPRESS,
-              help="Troubleshooting mode: disable ALL customizations — user config, AGENTS.md/memory injection, plugins, and MCP servers (implies --ignore-user-config and --ignore-rules). Use to isolate whether a problem comes from your setup or from Hermes itself.")
+              help="Troubleshooting mode: disable ALL customizations — user config, AGENTS.md/memory injection, plugins, and MCP servers (implies --ignore-user-config and --ignore-rules). Use to isolate whether a problem comes from your setup or from Oria itself.")
     add("--source", default=None,
         help="Session source tag for filtering (default: cli). Use 'tool' for third-party integrations that should not appear in user session lists.")
     inherited(chat_parser, "--tui", action="store_true", default=SUPPRESS,
@@ -319,7 +319,7 @@ def build_top_level_parser():
     ``subparsers.add_parser(...)``.
     """
     parser = HermesArgumentParser(
-        prog="hermes", description="Hermes Agent - AI assistant with tool-calling capabilities",
+        prog="oria", description="Oria - AI assistant with tool-calling capabilities",
         formatter_class=argparse.RawDescriptionHelpFormatter, epilog=_EPILOGUE)
     _add_top_level_flags(parser)
     # metavar keeps the usage line to ``hermes [...] <command>`` instead of the brace list of
