@@ -13,7 +13,7 @@ metadata:
 
 # MPP Agent Skill
 
-Wraps the Machine Payments Protocol (MPP, https://mpp.dev) clients so Hermes can pay for per-request API access against servers that respond with `HTTP 402 Payment Required`.
+Wraps the Machine Payments Protocol (MPP, https://mpp.dev) clients so Oria can pay for per-request API access against servers that respond with `HTTP 402 Payment Required`.
 
 Three client options, all distributed via npm. Pick the lightest one that solves the user's need. Gated `[linux, macos]` while the broader payments tooling matures on Windows.
 

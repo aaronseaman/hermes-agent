@@ -100,7 +100,7 @@ than stopping at titles; the listing only carries the first ~300 characters of e
 
 ⑤ If the user needs sustained Reddit access (monitoring, more than ~10 calls), stop and
 ask them to register the app credentials (Prerequisites) rather than grinding through the
-throttle. Tell them plainly: it is a free app registration, not logging Hermes into their
+throttle. Tell them plainly: it is a free app registration, not logging Oria into their
 account. Never ask for a Reddit password or browser cookies.
 
 ## Pitfalls
