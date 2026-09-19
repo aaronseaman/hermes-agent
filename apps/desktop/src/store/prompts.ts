@@ -259,7 +259,7 @@ export async function answerApproval(
   }
 
   if (!gateway) {
-    throw new Error('Hermes gateway is not connected')
+    throw new Error('Oria gateway is not connected')
   }
 
   await requestForOwnedSession(request.sessionId, ambientRequestFor(gateway), 'approval.respond', {

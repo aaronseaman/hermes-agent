@@ -171,7 +171,7 @@ export function handleStatusEvent(ctx: GatewayEventContext): boolean {
   }
 
   if (event.type === 'error') {
-    const errorMessage = payload?.message || 'Hermes reported an error'
+    const errorMessage = payload?.message || 'Oria reported an error'
     const looksLikeProviderSetup = isProviderSetupErrorMessage(errorMessage)
 
     // The gateway's `error` event carries no error_surface (prompt_turn.py

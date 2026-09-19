@@ -32,7 +32,7 @@ export async function resolveRemoteOauthTicket(
       gatewayTicketFailure(
         error,
         oauthTicketFailureAuthMessage(hadNativeSession),
-        'Could not reach the remote Hermes gateway while refreshing its WebSocket ticket. Try reconnecting.'
+        'Could not reach the remote Oria gateway while refreshing its WebSocket ticket. Try reconnecting.'
       )
     )
   }

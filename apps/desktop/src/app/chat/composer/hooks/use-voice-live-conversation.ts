@@ -313,7 +313,7 @@ export function useVoiceLiveConversation({
         refreshStatus()
         void Promise.resolve(latest.current.onSubmit(prompt, voiceContext)).catch(error => {
           notifyError(error, voiceCopy.liveDelegationFailed)
-          session.speak(delegationId, 'Sorry, I could not reach Hermes for that request.')
+          session.speak(delegationId, 'Sorry, I could not reach Oria for that request.')
           setDelegation(null)
           refreshStatus()
         })
@@ -388,7 +388,7 @@ export function useVoiceLiveConversation({
 
       if (tool && tool !== lastToolLabelRef.current) {
         lastToolLabelRef.current = tool
-        session.think(delegationId, `Hermes is working: ${tool}. Not done yet.`)
+        session.think(delegationId, `Oria is working: ${tool}. Not done yet.`)
       }
 
       const response = latest.current.pendingResponse()
@@ -436,7 +436,7 @@ export function useVoiceLiveConversation({
       ) {
         // Turn settled without a speakable reply (tool-only, error, interrupted).
         if (spokenLengthRef.current === 0) {
-          session.think(delegationId, 'Hermes finished that request without a spoken result.')
+          session.think(delegationId, 'Oria finished that request without a spoken result.')
         }
 
         setDelegation(null)

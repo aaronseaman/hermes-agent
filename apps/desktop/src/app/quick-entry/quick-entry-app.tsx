@@ -132,7 +132,7 @@ export function QuickEntryApp() {
                 dispatch({ type: 'dismiss' })
               }
             }}
-            placeholder={state.connected ? 'Ask Hermes…' : 'Not connected — open Hermes to reconnect'}
+            placeholder={state.connected ? 'Ask Oria…' : 'Not connected — open Oria to reconnect'}
             ref={inputRef}
             spellCheck={false}
             style={{

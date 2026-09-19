@@ -112,7 +112,7 @@ export function ConnectorsCard({ locked }: CardProps) {
           here. Saying so is what keeps the Connect cards later from reading as
           a second ask for the same thing. */}
       <p className="text-xs text-muted-foreground">
-        <strong className="font-medium text-foreground">Nothing connects yet.</strong> Hermes will offer to link these
+        <strong className="font-medium text-foreground">Nothing connects yet.</strong> Oria will offer to link these
         when a task needs them, and asks before reading anything.
       </p>
     </CardFrame>

@@ -85,7 +85,7 @@ async function openStoredBotChat(
   summary: CanonicalChatRow
 ): Promise<string> {
   if (!storedId || typeof host.openSession !== 'function') {
-    throw new Error('This Hermes Desktop version cannot open stored sessions')
+    throw new Error('This Oria Desktop version cannot open stored sessions')
   }
 
   const { bot, name, route } = botOwner(owner)
@@ -184,7 +184,7 @@ export function notifyBotOpenFailure(error: unknown, bot: RosterRow, step: BotOp
   const detail = errorDetail(error)
 
   if (botModeGatewayNeedsUpdate(error)) {
-    const connectionLabel = bot.connectionLabel || bot.connectionId || 'Hermes'
+    const connectionLabel = bot.connectionLabel || bot.connectionId || 'Oria'
     host.notify?.({
       kind: 'error',
       title: b.openNeedsUpdateTitle,
@@ -577,7 +577,7 @@ export async function prepareBotSource(bot: RosterRow) {
   if (route && typeof host.requestProfile !== 'function') {
     throw new Error(
       getPluginCtx()?.i18n?.t('bot.remoteConnectionsUnsupported') ??
-        'Update Hermes Desktop to chat with bots on other connections.'
+        'Update Oria Desktop to chat with bots on other connections.'
     )
   }
 

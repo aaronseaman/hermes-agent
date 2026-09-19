@@ -270,14 +270,14 @@ export async function resolveVenvHermesCommand(
     }))
   ) {
     rememberLog?.(
-      `Ignoring venv Hermes at ${python}: runtime import probe failed (broken/partial venv); falling through to bootstrap.`
+      `Ignoring venv Oria at ${python}: runtime import probe failed (broken/partial venv); falling through to bootstrap.`
     )
 
     return null
   }
 
   return {
-    label: `existing Hermes Python at ${python}`,
+    label: `existing Oria Python at ${python}`,
     command: python,
     args: ['-m', 'hermes_cli.main', ...backendArgs],
     bootstrap: false,

@@ -927,8 +927,12 @@ const BOOT_FAKE_STEP_MS = (() => {
   return Math.max(120, raw)
 })()
 
+// APP_NAME is the app's identity (app.setName): Electron derives the userData directory and the
+// "<name> Safe Storage" keychain entry from it, so it stays "Hermes" across the Oria rename to keep
+// existing installs' data. APP_DISPLAY_NAME is what users see (menus, About panel, window titles).
 const APP_NAME = process.env.HERMES_DESKTOP_APP_NAME || 'Hermes'
-const HUD_WINDOW_TITLE = `${APP_NAME} HUD`
+const APP_DISPLAY_NAME = process.env.HERMES_DESKTOP_APP_NAME || 'Oria'
+const HUD_WINDOW_TITLE = `${APP_DISPLAY_NAME} HUD`
 const TITLEBAR_HEIGHT = 34
 const MACOS_TRAFFIC_LIGHTS_HEIGHT = 14
 
@@ -1348,7 +1352,7 @@ if (IS_WINDOWS) {
 // an in-place `hermes update` mid-session is reflected without an app restart;
 // the seed here just covers the first open and any non-menu invocation path.
 app.setAboutPanelOptions({
-  applicationName: APP_NAME,
+  applicationName: APP_DISPLAY_NAME,
   applicationVersion: resolveHermesVersion(),
   copyright: 'Copyright © 2026 Nous Research'
 })
@@ -1588,7 +1592,7 @@ function logPoolSpawnFailure(label: string, error: unknown): void {
     rememberLog(`Profile backend ${label} slot wait timed out (background); retry is backing off`)
   } else {
     rememberLog(
-      `Hermes backend for profile ${label} failed to start: ${error instanceof Error ? error.message : String(error)}`
+      `Oria backend for profile ${label} failed to start: ${error instanceof Error ? error.message : String(error)}`
     )
   }
 }
@@ -1721,7 +1725,7 @@ let bootProgressState = {
   error: null,
   fakeMode: BOOT_FAKE_MODE,
   isCloudBackendDown: false,
-  message: 'Waiting to start Hermes backend',
+  message: 'Waiting to start Oria backend',
   phase: 'idle',
   progress: 0,
   retryable: false,
@@ -2454,7 +2458,7 @@ async function waitForUpdateToFinish() {
 
       await advanceBootProgress(
         'backend.update-wait',
-        'An update is finishing — Hermes will start automatically when it completes…',
+        'An update is finishing — Oria will start automatically when it completes…',
         12
       )
     },
@@ -2478,7 +2482,7 @@ async function waitForUpdateToFinish() {
       rememberLog(`[updates] detached update finished with manual action (branch ${result.branch}): ${result.message}`)
       dialog.showMessageBox({
         type: 'warning',
-        title: 'Hermes update',
+        title: 'Oria update',
         message: 'The update finished, but needs one more step',
         detail: result.message
       })
@@ -2494,8 +2498,8 @@ async function waitForUpdateToFinish() {
       void dialog
         .showMessageBox({
           type: 'error',
-          title: 'Hermes update',
-          message: "Hermes couldn't finish updating",
+          title: 'Oria update',
+          message: "Oria couldn't finish updating",
           detail:
             "You're still on the previous version and can keep using it. Try the update again, or open the update log to report the problem.\n\n" +
             `Details: ${result.message}`,
@@ -2527,7 +2531,7 @@ async function waitForUpdateToFinish() {
   if (outcome === 'timeout') {
     rememberLog('[updates] update still in progress after wait timeout; starting backend anyway')
   } else if (relaunchIntoSwappedBundle()) {
-    await advanceBootProgress('backend.update-restart', 'Restarting Hermes to load the updated app…', 14)
+    await advanceBootProgress('backend.update-restart', 'Restarting Oria to load the updated app…', 14)
     // Park while the scheduled exit lands so this stale build never starts a
     // backend; the failsafe below only runs if the exit somehow does not.
     await new Promise(resolve => setTimeout(resolve, BUNDLE_SWAP_RELAUNCH_FAILSAFE_MS))
@@ -3170,8 +3174,8 @@ async function checkUpdates({ force = false }: { force?: boolean } = {}) {
       supported: false,
       reason: 'not-a-git-checkout',
       message:
-        "This copy of Hermes can't update itself from inside the app. Download the latest version from the Hermes website, " +
-        `or reinstall Hermes to enable in-app updates. Details: ${updateRoot} has no version-control metadata.`,
+        "This copy of Oria can't update itself from inside the app. Download the latest version from the Oria website, " +
+        `or reinstall Oria to enable in-app updates. Details: ${updateRoot} has no version-control metadata.`,
       hermesRoot: updateRoot,
       branch
     }
@@ -3755,7 +3759,7 @@ async function claimBackendChild(child, command, profile, nonce, outputTail: Bac
     stopBackendChild(child)
     await waitForBackendExit(child)
     throw new Error(
-      `Hermes backend (PID ${child.pid}) died before its identity could be recorded: ${decision.reason}${outputTail?.describe() ?? ''}`
+      `Oria backend (PID ${child.pid}) died before its identity could be recorded: ${decision.reason}${outputTail?.describe() ?? ''}`
     )
   }
 
@@ -3764,7 +3768,7 @@ async function claimBackendChild(child, command, profile, nonce, outputTail: Bac
   if (decision.action === 'degrade') {
     startMarker = pidOnlyStartMarker(child.pid)
     rememberLog(
-      `WARNING: process start marker probe failed for live Hermes backend PID ${child.pid}; ` +
+      `WARNING: process start marker probe failed for live Oria backend PID ${child.pid}; ` +
         `claiming with PID-only identity instead of stopping it: ${decision.reason}`
     )
   } else {
@@ -3792,7 +3796,7 @@ async function claimBackendChild(child, command, profile, nonce, outputTail: Bac
     stopBackendChild(child)
     await waitForBackendExit(child)
     throw new Error(
-      `Could not persist ownership for the Hermes backend: ${error.message}${outputTail?.describe() ?? ''}`
+      `Could not persist ownership for the Oria backend: ${error.message}${outputTail?.describe() ?? ''}`
     )
   }
 }
@@ -4011,7 +4015,7 @@ async function applyUpdates(opts: { stopSafeBlockers?: boolean } = {}) {
         // bb/gui (or any non-main) install off-branch. Mirror the GUI
         // button's contract: append --branch <current> for non-main
         // checkouts, keep it bare for main so the card stays clean.
-        let command = 'hermes update'
+        let command = 'oria update'
 
         try {
           const head = await runGit(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: updateRoot })
@@ -4021,7 +4025,7 @@ async function applyUpdates(opts: { stopSafeBlockers?: boolean } = {}) {
             const branch = await resolveHealedBranch(updateRoot, current)
 
             if (branch !== 'main') {
-              command = `hermes update --branch ${branch}`
+              command = `oria update --branch ${branch}`
             }
           }
         } catch {
@@ -4053,7 +4057,7 @@ async function applyUpdates(opts: { stopSafeBlockers?: boolean } = {}) {
     emitUpdateProgress({
       stage: 'restart',
       message:
-        'Updating Hermes — this window will close and the updater will open. Don’t reopen Hermes yourself; it restarts automatically when the update finishes.',
+        'Updating Oria — this window will close and the updater will open. Don’t reopen Oria yourself; it restarts automatically when the update finishes.',
       percent: 100
     })
     repairMacUpdaterHelper(updater)
@@ -4098,8 +4102,8 @@ async function applyUpdates(opts: { stopSafeBlockers?: boolean } = {}) {
       // user close the holder and retry. Restart our own backend so the app
       // keeps working after the failed attempt.
       const message =
-        'Update aborted: another process is holding the Hermes install open ' +
-        '(a second Hermes window or a terminal running hermes?). Close it and retry.'
+        'Update aborted: another process is holding the Oria install open ' +
+        '(a second Oria window or a terminal running hermes?). Close it and retry.'
 
       emitUpdateProgress({ stage: 'error', message, percent: null })
       startHermes().catch(() => {})
@@ -4550,9 +4554,9 @@ async function applyUpdatesPosixHandoff(opts: any) {
   const handoff = resolvePosixScriptHandoff(updateRoot)
 
   if (!handoff) {
-    emitUpdateProgress({ stage: 'manual', message: 'hermes update', percent: null })
+    emitUpdateProgress({ stage: 'manual', message: 'oria update', percent: null })
 
-    return { ok: true, manual: true, command: 'hermes update', hermesRoot: updateRoot }
+    return { ok: true, manual: true, command: 'oria update', hermesRoot: updateRoot }
   }
 
   const handoffConflict = updateHandoffConflict(HERMES_HOME)
@@ -4636,7 +4640,7 @@ async function applyUpdatesPosixHandoff(opts: any) {
   emitUpdateProgress({
     stage: 'restart',
     message:
-      'Updating Hermes — this window will close. Don’t reopen Hermes yourself; it restarts automatically when the update finishes.',
+      'Updating Oria — this window will close. Don’t reopen Oria yourself; it restarts automatically when the update finishes.',
     percent: 100
   })
 
@@ -4834,7 +4838,7 @@ function resolveRendererIndexWithMissing(): { index: string; missing: string[] }
     rememberLog(
       `[renderer] every renderer bundle is incomplete (${present.join(', ')}). ` +
         `The last update replaced the app while its files were locked. ` +
-        `Repair with: hermes desktop --force-build`
+        `Repair with: oria desktop --force-build`
     )
 
     // present[0]'s own list, captured on the first loop iteration — never the
@@ -4848,7 +4852,7 @@ function resolveRendererIndexWithMissing(): { index: string; missing: string[] }
   rememberLog(
     `[renderer] index.html not found — the desktop app was packaged without a ` +
       `renderer bundle. Tried: ${candidates.join(', ')}. ` +
-      `Rebuild with: hermes desktop --force-build`
+      `Rebuild with: oria desktop --force-build`
   )
 
   return { index: candidates[0], missing: [] }
@@ -5015,7 +5019,7 @@ async function createActiveBackend(backendArgs) {
 
   return {
     kind: 'python',
-    label: `Hermes at ${ACTIVE_HERMES_ROOT}`,
+    label: `Oria at ${ACTIVE_HERMES_ROOT}`,
     command,
     args: ['-m', 'hermes_cli.main', ...backendArgs],
     env: buildDesktopBackendEnv({
@@ -5035,7 +5039,7 @@ async function resolveHermesBackend(backendArgs) {
   const overrideRoot = process.env.HERMES_DESKTOP_HERMES_ROOT && path.resolve(process.env.HERMES_DESKTOP_HERMES_ROOT)
 
   if (overrideRoot && isHermesSourceRoot(overrideRoot)) {
-    const backend = await createPythonBackend(overrideRoot, `Hermes source at ${overrideRoot}`, backendArgs)
+    const backend = await createPythonBackend(overrideRoot, `Oria source at ${overrideRoot}`, backendArgs)
 
     if (backend) {
       return backend
@@ -5047,7 +5051,7 @@ async function resolveHermesBackend(backendArgs) {
   //    installed `hermes` on PATH so local Python edits are actually exercised.
   //    (In dev with no checkout, SOURCE_REPO_ROOT won't pass isHermesSourceRoot.)
   if (!IS_PACKAGED && isHermesSourceRoot(SOURCE_REPO_ROOT)) {
-    const backend = await createPythonBackend(SOURCE_REPO_ROOT, `Hermes source at ${SOURCE_REPO_ROOT}`, backendArgs)
+    const backend = await createPythonBackend(SOURCE_REPO_ROOT, `Oria source at ${SOURCE_REPO_ROOT}`, backendArgs)
 
     if (backend) {
       return backend
@@ -5067,7 +5071,7 @@ async function resolveHermesBackend(backendArgs) {
   if (activeRuntime.shouldUseActiveRuntime && !bootstrapRepairRequested) {
     if (!activeRuntime.hasValidMarker) {
       rememberLog(
-        `[bootstrap] Active Hermes runtime at ${ACTIVE_HERMES_ROOT} is usable but the bootstrap marker is missing or stale; skipping first-run bootstrap.`
+        `[bootstrap] Active Oria runtime at ${ACTIVE_HERMES_ROOT} is usable but the bootstrap marker is missing or stale; skipping first-run bootstrap.`
       )
     }
 
@@ -5095,7 +5099,7 @@ async function resolveHermesBackend(backendArgs) {
       } else if (!isWindowsBinaryPathInWsl(hermesOverride, { isWsl: IS_WSL })) {
         hermesCommand = hermesOverride
       } else {
-        rememberLog(`Ignoring Windows Hermes override under WSL: ${hermesOverride}`)
+        rememberLog(`Ignoring Windows Oria override under WSL: ${hermesOverride}`)
       }
     } else {
       hermesCommand = findOnPath('hermes')
@@ -5103,7 +5107,7 @@ async function resolveHermesBackend(backendArgs) {
 
     if (hermesCommand) {
       if (looksLikeDesktopAppBinary(hermesCommand)) {
-        rememberLog(`Ignoring desktop app executable on PATH while resolving Hermes CLI: ${hermesCommand}`)
+        rememberLog(`Ignoring desktop app executable on PATH while resolving Oria CLI: ${hermesCommand}`)
         hermesCommand = null
       }
     }
@@ -5138,7 +5142,7 @@ async function resolveHermesBackend(backendArgs) {
         // same un-memoized import probe, costing up to another full probe
         // timeout on the boot path for an answer we already have.
         return {
-          label: `existing Hermes CLI at ${hermesCommand}`,
+          label: `existing Oria CLI at ${hermesCommand}`,
           command: hermesCommand,
           args: backendArgs,
           bootstrap: false,
@@ -5149,7 +5153,7 @@ async function resolveHermesBackend(backendArgs) {
       }
 
       rememberLog(
-        `Ignoring existing Hermes CLI at ${hermesCommand}: --version probe failed; falling through to bootstrap.`
+        `Ignoring existing Oria CLI at ${hermesCommand}: --version probe failed; falling through to bootstrap.`
       )
     }
   }
@@ -5195,7 +5199,7 @@ async function resolveHermesBackend(backendArgs) {
   //    is a recoverable state the GUI can drive through.
   return {
     kind: 'bootstrap-needed',
-    label: 'Hermes Agent not installed yet; bootstrap required',
+    label: 'Oria not installed yet; bootstrap required',
     command: null,
     args: backendArgs,
     bootstrap: true,
@@ -5233,11 +5237,11 @@ async function runEnsureRuntime(backend: any, assertStillOwned: () => void): Pro
   // will rewire startup to spawn the window first and route bootstrap events
   // to a renderer-side install overlay.
   if (backend.kind === 'bootstrap-needed') {
-    rememberLog('[bootstrap] no Hermes install found; starting first-launch bootstrap')
+    rememberLog('[bootstrap] no Oria install found; starting first-launch bootstrap')
 
     if (await handOffWindowsBootstrapRecovery('bootstrap-needed')) {
       const handoffError: Error & { isBootstrapFailure?: boolean; bootstrapHandedOff?: boolean } = new Error(
-        'Hermes recovery was handed off to Hermes Setup. The desktop will restart when recovery completes.'
+        'Oria recovery was handed off to Oria Setup. The desktop will restart when recovery completes.'
       )
 
       handoffError.isBootstrapFailure = true
@@ -5300,7 +5304,7 @@ async function runEnsureRuntime(backend: any, assertStillOwned: () => void): Pro
     bootstrapAbortController = null
 
     if (bootstrapResult.cancelled) {
-      const cancelledError = new Error('Hermes install was cancelled.') as any
+      const cancelledError = new Error('Oria install was cancelled.') as any
       cancelledError.isBootstrapFailure = true
       cancelledError.bootstrapCancelled = true
       bootstrapFailure = cancelledError
@@ -5337,7 +5341,7 @@ async function runEnsureRuntime(backend: any, assertStillOwned: () => void): Pro
   // (install.ps1 owns those concerns now and the bootstrap-complete marker
   // attests they ran successfully).
   if (!isHermesSourceRoot(ACTIVE_HERMES_ROOT)) {
-    throw new Error(missingInstallPartMessage(`Hermes source files are missing or incomplete at ${ACTIVE_HERMES_ROOT}`))
+    throw new Error(missingInstallPartMessage(`Oria source files are missing or incomplete at ${ACTIVE_HERMES_ROOT}`))
   }
 
   // On Windows, preflight Git Bash. Hermes' terminal tool calls bash.exe
@@ -5348,8 +5352,8 @@ async function runEnsureRuntime(backend: any, assertStillOwned: () => void): Pro
   // here via an external `hermes` on PATH, this check still helps.
   if (IS_WINDOWS && !findGitBash()) {
     throw new Error(
-      "Hermes needs a helper called Git for Windows, which isn't installed. " +
-        'Choose Repair install to add it automatically, or install it yourself from git-scm.com and reopen Hermes.'
+      "Oria needs a helper called Git for Windows, which isn't installed. " +
+        'Choose Repair install to add it automatically, or install it yourself from git-scm.com and reopen Oria.'
     )
   }
 
@@ -5367,10 +5371,10 @@ async function runEnsureRuntime(backend: any, assertStillOwned: () => void): Pro
   }
 
   backend.command = getVenvPython(VENV_ROOT)
-  backend.label = `Hermes at ${ACTIVE_HERMES_ROOT} (venv: ${VENV_ROOT})`
+  backend.label = `Oria at ${ACTIVE_HERMES_ROOT} (venv: ${VENV_ROOT})`
   updateBootProgress({
     phase: 'runtime.ready',
-    message: 'Hermes runtime is ready',
+    message: 'Oria runtime is ready',
     progress: 82,
     running: true,
     error: null
@@ -5419,7 +5423,7 @@ function fetchJson(url, token, options: any = {}) {
         const timeoutMs = resolveTimeoutMs(options.timeoutMs, DEFAULT_FETCH_TIMEOUT_MS)
 
         if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-          reject(new Error(`Unsupported Hermes backend URL protocol: ${parsed.protocol}`))
+          reject(new Error(`Unsupported Oria backend URL protocol: ${parsed.protocol}`))
 
           return
         }
@@ -5495,7 +5499,7 @@ function fetchJson(url, token, options: any = {}) {
 
         req.on('error', reject)
         req.setTimeout(timeoutMs, () => {
-          req.destroy(new Error(`Timed out connecting to Hermes backend after ${timeoutMs}ms`))
+          req.destroy(new Error(`Timed out connecting to Oria backend after ${timeoutMs}ms`))
         })
 
         // From here the request goes on the wire: a later transport error can no
@@ -5531,7 +5535,7 @@ function downloadViaTokenToFile(url, token, ctx, options: any = {}) {
     }
 
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      reject(new Error(`Unsupported Hermes backend URL protocol: ${parsed.protocol}`))
+      reject(new Error(`Unsupported Oria backend URL protocol: ${parsed.protocol}`))
 
       return
     }
@@ -5566,7 +5570,7 @@ function downloadViaTokenToFile(url, token, ctx, options: any = {}) {
 
     req.on('error', reject)
     req.setTimeout(timeoutMs, () => {
-      req.destroy(new Error(`Timed out connecting to Hermes backend after ${timeoutMs}ms`))
+      req.destroy(new Error(`Timed out connecting to Oria backend after ${timeoutMs}ms`))
     })
     req.end()
   })
@@ -5597,7 +5601,7 @@ function fetchPublicJson(url, options: any = {}) {
         const timeoutMs = resolveTimeoutMs(options.timeoutMs, DEFAULT_FETCH_TIMEOUT_MS)
 
         if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-          reject(new Error(`Unsupported Hermes backend URL protocol: ${parsed.protocol}`))
+          reject(new Error(`Unsupported Oria backend URL protocol: ${parsed.protocol}`))
 
           return
         }
@@ -5658,7 +5662,7 @@ function fetchPublicJson(url, options: any = {}) {
 
         req.on('error', reject)
         req.setTimeout(timeoutMs, () => {
-          req.destroy(new Error(`Timed out connecting to Hermes backend after ${timeoutMs}ms`))
+          req.destroy(new Error(`Timed out connecting to Oria backend after ${timeoutMs}ms`))
         })
 
         // Past this point the request is on the wire — see fetchJson.
@@ -6977,18 +6981,18 @@ function buildApplicationMenu() {
 
   if (IS_MAC) {
     template.push({
-      label: APP_NAME,
+      label: APP_DISPLAY_NAME,
       submenu: [
-        { label: `About ${APP_NAME}`, click: () => showAboutPanelFresh() },
+        { label: `About ${APP_DISPLAY_NAME}`, click: () => showAboutPanelFresh() },
         checkForUpdatesItem,
         { type: 'separator' },
         { role: 'services' },
         { type: 'separator' },
-        { role: 'hide' },
+        { label: `Hide ${APP_DISPLAY_NAME}`, role: 'hide' },
         { role: 'hideOthers' },
         { role: 'unhide' },
         { type: 'separator' },
-        { role: 'quit' }
+        { label: `Quit ${APP_DISPLAY_NAME}`, role: 'quit' }
       ]
     })
   }
@@ -7766,7 +7770,7 @@ function openOauthLoginWindow(baseUrl, { silent = false } = {}) {
       win = new BrowserWindow({
         width: 520,
         height: 720,
-        title: silent ? 'Connecting to Hermes Cloud agent…' : 'Sign in to Hermes gateway',
+        title: silent ? 'Connecting to Hermes Cloud agent…' : 'Sign in to Oria gateway',
         autoHideMenuBar: true,
         // Silent cascade: start HIDDEN. The auto-SSO 302 chain completes in
         // well under a second, so the window normally never needs to show. We
@@ -7861,7 +7865,7 @@ function fetchJsonViaOauthSession(url, options: any = {}) {
     }
 
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      reject(new Error(`Unsupported Hermes backend URL protocol: ${parsed.protocol}`))
+      reject(new Error(`Unsupported Oria backend URL protocol: ${parsed.protocol}`))
 
       return
     }
@@ -7894,7 +7898,7 @@ function fetchJsonViaOauthSession(url, options: any = {}) {
         // already finished
       }
 
-      reject(new Error(`Timed out connecting to Hermes backend after ${timeoutMs}ms`))
+      reject(new Error(`Timed out connecting to Oria backend after ${timeoutMs}ms`))
     }, timeoutMs)
 
     request.on('response', res => {
@@ -8056,7 +8060,7 @@ function downloadViaOauthSessionToFile(url, ctx, options: any = {}) {
     }
 
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      reject(new Error(`Unsupported Hermes backend URL protocol: ${parsed.protocol}`))
+      reject(new Error(`Unsupported Oria backend URL protocol: ${parsed.protocol}`))
 
       return
     }
@@ -8086,7 +8090,7 @@ function downloadViaOauthSessionToFile(url, ctx, options: any = {}) {
         // already finished
       }
 
-      reject(new Error(`Timed out connecting to Hermes backend after ${timeoutMs}ms`))
+      reject(new Error(`Timed out connecting to Oria backend after ${timeoutMs}ms`))
     }, timeoutMs)
 
     request.on('response', res => {
@@ -10083,7 +10087,7 @@ async function buildRemoteConnection(
 
   if (!token) {
     throw new Error(
-      'Remote Hermes gateway is selected, but no session token is saved. ' +
+      'Remote Oria gateway is selected, but no session token is saved. ' +
         'Open Settings → Gateway and save a token, or switch back to Local.'
     )
   }
@@ -11134,7 +11138,7 @@ async function testDesktopConnectionConfig(input: any = {}) {
             return {
               reachable: false,
               sshError: 'update-required',
-              error: 'Update Hermes on the remote host before connecting with Desktop SSH.'
+              error: 'Update Oria on the remote host before connecting with Desktop SSH.'
             }
           }
 
@@ -12607,7 +12611,7 @@ async function runPoolBackendStart(profile, entry, opts: { forceLocal?: boolean;
   assertLocalProfileCanStart(profile, profileDeletionGate, key =>
     directoryExists(path.join(HERMES_HOME, 'profiles', key))
   )
-  rememberLog(`Starting Hermes backend for profile "${profile}" via ${backend.label}`)
+  rememberLog(`Starting Oria backend for profile "${profile}" via ${backend.label}`)
 
   const parentStartMarker = await desktopParentStartMarker()
   const backendNonce = crypto.randomBytes(16).toString('hex')
@@ -12683,16 +12687,16 @@ async function runPoolBackendStart(profile, entry, opts: { forceLocal?: boolean;
   })
 
   child.once('error', error => {
-    rememberLog(`Hermes backend for profile "${profile}" failed to start: ${error.message}`)
+    rememberLog(`Oria backend for profile "${profile}" failed to start: ${error.message}`)
     void teardownFailedLocalBackend(poolKey, entry).catch(cleanupError => {
       rememberLog(
-        `Hermes backend for profile "${profile}" cleanup failed: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`
+        `Oria backend for profile "${profile}" cleanup failed: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`
       )
     })
     rejectStart?.(error)
   })
   child.once('exit', (code, signal) => {
-    rememberLog(`Hermes backend for profile "${profile}" exited (${signal || code})`)
+    rememberLog(`Oria backend for profile "${profile}" exited (${signal || code})`)
     releaseLocalBackendSlot(entry)
     releaseBackendChild(child)
 
@@ -12703,7 +12707,7 @@ async function runPoolBackendStart(profile, entry, opts: { forceLocal?: boolean;
     if (!ready) {
       rejectStart?.(
         new Error(
-          `Hermes backend for profile "${profile}" exited before it became ready (${signal || code}).${outputTail.describe()}`
+          `Oria backend for profile "${profile}" exited before it became ready (${signal || code}).${outputTail.describe()}`
         )
       )
     }
@@ -12726,7 +12730,7 @@ async function runPoolBackendStart(profile, entry, opts: { forceLocal?: boolean;
 
   const authToken = await adoptServedDashboardToken(baseUrl, token, {
     childAlive: () => child.exitCode === null && !child.killed,
-    label: `Hermes backend for profile "${profile}"`,
+    label: `Oria backend for profile "${profile}"`,
     rememberLog
   })
 
@@ -12742,7 +12746,7 @@ async function runPoolBackendStart(profile, entry, opts: { forceLocal?: boolean;
 
   if (!wsProbe.ok) {
     throw new Error(
-      `Hermes backend for profile "${profile}" is HTTP-reachable but the WebSocket (/api/ws) rejected the session token: ${wsProbe.reason}`
+      `Oria backend for profile "${profile}" is HTTP-reachable but the WebSocket (/api/ws) rejected the session token: ${wsProbe.reason}`
     )
   }
 
@@ -12894,7 +12898,7 @@ async function runHermesStart() {
   // otherwise SIGTERMs the running instance's live backend (#87295).
   if (!isPrimaryInstance) {
     rememberLog('[boot] non-primary instance: skipping backend machinery')
-    throw new Error('Hermes Desktop is already running in another window.')
+    throw new Error('Oria Desktop is already running in another window.')
   }
 
   await reapOrphanedBackendsOnce()
@@ -12926,7 +12930,7 @@ async function runHermesStart() {
   // E2E: simulate a boot failure without breaking the real backend. The boot
   // progresses a few steps, then fails with the given error message.
   if (BOOT_FAKE_ERROR) {
-    await advanceBootProgress('backend.resolve', 'Resolving Hermes backend', 8)
+    await advanceBootProgress('backend.resolve', 'Resolving Oria backend', 8)
     const error = new Error(BOOT_FAKE_ERROR) as any
     error.isBootstrapFailure = true
     bootstrapFailure = error
@@ -12970,7 +12974,7 @@ async function runHermesStart() {
       // remotes and Apply invalidated this attempt), bail before probing.
       backendConnectionState.assertCurrentAttempt(connectionAttempt)
 
-      await advanceBootProgress('backend.remote', `Connecting to remote Hermes backend at ${remote.baseUrl}`, 24)
+      await advanceBootProgress('backend.remote', `Connecting to remote Oria backend at ${remote.baseUrl}`, 24)
       await waitForHermes(remote.baseUrl, remote.token, undefined, remote.authMode, remote.headers)
 
       // Second async boundary: the health probe itself can outlive the
@@ -12979,7 +12983,7 @@ async function runHermesStart() {
 
       updateBootProgress({
         phase: 'backend.ready',
-        message: 'Remote Hermes backend is ready',
+        message: 'Remote Oria backend is ready',
         progress: 94,
         running: true,
         error: null
@@ -12988,7 +12992,7 @@ async function runHermesStart() {
       return createPrimaryRemoteConnection(remote, hermesLog.slice(-80), getWindowState())
     }
 
-    await advanceBootProgress('backend.resolve', 'Resolving Hermes backend', 8)
+    await advanceBootProgress('backend.resolve', 'Resolving Oria backend', 8)
     // Resolve for the desktop's primary profile so a per-profile remote
     // override on the active profile is honored (falls back to env / global).
 
@@ -13028,7 +13032,7 @@ async function runHermesStart() {
       ensureLocalRuntime: backend =>
         ensureRuntime(backend, () => backendConnectionState.assertCurrentAttempt(connectionAttempt)),
       prepareLocalBackend: async () => {
-        await advanceBootProgress('backend.runtime', 'Resolving Hermes runtime', 28)
+        await advanceBootProgress('backend.runtime', 'Resolving Oria runtime', 28)
 
         return resolveHermesBackend(backendArgs)
       },
@@ -13068,8 +13072,8 @@ async function runHermesStart() {
     const webDist = resolveWebDist()
     const readyFile = backend.readyFile ? makeDashboardReadyFile() : null
 
-    await advanceBootProgress('backend.spawn', `Starting Hermes backend via ${backend.label}`, 84)
-    rememberLog(`Starting Hermes backend via ${backend.label}`)
+    await advanceBootProgress('backend.spawn', `Starting Oria backend via ${backend.label}`, 84)
+    rememberLog(`Starting Oria backend via ${backend.label}`)
 
     const profile = primaryProfileKey()
     const parentStartMarker = await desktopParentStartMarker()
@@ -13152,7 +13156,7 @@ async function runHermesStart() {
       stopBackendChild(hermesProcess)
       await waitForBackendExit(hermesProcess)
       releaseBackendChild(hermesProcess)
-      throw new Error('Hermes backend start was superseded by a newer connection attempt.')
+      throw new Error('Oria backend start was superseded by a newer connection attempt.')
     }
 
     hermesProcess.stdout.on('data', rememberLog)
@@ -13168,17 +13172,17 @@ async function runHermesStart() {
       releaseBackendChild(hermesProcess)
 
       if (!backendConnectionState.clearForCurrentProcess(processOwner)) {
-        rememberLog(`Ignoring stale Hermes backend error: ${error.message}`)
-        rejectBackendStart?.(new Error('Hermes backend start was superseded by a newer connection attempt.'))
+        rememberLog(`Ignoring stale Oria backend error: ${error.message}`)
+        rejectBackendStart?.(new Error('Oria backend start was superseded by a newer connection attempt.'))
 
         return
       }
 
-      rememberLog(`Hermes backend failed to start: ${error.message}`)
+      rememberLog(`Oria backend failed to start: ${error.message}`)
       updateBootProgress(
         {
           error: error.message,
-          message: `Hermes backend failed to start: ${error.message}`,
+          message: `Oria backend failed to start: ${error.message}`,
           phase: 'backend.error',
           running: false
         },
@@ -13191,20 +13195,20 @@ async function runHermesStart() {
       releaseBackendChild(hermesProcess)
 
       if (!backendConnectionState.clearForCurrentProcess(processOwner)) {
-        rememberLog(`Ignoring stale Hermes backend exit (${signal || code})`)
+        rememberLog(`Ignoring stale Oria backend exit (${signal || code})`)
 
         if (!backendReady) {
-          rejectBackendStart?.(new Error('Hermes backend start was superseded by a newer connection attempt.'))
+          rejectBackendStart?.(new Error('Oria backend start was superseded by a newer connection attempt.'))
         }
 
         return
       }
 
-      rememberLog(`Hermes backend exited (${signal || code})`)
+      rememberLog(`Oria backend exited (${signal || code})`)
       sendBackendExit({ code, signal })
 
       if (!backendReady) {
-        const message = `Hermes backend exited before it became ready (${signal || code}).${primaryOutputTail.describe()}`
+        const message = `Oria backend exited before it became ready (${signal || code}).${primaryOutputTail.describe()}`
         updateBootProgress(
           {
             error: message,
@@ -13216,13 +13220,13 @@ async function runHermesStart() {
         )
         rejectBackendStart?.(
           new Error(
-            `Hermes backend exited before it became ready (${signal || code}). Log: ${DESKTOP_LOG_PATH}\n${recentHermesLog()}`
+            `Oria backend exited before it became ready (${signal || code}). Log: ${DESKTOP_LOG_PATH}\n${recentHermesLog()}`
           )
         )
       }
     })
 
-    await advanceBootProgress('backend.port', 'Waiting for Hermes backend to launch', 86)
+    await advanceBootProgress('backend.port', 'Waiting for Oria backend to launch', 86)
     backendConnectionState.assertCurrentAttempt(connectionAttempt)
 
     // Discover the ephemeral port the child bound to
@@ -13234,7 +13238,7 @@ async function runHermesStart() {
     }
 
     const baseUrl = `http://127.0.0.1:${port}`
-    await advanceBootProgress('backend.wait', 'Waiting for Hermes backend to become ready', 90)
+    await advanceBootProgress('backend.wait', 'Waiting for Oria backend to become ready', 90)
     backendConnectionState.assertCurrentAttempt(connectionAttempt)
     await Promise.race([waitForHermes(baseUrl, token), backendStartFailed])
     backendConnectionState.assertCurrentAttempt(connectionAttempt)
@@ -13255,13 +13259,13 @@ async function runHermesStart() {
 
     if (!wsProbe.ok) {
       throw new Error(
-        `Local Hermes backend is HTTP-reachable but the WebSocket (/api/ws) rejected the session token: ${wsProbe.reason}`
+        `Local Oria backend is HTTP-reachable but the WebSocket (/api/ws) rejected the session token: ${wsProbe.reason}`
       )
     }
 
     updateBootProgress({
       phase: 'backend.ready',
-      message: 'Hermes backend is ready. Finalizing desktop startup',
+      message: 'Oria backend is ready. Finalizing desktop startup',
       progress: 94,
       running: true,
       error: null
@@ -13495,7 +13499,7 @@ function spawnSecondaryWindow({
     height: SESSION_WINDOW_MIN_HEIGHT,
     minWidth: SESSION_WINDOW_MIN_WIDTH,
     minHeight: SESSION_WINDOW_MIN_HEIGHT,
-    title: 'Hermes',
+    title: 'Oria',
     titleBarStyle: 'hidden',
     titleBarOverlay: getTitleBarOverlayOptions(),
     trafficLightPosition: IS_MAC ? WINDOW_BUTTON_POSITION : undefined,
@@ -13589,7 +13593,7 @@ function spawnBrowserWindow(tabId) {
     height: BROWSER_WINDOW_HEIGHT,
     minWidth: BROWSER_WINDOW_MIN_WIDTH,
     minHeight: BROWSER_WINDOW_MIN_HEIGHT,
-    title: 'Hermes',
+    title: 'Oria',
     titleBarStyle: 'hidden',
     titleBarOverlay: getTitleBarOverlayOptions(),
     trafficLightPosition: IS_MAC ? WINDOW_BUTTON_POSITION : undefined,
@@ -13681,7 +13685,7 @@ function createInstanceWindow() {
     ...nextInstanceBounds(),
     minWidth: WINDOW_MIN_WIDTH,
     minHeight: WINDOW_MIN_HEIGHT,
-    title: 'Hermes',
+    title: 'Oria',
     titleBarStyle: 'hidden',
     titleBarOverlay: getTitleBarOverlayOptions(),
     trafficLightPosition: IS_MAC ? WINDOW_BUTTON_POSITION : undefined,
@@ -14665,7 +14669,7 @@ function createWindow() {
     ...computeWindowOptions(savedWindowState, screen.getAllDisplays()),
     minWidth: WINDOW_MIN_WIDTH,
     minHeight: WINDOW_MIN_HEIGHT,
-    title: 'Hermes',
+    title: 'Oria',
     // Frameless title bar on every platform so the renderer can paint the
     // "hide sidebar" button (and other left-side titlebar tools) flush with
     // the top edge — matching the macOS layout where the traffic lights sit
@@ -14850,7 +14854,7 @@ function createWindow() {
           errorCode: details?.errorCode,
           url: details?.url,
           errorDescription: 'The desktop renderer failed to load repeatedly after the update.',
-          repairHint: 'hermes desktop --force-build',
+          repairHint: 'oria desktop --force-build',
           reloadUrl: DEV_SERVER || pathToFileURL(resolveRendererIndex()).toString()
         })
       }
@@ -14887,7 +14891,7 @@ function createWindow() {
       errorCode: 'ERR_FILE_NOT_FOUND',
       errorDescription: `The desktop renderer bundle is incomplete after the last update (${tornAssets.length} missing file(s)).`,
       missingAssets: tornAssets,
-      repairHint: 'hermes desktop --force-build',
+      repairHint: 'oria desktop --force-build',
       reloadUrl: pathToFileURL(rendererIndex).toString()
     })
   } else {
@@ -15167,7 +15171,7 @@ ipcMain.handle('hermes:window:openInTerminal', async (_event, sessionId, opts) =
     const backend = await resolveHermesBackend(tuiResumeArgs(sessionId.trim(), profile || undefined))
 
     if (!backend.command) {
-      return { ok: false, error: 'Hermes is not installed yet' }
+      return { ok: false, error: 'Oria is not installed yet' }
     }
 
     const { cwd } = sanitizeWorkspaceCwd(opts?.cwd)
@@ -17651,7 +17655,7 @@ async function detectRendererSkew() {
 function showAboutPanelFresh() {
   void detectRendererSkew().then(skew => {
     app.setAboutPanelOptions({
-      applicationName: APP_NAME,
+      applicationName: APP_DISPLAY_NAME,
       applicationVersion: skew.outOfSync
         ? `${resolveHermesVersion()} — app build out of date, update the desktop app`
         : resolveHermesVersion(),
@@ -17875,7 +17879,7 @@ async function runDesktopUninstall(mode) {
     return {
       ok: false,
       error: 'agent-missing',
-      message: `Can't run the uninstaller: no Hermes agent venv at ${VENV_ROOT}.`
+      message: `Can't run the uninstaller: no Oria agent venv at ${VENV_ROOT}.`
     }
   }
 
