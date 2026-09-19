@@ -1343,6 +1343,10 @@ def _apply_agent_section(agent, _agent_cfg):
             from tools.env_probe import warm_environment_probe_async
             warm_environment_probe_async()
 
+    # Local call ledger (agent/call_ledger.py): off unless agent.call_ledger.enabled is true.
+    from agent.call_ledger import resolve_ledger_settings
+    agent._call_ledger_settings = resolve_ledger_settings(_agent_section.get("call_ledger"))
+
     # "Bot Chat" gate hint for hosts that defer the DB title write past the first prompt build.
     agent._session_title_hint = None
 

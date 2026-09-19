@@ -86,6 +86,17 @@ id; native Responses/Codex compaction paths are provider-specific. Compression i
 cache break — keep it the only one. Full detail:
 `website/docs/developer-guide/context-compression-and-caching.md`.
 
+## Call ledger (`agent/call_ledger.py` + `_store.py` / `_report.py`)
+
+Off by default (`agent.call_ledger.enabled`). A turn binds a ContextVar in `turn_facade.py`; the
+model seam is `turn_usage.record_response_usage` + the `api_request_hooks` error hook, the aux seam
+is `aux_accounting.record_aux_usage`, the tool seam is `tool_executor._commit_tool_result`. Each is
+one call-in — do not grow them. Records are JSONL under `<HERMES_HOME>/call_ledger/`, written by a
+daemon thread against the path resolved at turn start (never re-resolved off-turn), and **local
+only**. Tool args are stored as a `ToolCallSignature` hash, never raw. Every entry point swallows
+its own failure at DEBUG: a broken ledger must never change a turn. `hermes insights --ledger` and
+`evals/call_ledger/baseline.py` are the consumers.
+
 ## Model and provider resolution
 
 - Runtime provider/model resolution and its precedence: `website/docs/developer-guide/provider-runtime.md`.

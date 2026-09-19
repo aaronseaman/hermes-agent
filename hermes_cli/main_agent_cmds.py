@@ -104,7 +104,24 @@ def cmd_tools(args):
         tools_command(args)
 
 
+def _cmd_insights_ledger(args):
+    import json
+    from pathlib import Path
+    from agent.call_ledger_report import build_report, format_report, load_records
+    from agent.call_ledger_store import ledger_dir
+
+    sources = [Path(d).expanduser() for d in (args.ledger_dir or [])] or [ledger_dir()]
+    records = load_records(sources, days=args.days, session_id=args.session)
+    report = build_report(records)
+    if args.json:
+        print(json.dumps(report, indent=2, sort_keys=True))
+    else:
+        print(format_report(report, sources=sources))
+
+
 def cmd_insights(args):
+    if getattr(args, "ledger", False):
+        return _cmd_insights_ledger(args)
     db = None
     try:
         from hermes_state import SessionDB, _default_db_path

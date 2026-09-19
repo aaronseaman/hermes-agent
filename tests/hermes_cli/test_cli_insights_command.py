@@ -94,3 +94,34 @@ def test_subcommand_insights_closes_database_when_generation_fails(capsys):
 
     db.close.assert_called_once()
     assert "Error generating insights: boom" in capsys.readouterr().out
+
+
+def test_insights_ledger_reports_the_active_profiles_records(capsys):
+    """`hermes insights --ledger --json` reads this profile's call_ledger/ and counts what was recorded."""
+    import argparse
+    import json
+
+    from agent import call_ledger
+    from agent.call_ledger_store import WRITER
+    from hermes_cli.subcommands.insights import build_insights_parser
+
+    class _Agent:
+        _call_ledger_settings = call_ledger.LedgerSettings(enabled=True)
+        session_id, platform, provider, model, api_mode = "cli-ledger", "cli", "p", "m", "chat_completions"
+
+    agent = _Agent()
+    for _ in range(2):
+        token = call_ledger.begin_turn(agent, "task")
+        call_ledger.record_model_call(agent, usage=None, cost_usd=None, latency_s=0.5)
+        call_ledger.end_turn(token, outcome="success")
+    assert WRITER.flush(timeout=5.0)
+
+    parser = argparse.ArgumentParser()
+    build_insights_parser(parser.add_subparsers(), cmd_insights=cmd_insights)
+    args = parser.parse_args(["insights", "--ledger", "--json"])
+    args.func(args)
+
+    report = json.loads(capsys.readouterr().out)
+    assert report["aggregate"]["turns"] == 2
+    assert report["aggregate"]["model_calls_per_turn"] == 1
+    assert set(report["sessions"]) == {"cli-ledger"}
