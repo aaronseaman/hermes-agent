@@ -55,7 +55,7 @@ class LedgerProfile:
             if now >= self._next_refresh:
                 self._next_refresh = now + REFRESH_INTERVAL_S
                 self._tail_other_processes()
-            return self._stats.observation(capability, identity)
+            return self._stats.observe(capability, identity)
 
     def _tail_other_processes(self) -> None:
         from agent.call_ledger_store import _FILE_PREFIX

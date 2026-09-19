@@ -138,7 +138,8 @@ class ProfileStats:
                 st.latencies.append(float(latency))
         return True
 
-    def observation(self, capability: str, identity: str):
+    def observe(self, capability: str, identity: str):
+        """The raw :class:`~agent.capability_resolver.Observation` for one key (an ``ObservedProfile``)."""
         from agent.capability_resolver import Observation
         st = self._stats.get((capability, identity))
         if st is None or st.n == 0:
