@@ -2127,6 +2127,13 @@ EOF
     chmod +x "$command_link_dir/hermes"
     log_success "Installed hermes launcher → $command_link_display_dir/hermes"
 
+    # `oria` is the product-name alias of `hermes` (same console entry point):
+    # an identical shim, so uninstall recognises it the same way.
+    rm -f "$command_link_dir/oria"
+    cp "$command_link_dir/hermes" "$command_link_dir/oria"
+    chmod +x "$command_link_dir/oria"
+    log_success "Installed oria launcher → $command_link_display_dir/oria"
+
     # Also expose `hermes-agent`. The `hermes-agent` console script declared in
     # pyproject.toml's [project.scripts] lives inside the venv, which is not on
     # the login-shell PATH. Without this launcher users can't invoke the agent

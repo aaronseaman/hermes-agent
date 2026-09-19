@@ -15,6 +15,7 @@ import threading
 import time as _time
 
 from pathlib import Path
+from hermes_constants import CLI_EXECUTABLE_NAMES
 from hermes_cli import _early_recovery as _early_recovery_mod
 
 # Log-record parity with the origin module.
@@ -507,7 +508,7 @@ def _hermes_exe_shims(scripts_dir: Path) -> list[Path]:
     only; POSIX shims are plain scripts replaced atomically."""
     if not _is_windows():
         return []
-    names = set(_load_console_script_names()) or {"hermes", "hermes-agent", "hermes-acp"}
+    names = set(_load_console_script_names()) or {*CLI_EXECUTABLE_NAMES, "hermes-agent", "hermes-acp"}
     # Not a [project.scripts] entry point, but older update/install paths still
     # rewrite and quarantine it.
     names.add("hermes-gateway")

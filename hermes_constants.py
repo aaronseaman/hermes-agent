@@ -21,6 +21,10 @@ _HERMES_HOME_OVERRIDE: ContextVar[str | object] = ContextVar("_HERMES_HOME_OVERR
 INDICATOR_STYLES: tuple[str, ...] = ("ascii", "emoji", "kaomoji", "unicode")
 DEFAULT_INDICATOR_STYLE: str = "kaomoji"
 
+# Console-script names that run ``hermes_cli.main:main`` ([project.scripts]): ``oria`` is the
+# product-name alias of ``hermes``. Process matchers accept either (bare or ``.exe``).
+CLI_EXECUTABLE_NAMES: tuple[str, ...] = ("hermes", "oria")
+
 
 def set_hermes_home_override(path: str | Path | None) -> Token:
     """Set a context-local Hermes home override and return its reset token.

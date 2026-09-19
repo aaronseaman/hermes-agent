@@ -209,6 +209,7 @@ stdenv.mkDerivation (finalAttrs: {
       '')
       [
         "hermes"
+        "oria"
         "hermes-agent"
         "hermes-acp"
       ]

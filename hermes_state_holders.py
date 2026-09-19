@@ -15,6 +15,8 @@ import sys
 from pathlib import Path
 from typing import Callable, List, Optional, Sequence, Set, Tuple
 
+from hermes_constants import CLI_EXECUTABLE_NAMES
+
 try:  # Hard dependency, but tolerate scaffold-phase imports before pip install.
     import psutil
 except ImportError:  # pragma: no cover - stripped/scaffold installs only
@@ -30,7 +32,7 @@ def read_only_db_uri(db_path) -> str:
 logger = logging.getLogger(__name__)
 
 _IS_WINDOWS = sys.platform == "win32"
-_HERMES_EXECUTABLES = frozenset({"hermes", "hermes-agent", "hermes-acp"})
+_HERMES_EXECUTABLES = frozenset({*CLI_EXECUTABLE_NAMES, "hermes-agent", "hermes-acp"})
 _HERMES_PYTHON_MODULES = frozenset({"acp_adapter", "hermes_cli.main"})
 _HERMES_PYTHON_SCRIPTS = frozenset({"hermes_cli/main.py", "run_agent.py"})
 _PYTHON_SHORT_OPTIONS_WITH_OPERANDS = frozenset({"Q", "W", "X"})

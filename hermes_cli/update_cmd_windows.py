@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from hermes_cli.update_cmd_common import _best_effort
+from hermes_constants import CLI_EXECUTABLE_NAMES
 
 logger = logging.getLogger("hermes_cli.update_cmd")  # log-record parity with the origin module
 
@@ -170,7 +171,7 @@ def _detect_venv_python_processes(*, exclude_pids: set[int] | None = None) -> li
         in_venv = exe_norm.startswith(venv_prefix)
         name = str(info.get("name") or Path(exe).name)
         name_low = name.lower()
-        if not (in_venv or name_low.startswith(("python", "pypy")) or name_low in {"uv.exe", "uvx.exe", "hermes.exe"}):
+        if not (in_venv or name_low.startswith(("python", "pypy")) or name_low in {"uv.exe", "uvx.exe", *(f"{n}.exe" for n in CLI_EXECUTABLE_NAMES)}):
             continue
         cmdline_raw = _cmdline_or_empty(proc)
         cmdline_low = cmdline_raw.lower()
@@ -242,7 +243,7 @@ def _hermes_holder_subcommand(cmdline: str) -> str | None:
     def _is_entry(i: int, token: str) -> bool:
         low = token.lower().strip('"')
         return (low.endswith("hermes_cli.main") and i > 0 and tokens[i - 1] == "-m") or (
-            low.rsplit("\\", 1)[-1].rsplit("/", 1)[-1] in ("hermes", "hermes.exe"))
+            low.rsplit("\\", 1)[-1].rsplit("/", 1)[-1].removesuffix(".exe") in CLI_EXECUTABLE_NAMES)
 
     entry_idx = next((i for i, token in enumerate(tokens) if _is_entry(i, token)), None)
     if entry_idx is None:

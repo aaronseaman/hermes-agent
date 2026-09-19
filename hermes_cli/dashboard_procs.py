@@ -10,12 +10,14 @@ import subprocess
 import sys
 from pathlib import Path
 
+from hermes_constants import CLI_EXECUTABLE_NAMES
+
 # Cmdline substrings identifying the long-lived server (``serve`` = the headless name Desktop
 # spawns; reaped on update for the same reason).
 _DASHBOARD_PATTERNS = tuple(
     f"{launcher} {cmd}"
     for cmd in ("dashboard", "serve")
-    for launcher in ("hermes", "hermes_cli.main", "hermes_cli/main.py"))
+    for launcher in (*CLI_EXECUTABLE_NAMES, "hermes_cli.main", "hermes_cli/main.py"))
 _PS_RUN_KWARGS = dict(capture_output=True, text=True, encoding="utf-8", errors="replace")
 
 

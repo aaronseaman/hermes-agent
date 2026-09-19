@@ -16,6 +16,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Callable, Iterable, Literal, NoReturn, Sequence
 
+from hermes_constants import CLI_EXECUTABLE_NAMES
 from tools.ansi_strip import strip_ansi as _strip_ansi
 
 
@@ -390,7 +391,7 @@ class HermesConsoleEngine:
             return ConsoleResult("ok")
         try:
             tokens = _split_line(raw_line)
-            if tokens and tokens[0] == "hermes":
+            if tokens and tokens[0] in CLI_EXECUTABLE_NAMES:
                 tokens = tokens[1:]
             if not tokens:
                 return ConsoleResult("ok", output=self.help_text())

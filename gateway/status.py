@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, NamedTuple, Optional
 
-from hermes_constants import _get_platform_default_hermes_home, get_hermes_home
+from hermes_constants import CLI_EXECUTABLE_NAMES, _get_platform_default_hermes_home, get_hermes_home
 from utils import atomic_json_write
 
 if sys.platform == "win32":
@@ -329,7 +329,7 @@ def _gateway_command_subcommand(command: str | None) -> str | None:
         return "run"
     joined = " ".join(tokens)
     if "hermes_cli.main" not in joined and "hermes_cli/main.py" not in joined and not any(
-        b in ("hermes", "hermes.exe") for b in basenames
+        b.removesuffix(".exe") in CLI_EXECUTABLE_NAMES for b in basenames
     ):
         return None
     # Drop --profile X / -p X / --profile=X / -p=X (consumes a VALUE of "gateway" too).

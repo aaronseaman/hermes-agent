@@ -93,7 +93,7 @@ def _venv_scripts_dir(root: Path) -> Path | None:
 
 #: Launcher names install.ps1's Set-PathVariable exposes from the managed binary dir (the default
 #: Hermes root's ``bin``, next to uv.exe). Keep in lockstep with scripts/install.ps1.
-_WINDOWS_BIN_LAUNCHERS = ("hermes", "hermes-acp")
+_WINDOWS_BIN_LAUNCHERS = ("hermes", "oria", "hermes-acp")
 
 
 def _launcher_present(target: Path, name: str) -> bool:
@@ -370,8 +370,10 @@ def _quarantine_running_hermes_exe(
     """
     if not _is_windows():
         return []
+    from hermes_constants import CLI_EXECUTABLE_NAMES
+
     names = set(_load_console_script_names(scripts_dir.parent.parent)) or {
-        "hermes", "hermes-agent", "hermes-acp"}
+        *CLI_EXECUTABLE_NAMES, "hermes-agent", "hermes-acp"}
     names.add("hermes-gateway")
     moved: list[tuple[Path, Path]] = []
     for name in sorted(names):
