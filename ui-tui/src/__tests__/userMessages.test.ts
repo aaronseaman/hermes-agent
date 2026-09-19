@@ -212,7 +212,7 @@ describe('slash.exec fallback policy', () => {
 })
 
 describe('backend lifecycle copy', () => {
-  it('names the exit code, the last real stderr line, /logs and hermes doctor', () => {
+  it('names the exit code, the last real stderr line, /logs and oria doctor', () => {
     const tail =
       '[lifecycle] child exit code=1\nModuleNotFoundError: No module named pydantic\n[lifecycle] scheduling gateway reconnect in 1000ms (attempt 1)'
 
@@ -222,7 +222,7 @@ describe('backend lifecycle copy', () => {
     expect(text).toContain('Details: ModuleNotFoundError: No module named pydantic')
     expect(text).not.toContain('[lifecycle]')
     expect(text).toContain('/logs')
-    expect(text).toContain('hermes doctor')
+    expect(text).toContain('oria doctor')
     expect(text).toContain('/resume')
     expect(text).not.toMatch(/\bgateway\b/)
   })
