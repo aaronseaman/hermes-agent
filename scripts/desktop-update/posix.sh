@@ -130,7 +130,7 @@ notify_fallback() { # status message — renderer-free recovery surface.
   # boot surfaces it in a dialog (handoff-result.ts + main.ts).
   case "$1" in manual|error) ;; *) return 0 ;; esac
   if [ "$(uname)" = "Darwin" ]; then
-    /usr/bin/osascript -e "display notification \"$(printf '%s' "$2" | sed 's/"/\\"/g')\" with title \"Hermes update\"" 2>/dev/null && return 0
+    /usr/bin/osascript -e "display notification \"$(printf '%s' "$2" | sed 's/"/\\"/g')\" with title \"Oria update\"" 2>/dev/null && return 0
   else
     if command -v notify-send >/dev/null 2>&1; then
       notify-send -u critical "Hermes update" "$2" 2>/dev/null && return 0

@@ -56,7 +56,7 @@ get_command_link_display_dir() {
 }
 
 echo ""
-echo -e "${CYAN}☤ Hermes Agent Setup${NC}"
+echo -e "${CYAN}☤ Oria Setup${NC}"
 echo ""
 
 # ============================================================================
@@ -152,7 +152,7 @@ if is_termux; then
     if [ -z "${PYTHON_PATH:-}" ]; then
         if command -v python >/dev/null 2>&1; then
             PYTHON_FOUND_VERSION="$(python --version 2>/dev/null || true)"
-            echo -e "${RED}✗${NC} Termux Python $PYTHON_FOUND_VERSION is not supported; Hermes requires Python >=3.11,<3.14"
+            echo -e "${RED}✗${NC} Termux Python $PYTHON_FOUND_VERSION is not supported; Oria requires Python >=3.11,<3.14"
             echo "    Install a supported interpreter and re-run this script:"
             echo "      pkg install tur-repo && pkg install python3.13"
         else
@@ -420,7 +420,7 @@ else
         if ! echo "$PATH" | tr ':' '\n' | grep -q "^$HOME/.local/bin$"; then
             if ! grep -q '\.local/bin' "$SHELL_CONFIG" 2>/dev/null; then
                 echo "" >> "$SHELL_CONFIG"
-                echo "# Hermes Agent — ensure ~/.local/bin is on PATH" >> "$SHELL_CONFIG"
+                echo "# Oria — ensure ~/.local/bin is on PATH" >> "$SHELL_CONFIG"
                 echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_CONFIG"
                 echo -e "${GREEN}✓${NC} Added ~/.local/bin to PATH in $SHELL_CONFIG"
             else
@@ -462,7 +462,7 @@ echo "Next steps:"
 echo ""
 if is_termux; then
     echo "  1. Run the setup wizard to configure API keys:"
-    echo "     hermes setup"
+    echo "     oria setup"
     echo ""
     echo "  2. Start chatting:"
     echo "     hermes"
@@ -472,21 +472,21 @@ else
     echo "     source $SHELL_CONFIG"
     echo ""
     echo "  2. Run the setup wizard to configure API keys:"
-    echo "     hermes setup"
+    echo "     oria setup"
     echo ""
     echo "  3. Start chatting:"
     echo "     hermes"
     echo ""
 fi
 echo "Other commands:"
-echo "  hermes status        # Check configuration"
+echo "  oria status          # Check configuration"
 if is_termux; then
-    echo "  hermes gateway       # Run gateway in foreground"
+    echo "  oria gateway         # Run gateway in foreground"
 else
-    echo "  hermes gateway install # Install gateway service (messaging + cron)"
+    echo "  oria gateway install # Install gateway service (messaging + cron)"
 fi
-echo "  hermes cron list     # View scheduled jobs"
-echo "  hermes doctor        # Diagnose issues"
+echo "  oria cron list       # View scheduled jobs"
+echo "  oria doctor          # Diagnose issues"
 echo ""
 
 # Ask if they want to run setup wizard now

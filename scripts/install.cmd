@@ -12,7 +12,7 @@ REM   iex (irm https://hermes-agent.nousresearch.com/install.ps1)
 REM ============================================================================
 
 echo.
-echo  Hermes Agent Installer
+echo  Oria Installer
 echo  Launching PowerShell installer...
 echo.
 
