@@ -153,7 +153,7 @@ function sourceLabel(source: string): string {
     case "tool":
       return "Tool";
     case "hermes_flow":
-      return "Hermes Flow";
+      return "Oria Flow";
     case "vulcan_delegate":
       return "Vulcan delegate";
     case "webhook":

@@ -42,7 +42,7 @@ function hermesDevToken(): Plugin {
         if (!match) {
           console.warn(
             `[hermes] Could not find session token in ${BACKEND} — ` +
-              `is \`hermes dashboard\` running? /api calls will 401.`,
+              `is \`oria dashboard\` running? /api calls will 401.`,
           );
           return;
         }
@@ -60,7 +60,7 @@ function hermesDevToken(): Plugin {
       } catch (err) {
         console.warn(
           `[hermes] Dashboard at ${BACKEND} unreachable — ` +
-            `start it with \`hermes dashboard\` or set HERMES_DASHBOARD_URL. ` +
+            `start it with \`oria dashboard\` or set HERMES_DASHBOARD_URL. ` +
             `(${(err as Error).message})`,
         );
       }
