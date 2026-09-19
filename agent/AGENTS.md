@@ -90,7 +90,9 @@ cache break — keep it the only one. Full detail:
 
 Off by default (`agent.call_ledger.enabled`). A turn binds a ContextVar in `turn_facade.py`; the
 model seam is `turn_usage.record_response_usage` + the `api_request_hooks` error hook, the aux seam
-is `aux_accounting.record_aux_usage`, the tool seam is `tool_executor._commit_tool_result`. Each is
+is `aux_accounting.record_aux_usage`, the tool seam is `tool_executor._commit_tool_result`, the
+capability seam (one record per `semantic_call` attempt; no turn totals) is
+`semantic_call_cascade.py` → `record_capability_attempt`. Each is
 one call-in — do not grow them. Records are JSONL under `<HERMES_HOME>/call_ledger/`, written by a
 daemon thread against the path resolved at turn start (never re-resolved off-turn), and **local
 only**. Tool args are stored as a `ToolCallSignature` hash, never raw. Every entry point swallows
@@ -107,9 +109,15 @@ its own failure at DEBUG: a broken ledger must never change a turn. `hermes insi
   its own `provider/model/base_url/reasoning_effort` under `auxiliary:` in config.yaml.
 - **`semantic_call(capability, inputs, output_schema, policy)`** (`agent/semantic_call.py`) addresses
   an `auxiliary.<capability>` block by capability, never by model: `agent/capability_resolver.py`
-  picks among its `candidates` (policy constraints fail closed, incumbent stickiness, an explanation
-  per decision) and the model kind dispatches through `call_llm`. New aux tasks with a schema or
-  policy should use it; `sandbox: true` also exposes it to `execute_code` as a host RPC.
+  picks among its `candidates` (policy constraints fail closed, an explanation per decision) and the
+  model kind dispatches through `call_llm`. New aux tasks with a schema or policy should use it;
+  `sandbox: true` also exposes it to `execute_code` as a host RPC.
+  - **Learning** (`capability_profile*.py`, on when `agent.call_ledger` is): per-(capability,
+    implementation) profiles from ledger `capability` records, shrunk toward the declared prior;
+    `capability_resolver_utility.py` ranks by utility with a switching penalty and seeded
+    exploration. `order` stays the user's explicit ranking.
+  - **Attempts** (`semantic_call_cascade.py`): failover, verified cascades (only with an enforced
+    schema or a `verify` predicate, only under `optimize: cost`), one ledger record each.
 - Fallback models and credential pools are resolution-chain code: E2E them with real imports
   against a temp `HERMES_HOME`, not mocks (root rubric).
 
