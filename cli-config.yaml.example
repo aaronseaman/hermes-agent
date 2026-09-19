@@ -1,17 +1,17 @@
-# Hermes Agent CLI Configuration
+# Oria CLI Configuration
 # Copy settings from this example into ~/.hermes/config.yaml, or use
-# `hermes config set <section.key> <value>` to update the active profile.
+# `oria config set <section.key> <value>` to update the active profile.
 # This file configures CLI behavior; only documented secret environment
 # variables in .env take precedence over their corresponding settings.
 
 # =============================================================================
 # Database Configuration
 # =============================================================================
-# WAL is the normal default. Hermes automatically falls back to DELETE when
+# WAL is the normal default. Oria automatically falls back to DELETE when
 # SQLite reports that WAL is incompatible with the filesystem. Set this to
 # "delete" explicitly for deployments whose backing filesystem is not WAL
 # crash-safe, such as Linux containers bind-mounted through macOS virtiofs,
-# NFS, or SMB. Hermes will not live-downgrade a database already open in WAL.
+# NFS, or SMB. Oria will not live-downgrade a database already open in WAL.
 database:
   journal_mode: "wal"  # Supported values: "wal", "delete"
   # Optional WAL sizing pragmas (integers). Unset = SQLite defaults.
@@ -30,7 +30,7 @@ database:
 # =============================================================================
 # Runtime Limits
 # =============================================================================
-# Long-running Hermes server processes raise their RLIMIT_NOFILE soft limit to
+# Long-running Oria server processes raise their RLIMIT_NOFILE soft limit to
 # this value when the operating system permits it. The value is clamped to the
 # hard limit and never lowers an already higher soft limit. Set to 0, false, or
 # null to disable the adjustment. Default: 4096.
@@ -48,10 +48,10 @@ model:
   # Inference provider selection:
   #   "auto"         - Auto-detect from credentials (default)
   #   "openrouter"   - OpenRouter (requires: OPENROUTER_API_KEY or OPENAI_API_KEY)
-  #   "nous"         - Nous Portal OAuth (requires: hermes auth add nous)
+  #   "nous"         - Nous Portal OAuth (requires: oria auth add nous)
   #   "nous-api"     - Nous Portal API key (requires: NOUS_API_KEY)
   #   "anthropic"    - Direct Anthropic API (requires: ANTHROPIC_API_KEY)
-  #   "openai-codex" - OpenAI Codex (requires: hermes auth)
+  #   "openai-codex" - OpenAI Codex (requires: oria auth)
   #   "copilot"      - GitHub Copilot / GitHub Models (requires: GITHUB_TOKEN)
   #   "gemini"      - Use Google AI Studio direct (requires: GOOGLE_API_KEY or GEMINI_API_KEY)
   #   "zai"         - Use z.ai / ZhipuAI GLM models (requires: GLM_API_KEY)
@@ -104,15 +104,15 @@ model:
   # ── Token limits — two settings, easy to confuse ──────────────────────────
   #
   # context_length: TOTAL context window (input + output tokens combined).
-  #   Controls when Hermes compresses history and validates requests.
-  #   Leave unset — Hermes auto-detects the correct value from the provider.
+  #   Controls when Oria compresses history and validates requests.
+  #   Leave unset — Oria auto-detects the correct value from the provider.
   #   Set manually only when auto-detection is wrong (e.g. a local server with
   #   a custom num_ctx, or a proxy that doesn't expose /v1/models).
   #
   # context_length: 131072
   #
   # ollama_num_ctx: Ollama only — the num_ctx sent on every chat request.
-  #   Hermes auto-detects the model's window and sends it (Ollama otherwise
+  #   Oria auto-detects the model's window and sends it (Ollama otherwise
   #   defaults to 2048); context_length, if set, caps the detected value.
   #   An explicit ollama_num_ctx is sent as-is (never capped) — set it to
   #   pin VRAM use.
@@ -120,7 +120,7 @@ model:
   # ollama_num_ctx: 32768
   #
   # Output-token limits are provider-owned, not user configuration. Native
-  # protocols requiring a limit receive an internal value from Hermes.
+  # protocols requiring a limit receive an internal value from Oria.
 
   # ── Custom request headers (optional) ─────────────────────────────────────
   #
@@ -177,7 +177,7 @@ model:
 # Enterprise gateways often issue SHORT-LIVED bearers (SSO/OIDC brokers, cloud
 # IAM, internal auth proxies) rather than static API keys, so a value copied
 # into .env via `key_env` is stale within the hour and every later request 401s.
-# `key_cmd` names a command that PRINTS a token instead: Hermes runs it per
+# `key_cmd` names a command that PRINTS a token instead: Oria runs it per
 # request (cached until shortly before expiry), so long sessions keep working
 # with no restart.
 #
@@ -261,7 +261,7 @@ model:
 # =============================================================================
 # Unified Timeouts (operation deadlines)
 # =============================================================================
-# One place to override Hermes's internal operation deadlines (seconds).
+# One place to override Oria's internal operation deadlines (seconds).
 # Keys are dotted paths resolved by agent/deadline.py:resolve_timeout().
 # Precedence: this section > legacy HERMES_* env var (back-compat) > built-in
 # default. 0 or a negative value disables the bound (unbounded); very large
@@ -365,7 +365,7 @@ kanban:
 # Commands run directly on your machine in the current directory
 # -----------------------------------------------------------------------------
 # Working directory behavior:
-#   - CLI (`hermes` command): Uses "." (current directory where you run hermes)
+#   - CLI (`oria` command): Uses "." (current directory where you run hermes)
 #   - Gateway/messaging/cron: Uses terminal.cwd here; legacy .env cwd values are deprecated
 cron:
   catch_up_missed: true  # False skips past-grace recurring misses after planned downtime.
@@ -494,7 +494,7 @@ terminal:
 # - Password is cached for the session
 #
 # EMPTY PASSWORDS: Setting sudo_password to an explicit empty string is different
-# from leaving it unset. Hermes will try an empty password via `sudo -S` and
+# from leaving it unset. Oria will try an empty password via `sudo -S` and
 # will not open the interactive prompt. This is useful for passwordless sudo,
 # Touch ID sudo setups, and environments where prompting is just noise.
 #
@@ -537,7 +537,7 @@ browser:
   # after this period of no activity between agent loops (default: 120 = 2 minutes)
   inactivity_timeout: 120
   # Let an authenticated browser extension register as the controller for an
-  # existing Hermes session. Disabled by default. Local API registration also
+  # existing Oria session. Disabled by default. Local API registration also
   # requires the API server bearer key to be configured.
   extension_control:
     enabled: false
@@ -652,7 +652,7 @@ compression:
   # Survives model switches and fallback activations.
   # threshold_tokens: 200000
 
-  # Existing Codex gpt-5.5 behavior: raise Hermes' compaction trigger to 85%
+  # Existing Codex gpt-5.5 behavior: raise Oria' compaction trigger to 85%
   # for the ChatGPT Codex OAuth route. Set false to opt back down to threshold.
   codex_gpt55_autoraise: true
 
@@ -683,18 +683,18 @@ compression:
   max_attempts: 3
 
   # Codex app-server (codex CLI runtime) thread-compaction mode. The codex
-  # agent owns the real thread context on this runtime, so Hermes' summarizer
+  # agent owns the real thread context on this runtime, so Oria' summarizer
   # cannot shrink it — compaction goes through the app server instead.
   #   native = let Codex decide when to compact its own thread (default)
-  #   hermes = let Hermes threshold trigger Codex thread/compact/start
-  #   off    = Hermes will not auto-trigger compaction; Codex may still compact natively
+  #   hermes = let Oria threshold trigger Codex thread/compact/start
+  #   off    = Oria will not auto-trigger compaction; Codex may still compact natively
   codex_app_server_auto: native
 
   # Native OpenAI Responses server-side compaction (default: false). When true,
   # gpt-5.6-family models on the DIRECT OpenAI API (api.openai.com) or a ChatGPT
   # Codex subscription compact server-side: OpenAI prunes older context into an
-  # encrypted checkpoint that Hermes replays on later turns. No other provider,
-  # route, or model is affected. Hermes' local compression stays armed as the
+  # encrypted checkpoint that Oria replays on later turns. No other provider,
+  # route, or model is affected. Oria' local compression stays armed as the
   # fallback and still handles every non-eligible session.
   codex_responses_native: false
 
@@ -798,7 +798,7 @@ prompt_caching:
 # =============================================================================
 # Auxiliary Models (Advanced — Experimental)
 # =============================================================================
-# Hermes uses lightweight "auxiliary" models for side tasks: image analysis,
+# Oria uses lightweight "auxiliary" models for side tasks: image analysis,
 # browser screenshot analysis, web page summarization, TTS audio-tag insertion,
 # and context compression.
 #
@@ -818,10 +818,10 @@ prompt_caching:
 # Provider options:
 #   "auto"       - Best available: OpenRouter → Nous Portal → main endpoint (default)
 #   "openrouter" - Force OpenRouter (requires OPENROUTER_API_KEY)
-#   "nous"       - Force Nous Portal (requires: hermes auth add nous)
+#   "nous"       - Force Nous Portal (requires: oria auth add nous)
 #   "gemini"      - Force Google AI Studio direct (requires: GOOGLE_API_KEY or GEMINI_API_KEY)
 #   "ollama-cloud" - Ollama Cloud (requires: OLLAMA_API_KEY)
-#   "codex"       - Force Codex OAuth (requires: hermes model → Codex).
+#   "codex"       - Force Codex OAuth (requires: oria model → Codex).
 #                  Uses gpt-5.3-codex which supports vision.
 #   "main"       - Use your custom endpoint (OPENAI_BASE_URL + OPENAI_API_KEY).
 #                  Works with OpenAI API, local models, or any OpenAI-compatible
@@ -945,7 +945,7 @@ memory:
 # unlimited concurrent sessions. When the limit is reached, new sessions get a
 # clean error while existing active sessions keep their normal behavior. This
 # top-level key takes precedence over gateway.max_concurrent_sessions. The cap
-# is a best-effort single-host/profile runtime guard; Hermes fails open if the
+# is a best-effort single-host/profile runtime guard; Oria fails open if the
 # local runtime lease registry cannot be read or locked.
 max_concurrent_sessions: null
 
@@ -961,7 +961,7 @@ group_sessions_per_user: true
 # ~/.hermes/state.db keeps every session, message, and tool call, plus the
 # FTS5 search indexes. Since #54189, auto-pruning is ON by default so the file
 # stays bounded: at CLI/gateway/cron startup (at most once per
-# min_interval_hours) Hermes deletes ENDED sessions whose last activity is
+# min_interval_hours) Oria deletes ENDED sessions whose last activity is
 # older than retention_days. Open, pinned, and in-progress sessions are never
 # deleted. Stale automation sessions (cron/kanban/subagent/one-shot CLI) whose
 # process died without closing them are first *closed*, then aged through a
@@ -984,7 +984,7 @@ group_sessions_per_user: true
 # Optional direct endpoint for autonomous Bot Mode rooms spanning gateways.
 # Leave unset for the safe default: Desktop coordinates cross-gateway rooms and
 # same-gateway rooms can still continue on their own. Set this only to the
-# public HTTPS base URL that another trusted Hermes gateway can reach. The API
+# public HTTPS base URL that another trusted Oria gateway can reach. The API
 # server key authorizes the initial invitation; scoped grants are signed by a
 # separate installation-private secret and survive API-key rotation. Disbanding
 # a Group Chat revokes its known peer routes; API-key rotation alone does not.
@@ -997,7 +997,7 @@ group_sessions_per_user: true
 #   room_link_url: "https://hermes.example.net"
 #
 # The equivalent environment override is HERMES_ROOM_LINK_URL. After changing
-# it, restart the gateway and reopen New Group Chat > Advanced; Hermes will
+# it, restart the gateway and reopen New Group Chat > Advanced; Oria will
 # re-check the selected gateways automatically.
 
 # Startup sweep of session rows orphaned by a dead gateway process.
@@ -1017,7 +1017,7 @@ group_sessions_per_user: true
 # API Server — per-client model routing
 # ─────────────────────────────────────────────────────────────────────────────
 # Route different API clients to different models/providers on a single
-# Hermes deployment.  Clients choose a backend by sending a specific string
+# Oria deployment.  Clients choose a backend by sending a specific string
 # as the OpenAI ``model`` field.  Unmapped model values fall back to the
 # global model configured in the ``model:`` section above, and an explicit
 # session /model override always wins over a route.
@@ -1098,7 +1098,7 @@ agent:
   # gateway_timeout: 1800
 
   # Maximum time an alias routing key waits for an active turn holding the same
-  # resolved session lease. On expiry Hermes rejects this inbound message and
+  # resolved session lease. On expiry Oria rejects this inbound message and
   # asks the user to resend rather than running it without serialization.
   # Non-positive values fall back to the 5-second default.
   # gateway_turn_lease_timeout: 5
@@ -1116,9 +1116,9 @@ agent:
 
   # Transcript-sanitiser repeated-heal escalation (#96870). The pre-send
   # sanitiser silently repairs empty non-final turns on the wire copy; after
-  # this many heal passes within a 10-minute session window Hermes logs one
+  # this many heal passes within a 10-minute session window Oria logs one
   # ERROR (with session id + heal pattern) and sends a ONE-TIME out-of-band
-  # notice to the user suggesting /debug share or `hermes doctor`. The notice
+  # notice to the user suggesting /debug share or `oria doctor`. The notice
   # goes through the status channel only — conversation context and prompt
   # caching are untouched. Set 0 to disable escalation (per-window WARNINGs
   # still fire). Default 3.
@@ -1184,7 +1184,7 @@ agent:
   # HERMES_VERIFY_ON_STOP env var (1/0) takes precedence.
   # verify_on_stop: false
 
-  # Standing operator instructions for the coding posture (when Hermes is in a
+  # Standing operator instructions for the coding posture (when Oria is in a
   # code workspace). Appended to the coding brief as an extra system block, so
   # you can pin project-wide workflow rules without editing the shipped brief.
   # Accepts a string or a list of strings. Takes effect next session.
@@ -1216,7 +1216,7 @@ agent:
   #      provider prefix optional). First match wins.
   # Value: reasoning effort level (same options as reasoning_effort)
   # Override the global reasoning_effort for that specific model.
-  # NOTE: no `hermes config set` support for this key -- edit YAML directly.
+  # NOTE: no `oria config set` support for this key -- edit YAML directly.
   # reasoning_overrides:
   #   "openrouter/anthropic/claude-opus-4.5": "xhigh"
   #   "openai/gpt-5": "low"
@@ -1268,7 +1268,7 @@ gateway:
 # Toolsets
 # =============================================================================
 # Control which tools the agent has access to.
-# Use `hermes tools` to interactively enable/disable tools per platform.
+# Use `oria tools` to interactively enable/disable tools per platform.
 
 # =============================================================================
 # Platform Toolsets (per-platform tool configuration)
@@ -1345,12 +1345,12 @@ platform_toolsets:
 #       rich_drafts: false            # Experimental rich draft previews during Telegram DM streaming; default false because Telegram Desktop/macOS can visually overlay draft frames
 #       allow_cjk_rich_messages: false # Keep CJK content on the safe MarkdownV2 path unless an unaffected client explicitly opts in to native rich rendering
 #       command_menu:
-#         # Telegram allows up to 100 BotCommands; Hermes defaults to 60 so
+#         # Telegram allows up to 100 BotCommands; Oria defaults to 60 so
 #         # all built-in commands plus common skill commands stay visible
 #         # while remaining under Telegram's payload-size limit. Clamped 1..100.
 #         max_commands: 60
-#         # prepend = user priority first, then Hermes defaults
-#         # append  = Hermes defaults first, then user priority
+#         # prepend = user priority first, then Oria defaults
+#         # append  = Oria defaults first, then user priority
 #         # replace = only the list below defines priority
 #         priority_mode: prepend
 #         # Priority is applied across core + plugin + skill commands before
@@ -1390,8 +1390,8 @@ platform_toolsets:
 # ─────────────────────────────────────────────────────────────────────────────
 # Available toolsets (use these names in platform_toolsets or the toolsets list)
 #
-# Run `hermes chat --list-toolsets` to see all toolsets and their tools.
-# Run `hermes chat --list-tools` to see every individual tool with descriptions.
+# Run `oria chat --list-toolsets` to see all toolsets and their tools.
+# Run `oria chat --list-tools` to see every individual tool with descriptions.
 # ─────────────────────────────────────────────────────────────────────────────
 #
 # INDIVIDUAL TOOLSETS (compose your own):
@@ -1443,9 +1443,9 @@ platform_toolsets:
 
 # NOTE: The top-level "toolsets" key is deprecated and ignored.
 # Tool configuration is managed per-platform via platform_toolsets above.
-# Use `hermes tools` to configure interactively, or edit platform_toolsets directly.
+# Use `oria tools` to configure interactively, or edit platform_toolsets directly.
 #
-# CLI override: hermes chat --toolsets terminal,web,file
+# CLI override: oria chat --toolsets terminal,web,file
 
 # =============================================================================
 # MCP (Model Context Protocol) Servers
@@ -1567,7 +1567,7 @@ stt:
   # that provider.
   #
   # Length / truncation contract: Whisper-family backends (local, openai,
-  # groq, deepinfra) only use the final ~224 prompt tokens, so Hermes
+  # groq, deepinfra) only use the final ~224 prompt tokens, so Oria
   # truncates longer prompts client-side (keeping the tail) with a WARNING
   # log — never an error. Other backends own their own validation.
   #
@@ -1579,7 +1579,7 @@ stt:
   #   local_command/xai/
   #   elevenlabs             -> unsupported; DEBUG log, then continue
   #   plugin providers       -> `prompt` in `**extra`; plugin owns limits
-  # prompt: "Hermes, Teknium, Nous Research, kanban"
+  # prompt: "Oria, Teknium, Nous Research, kanban"
   local:
     model: "base"              # tiny | base | small | medium | large-v3 | turbo
     # language: ""             # auto-detect; set to "en", "es", "fr", etc. to force
@@ -1669,7 +1669,7 @@ stt:
 # =============================================================================
 # Code Execution Sandbox (Programmatic Tool Calling)
 # =============================================================================
-# The execute_code tool runs Python scripts that call Hermes tools via RPC.
+# The execute_code tool runs Python scripts that call Oria tools via RPC.
 # Intermediate tool results stay out of the LLM's context window.
 code_execution:
   timeout: 300         # Max seconds per script before kill (default: 300 = 5 min)
@@ -1797,8 +1797,8 @@ display:
   # terse: "Interrupting current task" and "⏳ Working — 12 min, terminal".
   busy_ack_detail: true
 
-  # What Enter does when Hermes is already busy (CLI and gateway platforms).
-  #   interrupt: Interrupt the current run and redirect Hermes (default)
+  # What Enter does when Oria is already busy (CLI and gateway platforms).
+  #   interrupt: Interrupt the current run and redirect Oria (default)
   #   queue:     Queue your message for the next turn
   #   steer:     Inject your message mid-run via /steer, arriving at the agent
   #              after the next tool call — no interrupt, no role violation.
@@ -1858,7 +1858,7 @@ display:
   # response box label, and branding text. Change at runtime with /skin <name>.
   #
   # Built-in skins:
-  #   default        — Classic Hermes gold/kawaii
+  #   default        — Classic Oria gold/kawaii
   #   ares           — Crimson/bronze war-god theme with spinner wings
   #   mono           — Clean grayscale monochrome
   #   slate          — Cool blue developer-focused
@@ -1981,7 +1981,7 @@ display:
 # =============================================================================
 # Telemetry
 # =============================================================================
-# Shared metrics are disabled by default. When enabled, Hermes writes only
+# Shared metrics are disabled by default. When enabled, Oria writes only
 # allowlisted aggregate counters and immutable JSON
 # packages under $HERMES_HOME/telemetry/shared_metrics.
 # Packages include a random profile-scoped ID that stays stable until this
@@ -2014,18 +2014,18 @@ telemetry:
 # Update Behavior
 # =============================================================================
 updates:
-  # Disable passive CLI/banner update checks with `hermes config set updates.check false`.
-  # Explicit `hermes update --check` and `hermes update` remain available.
+  # Disable passive CLI/banner update checks with `oria config set updates.check false`.
+  # Explicit `oria update --check` and `oria update` remain available.
   check: true
-  # Create a full HERMES_HOME zip before every `hermes update`.
-  # Backups land in ~/.hermes/backups/ and can be restored with `hermes import`.
+  # Create a full HERMES_HOME zip before every `oria update`.
+  # Backups land in ~/.hermes/backups/ and can be restored with `oria import`.
   # Off by default because large homes can add minutes to every update.
   pre_update_backup: false
 
   # Number of pre-update backup zips to retain.
   backup_keep: 5
 
-  # What non-interactive updates do with local source edits in the Hermes repo.
+  # What non-interactive updates do with local source edits in the Oria repo.
   # Interactive terminal updates always prompt before restoring the autostash.
   #
   #   stash   - auto-stash before pull, then auto-restore after success (default)
@@ -2037,7 +2037,7 @@ updates:
 # =============================================================================
 # Web Dashboard
 # =============================================================================
-# OAuth gate configuration for `hermes dashboard --host <non-loopback>`.
+# OAuth gate configuration for `oria dashboard --host <non-loopback>`.
 # The bundled Nous Portal plugin reads these on startup; settings here are
 # the canonical surface. Each can be overridden by an environment variable:
 #
@@ -2107,7 +2107,7 @@ updates:
 #
 #       # OPTIONAL — set ONLY if your IDP registered the client as
 #       # *confidential* (Authentik / Keycloak often default to this). When
-#       # set, Hermes authenticates the client at the token endpoint
+#       # set, Oria authenticates the client at the token endpoint
 #       # (client_secret_basic or client_secret_post, auto-selected from the
 #       # IDP's discovery doc) IN ADDITION to PKCE. Leave unset for a public
 #       # (PKCE-only) client — the common case.
@@ -2123,7 +2123,7 @@ updates:
 # instead of storing them in ~/.hermes/.env. Only the manager's bootstrap
 # credential (e.g. BWS_ACCESS_TOKEN / OP_SERVICE_ACCOUNT_TOKEN) lives in .env
 # (or your shell / desktop session); everything else rotates centrally.
-# Failures never block startup — Hermes warns once and continues with
+# Failures never block startup — Oria warns once and continues with
 # whatever .env already had.
 #
 # Multiple sources can be enabled at once:

@@ -405,8 +405,8 @@ def render_desktop_entry(exec_command: str, icon: str) -> str:
     return (
         "[Desktop Entry]\n"
         "Type=Application\n"
-        "Name=Hermes\n"
-        "GenericName=Hermes Desktop\n"
+        "Name=Oria\n"
+        "GenericName=Oria Desktop\n"
         "Comment=Launch Oria Desktop\n"
         f"Exec={exec_command}\n"
         f"Icon={icon}\n"

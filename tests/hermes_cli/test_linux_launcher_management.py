@@ -29,7 +29,7 @@ def test_launcher_optout_preserves_custom_entry_but_creates_missing(tmp_path, mo
         assert entry.read_bytes() == custom
     entry.unlink()
     assert install_desktop_entry(root) == entry
-    assert b"Name=Hermes\n" in entry.read_bytes()
+    assert b"Name=Oria\n" in entry.read_bytes()
     config.write_text("desktop: {}\n", encoding="utf-8")
     entry.write_bytes(custom)
     assert install_desktop_entry(root) == entry
