@@ -1,6 +1,6 @@
 # Adding a New Messaging Platform
 
-There are two ways to add a platform to the Hermes gateway:
+There are two ways to add a platform to the Oria gateway:
 
 ## Plugin Path (Recommended for Community/Third-Party)
 
@@ -8,7 +8,7 @@ Create a plugin directory in `~/.hermes/plugins/` (or under `plugins/platforms/`
 for bundled plugins) with a `plugin.yaml` and `adapter.py`.  The adapter
 inherits from `BasePlatformAdapter` and registers via
 `ctx.register_platform()` in the `register(ctx)` entry point.  This requires
-**zero changes to core Hermes code**.
+**zero changes to core Oria code**.
 
 The plugin system automatically handles: adapter creation, config parsing,
 user authorization, cron delivery, send_message routing, system prompt hints,
@@ -19,7 +19,7 @@ status display, gateway setup, and more.
 - `env_enablement_fn: () -> Optional[dict]` — seeds `PlatformConfig.extra`
   (and an optional `home_channel` dict) from env vars BEFORE the adapter is
   constructed.  Without this, env-only setups don't surface in
-  `hermes gateway status` or `get_connected_platforms()` until the SDK
+  `oria gateway status` or `get_connected_platforms()` until the SDK
   instantiates.  Build it from a `(ENV_VAR, extra_key, conv)` table with
   `gateway.platforms._shared.seed_extra_from_env(spec, home_env=...)`; every
   read goes through `_shared.get_scoped_secret` (multiplex-safe, never
@@ -85,7 +85,7 @@ plugin guide with code examples and hook documentation.
 
 ## Built-in Path (Core Contributors Only)
 
-Checklist for integrating a platform directly into the Hermes core.
+Checklist for integrating a platform directly into the Oria core.
 Use this as a reference when building a built-in adapter — every item here
 is a real integration point. Missing any of them will cause broken
 functionality, missing features, or inconsistent behavior.

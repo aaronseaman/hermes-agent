@@ -1,7 +1,7 @@
 name: hermes-rss
 repo: https://github.com/Adolanium/hermes-rss
 sha: 8053056094f8a232babe029e2336cb8118d8ba7a
-description: Read RSS and Atom feeds and discuss articles in Hermes Desktop.
+description: Read RSS and Atom feeds and discuss articles in Oria Desktop.
 maintainer: Adolanium
 tier: community
 category: desktop

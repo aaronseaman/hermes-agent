@@ -1,7 +1,7 @@
 name: deepgram-voice
 repo: https://github.com/jaysonsantos/hermes-deepgram-voice-plugin
 sha: c1d8ef24ffe3606976ba52d635e684f5566ed04c
-description: Deepgram Aura text-to-speech and Nova speech-to-text providers for Hermes Agent.
+description: Deepgram Aura text-to-speech and Nova speech-to-text providers for Oria.
 maintainer: jaysonsantos
 tier: community
 category: voice

@@ -16,7 +16,7 @@ from utils import read_json_or_empty
 
 RULE = "─" * 40
 REASONING_LEVELS = ("minimal", "low", "medium", "high", "max")
-_RETRY_HINT = "  Re-run 'hermes honcho setup' to retry, or choose an API key instead.\n"
+_RETRY_HINT = "  Re-run 'oria honcho setup' to retry, or choose an API key instead.\n"
 
 # Settings a new profile host block inherits from the default block.
 _INHERITED_KEYS = (
@@ -314,10 +314,10 @@ def _sync_profiles(verbose: bool) -> int:
         return say(f"  Could not list profiles: {e}\n") or 0
     cfg = _read_config()
     if not cfg:
-        return say("  No Honcho config found. Run 'hermes honcho setup' first.\n") or 0
+        return say("  No Honcho config found. Run 'oria honcho setup' first.\n") or 0
     default_block, has_key = _default_block_and_key(cfg)
     if not default_block and not has_key:
-        return say("  Honcho not configured on default profile. Run 'hermes honcho setup' first.\n") or 0
+        return say("  Honcho not configured on default profile. Run 'oria honcho setup' first.\n") or 0
 
     created = skipped = 0
     for p in (p for p in profiles if p.name != "default"):
@@ -355,7 +355,7 @@ def cmd_enable(args) -> None:
     block = cfg.setdefault("hosts", {}).setdefault(host, {})
     if not _resolve_api_key(cfg, block, env=False):
         profile = _active_profile_name()
-        setup = "hermes honcho setup" + (f" --target-profile {profile}" if profile != "default" else "")
+        setup = "oria honcho setup" + (f" --target-profile {profile}" if profile != "default" else "")
         return print(f"  {label}Honcho stays disabled: no API key or base URL is configured for this profile, and the default "
                      f"profile's key is not shared.\n  Run '{setup}' to sign in, or set apiKey on hosts.{host} in {_config_path()}.\n")
     if block.get("enabled") is True:
@@ -664,9 +664,9 @@ def _setup_device_login(cfg: dict, hermes_host: dict, write_path: Path, *, open_
             open_url=webbrowser.open if open_browser else None, on_poll=lambda: print(".", end="", flush=True),
         )
     except KeyboardInterrupt:
-        print("\n  Cancelled. Re-run 'hermes honcho setup' to try again.\n")
+        print("\n  Cancelled. Re-run 'oria honcho setup' to try again.\n")
     except (AuthorizationTimeout, DeviceCodeExpired):
-        print("\n  Device code expired before approval.\n  Re-run 'hermes honcho setup' to get a new code.\n")
+        print("\n  Device code expired before approval.\n  Re-run 'oria honcho setup' to get a new code.\n")
     except AccessDenied:
         print("\n  Sign-in was denied on the approval page.\n" + _RETRY_HINT)
     except Exception as e:
@@ -736,7 +736,7 @@ def _setup_cloud_auth(cfg: dict, hermes_host: dict, write_path: Path) -> bool:
     key = new_key or current
     if not key:
         print("\n  No API key configured. Get yours at https://app.honcho.dev\n"
-              "  Run 'hermes honcho setup' again once you have a key.\n")
+              "  Run 'oria honcho setup' again once you have a key.\n")
         return False
     hermes_host.pop("oauth", None)
     hermes_host["apiKey"] = key
@@ -863,7 +863,7 @@ def _setup_wizard(args) -> None:
 
     _setup_identity_mapping(cfg, hermes_host, current_peer, new_host)
     print("\n  For a gateway with many users and agents, run\n"
-          "  'hermes honcho peers map' to map accounts interactively.")
+          "  'oria honcho peers map' to map accounts interactively.")
 
     _setup_tuning(cfg, hermes_host)
     hermes_host["enabled"] = True
@@ -906,11 +906,11 @@ def _setup_wizard(args) -> None:
     honcho_conclude  -- persist a user fact to memory
 
   Other commands:
-    hermes honcho status     -- show full config
-    hermes honcho mode       -- change recall/observation mode
-    hermes honcho tokens     -- tune context and dialectic budgets
-    hermes honcho peer       -- update peer names
-    hermes honcho map <name> -- map this directory to a session name
+    oria honcho status       -- show full config
+    oria honcho mode         -- change recall/observation mode
+    oria honcho tokens       -- tune context and dialectic budgets
+    oria honcho peer         -- update peer names
+    oria honcho map <name> -- map this directory to a session name
 """)
 
 
@@ -950,14 +950,14 @@ def cmd_status(args) -> None:
     try:
         import honcho  # noqa: F401
     except ImportError:
-        print("  honcho-ai is not installed. Run: hermes honcho setup\n")
+        print("  honcho-ai is not installed. Run: oria honcho setup\n")
         return
 
     cfg = _read_config()
     active_path = _config_path()
     write_path = _local_config_path()
     from plugins.memory.honcho.client import HonchoClientConfig, get_honcho_client
-    not_found = f"  No Honcho config found at {active_path}\n  Run 'hermes honcho setup' to configure.\n"
+    not_found = f"  No Honcho config found at {active_path}\n  Run 'oria honcho setup' to configure.\n"
     try:
         hcfg = HonchoClientConfig.from_global_config(host=_host_key())
     except Exception as e:
@@ -1390,7 +1390,7 @@ def cmd_peers_map(args) -> None:
     if pin:
         print("\n  pinUserPeer is on: every gateway account resolves to peer")
         print(f"  '{peer_name or '(peerName not set)'}' and aliases have no effect.")
-        print("  Turn the pin off with 'hermes honcho setup' to use per-account peers.")
+        print("  Turn the pin off with 'oria honcho setup' to use per-account peers.")
         if not _yes(_prompt("Edit aliases anyway? (y/N)", default="n")):
             print("  Nothing changed.\n")
             return
@@ -1496,7 +1496,7 @@ def cmd_sessions(args) -> None:
     """List known directory → session name mappings."""
     sessions = _read_config().get("sessions", {})
     if not sessions:
-        return print(f"  No session mappings configured.\n\n  Add one with: hermes honcho map <session-name>\n"
+        return print(f"  No session mappings configured.\n\n  Add one with: oria honcho map <session-name>\n"
                      f"  Or edit {_config_path()} directly.\n")
     cwd = os.getcwd()
     print(f"\nHoncho session mappings ({len(sessions)})\n" + RULE)
@@ -1552,7 +1552,7 @@ Honcho peers
   User peer:   {_pref(hermes, cfg, 'peerName') or '(not set)'}
     Your identity in Honcho. Messages you send build this peer's card.
   AI peer:     {_pref(hermes, cfg, 'aiPeer') or _host_key()}
-    Oria' identity in Honcho. Seed with 'hermes honcho identity <file>'.
+    Oria' identity in Honcho. Seed with 'oria honcho identity <file>'.
     Dialectic calls ask this peer questions to warm session context.
 
   Dialectic reasoning:  {_pref(hermes, cfg, 'dialecticReasoningLevel') or 'low'}  ({', '.join(REASONING_LEVELS)})
@@ -1571,7 +1571,7 @@ def _show_or_set_choice(args, *, attr: str, key: str, noun: str, title: str, cho
         current = _pref(_active_block(cfg), cfg, key) or default
         print(f"\nHoncho {title}\n" + RULE)
         print("\n".join(f"  {m:<{width}}  {desc}{' <-' if m == current else ''}" for m, desc in choices.items()))
-        return print(f"\n  Set with: hermes honcho {attr} [{'|'.join(choices)}]\n")
+        return print(f"\n  Set with: oria honcho {attr} [{'|'.join(choices)}]\n")
     if value not in choices:
         return print(f"  Invalid {noun} '{value}'. Options: {', '.join(choices)}\n")
     host = _host_key()
@@ -1609,7 +1609,7 @@ Honcho budgets
     to synthesize an answer. Used for first-turn session continuity.
     Level controls how much reasoning Honcho spends on the answer.
 
-  Set with: hermes honcho tokens [--context N] [--dialectic N]
+  Set with: oria honcho tokens [--context N] [--dialectic N]
 """)
     _show_or_set_fields(args, (("context", "contextTokens", "context tokens -> {}", None),
                                ("dialectic", "dialecticMaxChars", "dialectic cap  -> {} chars", None)), show)
@@ -1621,7 +1621,7 @@ def cmd_identity(args) -> None:
     """Seed AI peer identity or show both peer representations."""
     cfg = _read_config()
     if not _resolve_api_key(cfg):
-        return print("  No API key configured. Run 'hermes honcho setup' first.\n")
+        return print("  No API key configured. Run 'oria honcho setup' first.\n")
     file_path = getattr(args, "file", None)
     try:
         hcfg, client = _connect(_host_key())
@@ -1641,7 +1641,7 @@ def cmd_identity(args) -> None:
               else "  No user peer card yet. Send a few messages to build one.")
         print(f"\nAI peer ({hcfg.ai_peer})\n" + RULE)
         print(ai_rep.get("representation") or ai_rep.get("card")
-              or "  No representation built yet.\n  Run 'hermes honcho identity <file>' to seed one.")
+              or "  No representation built yet.\n  Run 'oria honcho identity <file>' to seed one.")
         print()
         return
 
@@ -1652,8 +1652,8 @@ Honcho identity management
   User peer: {hcfg.peer_name or 'not set'}
   AI peer:   {hcfg.ai_peer}
 
-    hermes honcho identity --show        — show both peer representations
-    hermes honcho identity <file>        — seed AI peer from SOUL.md or any .md/.txt
+    oria honcho identity --show          — show both peer representations
+    oria honcho identity <file>          — seed AI peer from SOUL.md or any .md/.txt
 """)
         return
 
@@ -1727,15 +1727,15 @@ Step 1  Create a Honcho account
   across sessions. You need an API key to use it.
 
   1. Get your API key at https://app.honcho.dev
-  2. Run:  hermes honcho setup
+  2. Run:  oria honcho setup
      Paste the key when prompted.
 """)
-        if _yes(_prompt("  Run 'hermes honcho setup' now?", default="y")):
+        if _yes(_prompt("  Run 'oria honcho setup' now?", default="y")):
             cmd_setup(args)
             cfg = _read_config()
             has_key = bool(cfg.get("apiKey", ""))
         else:
-            print("\n  Run 'hermes honcho setup' when ready, then re-run this walkthrough.")
+            print("\n  Run 'oria honcho setup' when ready, then re-run this walkthrough.")
 
     print("\nStep 2  Detected OpenClaw memory files\n")
     if user_files or agent_files:
@@ -1747,7 +1747,7 @@ Step 1  Create a Honcho account
     else:
         print("  No OpenClaw native memory files found in cwd or ~/.openclaw/.\n"
               "  If your files are elsewhere, copy them here before continuing,\n"
-              "  or seed them manually:  hermes honcho identity <path/to/file>")
+              "  or seed them manually:  oria honcho identity <path/to/file>")
 
     print("""
 Step 3  Migrate user memory files → Honcho user peer
@@ -1764,11 +1764,11 @@ Step 3  Migrate user memory files → Honcho user peer
   (Oria calls migrate_memory_files() on first session init.)
 
   If you want to migrate them now without starting a session:""")
-        print("    hermes honcho migrate  — this step handles it interactively\n" * len(user_files), end="")
+        print("    oria honcho migrate    — this step handles it interactively\n" * len(user_files), end="")
         if has_key:
             _offer("  Upload user memory files to Honcho now?", _migrate_upload, user_files)
         else:
-            print("  Run 'hermes honcho setup' first, then re-run this step.")
+            print("  Run 'oria honcho setup' first, then re-run this step.")
     else:
         print("  No user memory files detected. Nothing to migrate here.")
 
@@ -1790,10 +1790,10 @@ Step 4  Seed AI identity files → Honcho AI peer
         if has_key:
             _offer("  Seed AI identity from all detected files now?", _migrate_seed, agent_files)
         else:
-            print("  Run 'hermes honcho setup' first, then seed manually:")
-            print("\n".join(f"    hermes honcho identity {f}" for f in agent_files))
+            print("  Run 'oria honcho setup' first, then seed manually:")
+            print("\n".join(f"    oria honcho identity {f}" for f in agent_files))
     else:
-        print("  No agent identity files detected.\n  To seed manually:  hermes honcho identity <path/to/SOUL.md>")
+        print("  No agent identity files detected.\n  To seed manually:  oria honcho identity <path/to/SOUL.md>")
 
     print("""
 Step 5  What changes vs. OpenClaw native memory
@@ -1823,20 +1823,20 @@ Step 5  What changes vs. OpenClaw native memory
   Session naming
     OpenClaw: no persistent session concept — files are global.
     Oria:   per-session by default — each run gets its own session
-              Map a custom name:  hermes honcho map <session-name>
+              Map a custom name:  oria honcho map <session-name>
 
 Step 6  Next steps
 """)
     if not has_key:
-        print("  1. hermes honcho setup              — configure API key (required)\n"
-              "  2. hermes honcho migrate            — re-run this walkthrough")
+        print("  1. oria honcho setup                — configure API key (required)\n"
+              "  2. oria honcho migrate              — re-run this walkthrough")
     else:
-        print("""  1. hermes honcho status             — verify Honcho connection
+        print("""  1. oria honcho status               — verify Honcho connection
   2. hermes                           — start a session
      (user memory files auto-uploaded on first turn if not done above)
-  3. hermes honcho identity --show    — verify AI peer representation
-  4. hermes honcho tokens             — tune context and dialectic budgets
-  5. hermes honcho mode               — view or change memory mode""")
+  3. oria honcho identity --show      — verify AI peer representation
+  4. oria honcho tokens               — tune context and dialectic budgets
+  5. oria honcho mode                 — view or change memory mode""")
     print()
 
 

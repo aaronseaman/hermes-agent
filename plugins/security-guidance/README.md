@@ -42,7 +42,7 @@ plugin is warn-by-default precisely because of that.
 Plugins are opt-in. Add it to your allow-list:
 
 ```bash
-hermes plugins enable security-guidance
+oria plugins enable security-guidance
 # or edit ~/.hermes/config.yaml manually:
 plugins:
   enabled:

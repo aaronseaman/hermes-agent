@@ -607,7 +607,7 @@ class HonchoMemoryProvider(DialecticMixin, MemoryProvider):
             msg = self._init_auth_failure
         return ("[Honcho memory status] Authentication with the Honcho memory backend has expired and automatic "
                 f"token refresh failed, so memory sync and recall are paused. Reason: {msg}\n"
-                "Tell the user (once) that Honcho memory is paused and that running 'hermes honcho setup' "
+                "Tell the user (once) that Honcho memory is paused and that running 'oria honcho setup' "
                 "to re-authenticate will restore it.")
 
     def _peer_failure_text(self) -> str:
@@ -615,7 +615,7 @@ class HonchoMemoryProvider(DialecticMixin, MemoryProvider):
         user id from the transport, never peerName: a shared peerName would merge every user onto one peer."""
         text = self._init_peer_failure or ""
         if self._init_peer_platform in _LOCAL_PLATFORMS:
-            return f"{text} Set one with 'hermes honcho peer --user <name>'."
+            return f"{text} Set one with 'oria honcho peer --user <name>'."
         return f"{text} This platform supplied no user id for the chat, so memory stays off here."
 
     def _pop_peer_notice(self) -> str:

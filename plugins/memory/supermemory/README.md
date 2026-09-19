@@ -11,13 +11,13 @@ Semantic long-term memory with profile recall, semantic search, explicit memory 
 ## Setup
 
 ```bash
-hermes memory setup    # select "supermemory"
+oria memory setup      # select "supermemory"
 ```
 
 Or manually:
 
 ```bash
-hermes config set memory.provider supermemory
+oria config set memory.provider supermemory
 echo 'SUPERMEMORY_API_KEY=***' >> ~/.hermes/.env
 ```
 
@@ -28,7 +28,7 @@ prints on first boot:
 npx supermemory local
 ```
 
-Before running `hermes memory setup`, add the local endpoint to
+Before running `oria memory setup`, add the local endpoint to
 `$HERMES_HOME/supermemory.json`:
 
 ```json
@@ -37,7 +37,7 @@ Before running `hermes memory setup`, add the local endpoint to
 }
 ```
 
-Then run `hermes memory setup` and enter the local server's API key. Configuring
+Then run `oria memory setup` and enter the local server's API key. Configuring
 the endpoint first ensures the setup connection probe also stays local.
 
 ## Config
@@ -47,7 +47,7 @@ Config file: `$HERMES_HOME/supermemory.json`
 | Key | Default | Description |
 |-----|---------|-------------|
 | `base_url` | `https://api.supermemory.ai` | API endpoint for hosted or self-hosted Supermemory. Takes priority over `SUPERMEMORY_BASE_URL`. |
-| `container_tag` | `hermes` | Container tag used for search and writes. Supports `{identity}` template for profile-scoped tags (e.g. `hermes-{identity}` → `hermes-coder`). |
+| `container_tag` | `oria` | Container tag used for search and writes. Supports `{identity}` template for profile-scoped tags (e.g. `hermes-{identity}` → `hermes-coder`). |
 | `auto_recall` | `true` | Inject relevant memory context before turns |
 | `auto_capture` | `true` | Store cleaned user-assistant turns after each response |
 | `max_recall_results` | `10` | Max recalled items to format into context |
@@ -66,7 +66,7 @@ Config file: `$HERMES_HOME/supermemory.json`
 | `SUPERMEMORY_CONTAINER_TAG` | Override container tag (takes priority over config file) |
 
 Base URL precedence is `supermemory.json` → `SUPERMEMORY_BASE_URL` →
-`https://api.supermemory.ai`. Hermes resolves it once and uses the same endpoint
+`https://api.supermemory.ai`. Oria resolves it once and uses the same endpoint
 for SDK operations and setup/status probes.
 
 ## Tools
@@ -84,13 +84,13 @@ Kebab-case names are registered for the agent; snake_case aliases remain support
 
 All Supermemory API calls send `x-sm-source: hermes`, and document writes stamp
 `metadata.sm_source: hermes`. This is a **functional routing key, not telemetry**:
-it groups Hermes-written memories into a dedicated "Hermes" Space in the
+it groups Hermes-written memories into a dedicated "Oria" Space in the
 Supermemory app, so you can filter, browse, and bulk-manage them per source agent
 (alongside Codex, Claude Code, etc.) from the Supermemory UI.
 
 ## Behavior
 
-When enabled, Hermes can:
+When enabled, Oria can:
 
 - prefetch relevant memory context before each turn
 - write each completed user/assistant turn to **one document per session per 4-hour window** (`customId` = `<session>_<date>_b<0-5>`, so the API appends deltas), matching the capture shape of the other Supermemory agent integrations
@@ -101,7 +101,7 @@ When enabled, Hermes can:
 
 ## Profile-Scoped Containers
 
-Use `{identity}` in the `container_tag` to scope memories per Hermes profile:
+Use `{identity}` in the `container_tag` to scope memories per Oria profile:
 
 ```json
 {

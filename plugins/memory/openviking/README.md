@@ -7,10 +7,10 @@ Context database by Volcengine (ByteDance) with filesystem-style knowledge hiera
 - OpenViking installed with the `openviking-server` command available
 - OpenViking server config initialized and validated (`openviking-server init`,
   then `openviking-server doctor`)
-- OpenViking server running and reachable from Hermes
+- OpenViking server running and reachable from Oria
 
 OpenViking 0.2.10 or newer is recommended. For backward compatibility,
-Hermes can identify older servers that expose the legacy status-only health
+Oria can identify older servers that expose the legacy status-only health
 response, but only when anonymous OpenAPI metadata also identifies the service
 as OpenViking. OpenViking 0.2.6 and earlier are deprecated for this integration;
 upgrade them to receive the current health contract and compatibility fixes.
@@ -25,20 +25,20 @@ openviking-server doctor
 openviking-server
 ```
 
-Then configure Hermes:
+Then configure Oria:
 
 ```bash
-hermes memory setup    # select "openviking"
+oria memory setup      # select "openviking"
 ```
 
 The setup can link to an existing `~/.openviking/ovcli.conf`, copy its current
-connection values into Hermes, or create a minimal `ovcli.conf` when one does
+connection values into Oria, or create a minimal `ovcli.conf` when one does
 not exist.
 
 Or manually:
 
 ```bash
-hermes config set memory.provider openviking
+oria config set memory.provider openviking
 ```
 
 Add the connection settings to the active profile's `.env` file. For the
@@ -54,7 +54,7 @@ OPENVIKING_ENDPOINT=http://127.0.0.1:1933
 
 ## Config
 
-OpenViking's server config is separate from Hermes:
+OpenViking's server config is separate from Oria:
 
 - `ov.conf` configures OpenViking storage, embedding/VLM models, auth, and
   server behavior. OpenViking reads it from `--config`,
@@ -74,17 +74,17 @@ profile's `.env`:
 | `OPENVIKING_USER` | `default` | Tenant user for local/trusted mode |
 | `OPENVIKING_AGENT` | (none) | Optional peer ID for separate assistant context |
 
-When `OPENVIKING_API_KEY` is set, Hermes lets OpenViking derive account/user
+When `OPENVIKING_API_KEY` is set, Oria lets OpenViking derive account/user
 identity from the key. In local or trusted deployments without an API key,
-Hermes sends `OPENVIKING_ACCOUNT` and `OPENVIKING_USER` as identity headers.
+Oria sends `OPENVIKING_ACCOUNT` and `OPENVIKING_USER` as identity headers.
 Hermes also sends `User-Agent: openviking-memory-hermes/<version>` on
-OpenViking requests. This standard harness identifier contains the Hermes
+OpenViking requests. This standard harness identifier contains the Oria
 version, but no per-user identifier, and does not add a separate request.
 
 ### Optional peer identity
 
 New connections use the OpenViking user's memory directory by default. Setup
-does not ask for a peer ID. Without a configured peer, Hermes sends neither
+does not ask for a peer ID. Without a configured peer, Oria sends neither
 `X-OpenViking-Actor-Peer` nor assistant-message `peer_id`.
 
 For separate assistant context, set the existing `agent` field in the active
@@ -98,12 +98,12 @@ memory:
 
 Existing non-empty `OPENVIKING_AGENT`, YAML `agent`, and linked OpenViking
 `actor_peer_id` or legacy `agent_id` values retain their behavior. Resolution
-order remains environment, linked OpenViking config, then Hermes YAML. To use
+order remains environment, linked OpenViking config, then Oria YAML. To use
 no peer, remove the peer value from each configured source and start a new
-Hermes session.
+Oria session.
 
 Upgrades do not move or delete existing memories. Installations that relied
-on the old implicit `hermes` peer now use user memory for new writes. Without
+on the old implicit `oria` peer now use user memory for new writes. Without
 a peer ID, default OpenViking search covers user memory and existing peer
 memories under the same OpenViking user. Old peer memories stay at their
 existing paths and remain searchable. Ranking and result limits determine
@@ -139,7 +139,7 @@ the fact into an existing memory, or produce no memory operation. It does not
 promise that OpenViking created a distinct memory file. The fact is submitted
 as an unchanged `user` message so OpenViking owns the final classification.
 The legacy `category` argument is still accepted from existing callers but is
-not advertised or used. The one-shot session is separate from the live Hermes
+not advertised or used. The one-shot session is separate from the live Oria
 conversation, so an explicit remember does not commit or rotate the active
 conversation session.
 
@@ -149,19 +149,19 @@ commit <session-id>` recovery command. Inspect the session first. An archive
 means the commit completed. A non-empty live `messages.jsonl` with no archive
 means the message was accepted but still needs a commit. An empty live file
 without an archive is ambiguous and must not trigger an automatic resubmission.
-Use the same OpenViking profile and credentials as Hermes for manual recovery.
+Use the same OpenViking profile and credentials as Oria for manual recovery.
 OpenViking server auto-commit is disabled by default, so an accepted message
 whose explicit commit fails normally remains live and unextracted until it is
 manually committed.
 
-Hermes built-in `memory` tool additions are mirrored to OpenViking after the
+Oria built-in `memory` tool additions are mirrored to OpenViking after the
 local memory operation succeeds:
 
-| Hermes action | OpenViking operation |
+| Oria action | OpenViking operation |
 |---------------|----------------------|
 | `add` | `content/write` with `mode=create` under user memory, or the configured peer memory directory |
 
-Built-in `replace` and `remove` operations are not mirrored because Hermes
+Built-in `replace` and `remove` operations are not mirrored because Oria
 native memory entries do not yet carry stable OpenViking file URIs. Use
 `viking_forget` when the user explicitly asks to delete a specific OpenViking
 memory URI.

@@ -31,7 +31,7 @@ def register_cli(subparser: argparse.ArgumentParser) -> None:
 def teams_pipeline_command(args: argparse.Namespace) -> int:
     action = getattr(args, "teams_pipeline_action", None)
     if not action:
-        print(f"Usage: hermes teams-pipeline {{{'|'.join(spec[0] for spec in _SUBCOMMANDS)}}}")
+        print(f"Usage: oria teams-pipeline {{{'|'.join(spec[0] for spec in _SUBCOMMANDS)}}}")
         return 2
     handler = _ACTIONS.get(action)
     if handler is None:

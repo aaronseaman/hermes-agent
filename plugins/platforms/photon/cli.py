@@ -257,8 +257,8 @@ def _cmd_status(_args: argparse.Namespace) -> int:
     photon_auth.print_credential_summary(print)
     node_bin = os.getenv("PHOTON_NODE_BIN") or shutil.which("node")
     print(f"  node binary         : {node_bin or '✗ missing (install Node 18+)'}")
-    print(f"  sidecar deps        : {'✓ installed' if sidecar_deps_installed() else '✗ run `hermes photon install-sidecar`'}")
-    print(f"  telemetry           : {'on' if _telemetry_enabled() else 'off'} (`hermes photon telemetry on|off`)")
+    print(f"  sidecar deps        : {'✓ installed' if sidecar_deps_installed() else '✗ run `oria photon install-sidecar`'}")
+    print(f"  telemetry           : {'on' if _telemetry_enabled() else 'off'} (`oria photon telemetry on|off`)")
     return 0
 
 
@@ -276,7 +276,7 @@ def _cmd_telemetry(args: argparse.Namespace) -> int:
     state = getattr(args, "state", None)
     if state is None:
         print(f"Photon telemetry: {'on' if _telemetry_enabled() else 'off'}")
-        print("  Toggle with `hermes photon telemetry on` / `hermes photon telemetry off`.")
+        print("  Toggle with `oria photon telemetry on` / `oria photon telemetry off`.")
         return 0
     try:
         from hermes_cli.config import save_env_value

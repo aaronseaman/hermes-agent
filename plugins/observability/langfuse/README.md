@@ -1,6 +1,6 @@
 # Langfuse Observability Plugin
 
-This plugin ships bundled with Hermes but is **opt-in** — it only loads when
+This plugin ships bundled with Oria but is **opt-in** — it only loads when
 you explicitly enable it.
 
 ## Enable
@@ -9,16 +9,16 @@ Pick one:
 
 ```bash
 # Interactive: walks you through credentials + SDK install + enable
-hermes tools  # → Langfuse Observability
+oria tools    # → Langfuse Observability
 
 # Manual
 pip install langfuse
-hermes plugins enable observability/langfuse
+oria plugins enable observability/langfuse
 ```
 
 ## Required credentials
 
-Set these in `~/.hermes/.env` (or via `hermes tools`):
+Set these in `~/.hermes/.env` (or via `oria tools`):
 
 ```bash
 HERMES_LANGFUSE_PUBLIC_KEY=pk-lf-...
@@ -32,11 +32,11 @@ open.
 ## Verify
 
 ```bash
-hermes plugins list                 # observability/langfuse should show "enabled"
-hermes chat -q "hello"              # then check Langfuse for a "Hermes turn" trace
+oria plugins list                   # observability/langfuse should show "enabled"
+oria chat -q "hello"              # then check Langfuse for a "Oria turn" trace
 ```
 
-Generation observations include the Hermes system prompt when the provider
+Generation observations include the Oria system prompt when the provider
 uses a separate `system` param (Anthropic Messages API). Open an **LLM call**
 child span to inspect `role: system` (truncated via `HERMES_LANGFUSE_MAX_CHARS`).
 
@@ -79,5 +79,5 @@ For personal sessions or shared Langfuse projects, prefer `metadata`.
 ## Disable
 
 ```bash
-hermes plugins disable observability/langfuse
+oria plugins disable observability/langfuse
 ```

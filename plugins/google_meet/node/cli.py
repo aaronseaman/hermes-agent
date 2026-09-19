@@ -36,7 +36,7 @@ def _cmd_run(args: argparse.Namespace, reg: NodeRegistry) -> int:
     print(f"[meet-node] display_name={server.display_name}\n"
           f"[meet-node] listening on ws://{args.host}:{args.port}\n"
           f"[meet-node] token (copy to gateway): {token}\n[meet-node] approve with:\n"
-          f"             hermes meet node approve <name> ws://<host>:{args.port} {token}")
+          f"             oria meet node approve <name> ws://<host>:{args.port} {token}")
     try:
         asyncio.run(server.serve())
     except KeyboardInterrupt:

@@ -548,7 +548,7 @@ class PhotonAdapter(BasePlatformAdapter):
         if not self._project_id or not self._project_secret:
             self._set_fatal_error(
                 "MISSING_CREDENTIALS",
-                "PHOTON_PROJECT_ID and PHOTON_PROJECT_SECRET are required. Run: hermes photon setup",
+                "PHOTON_PROJECT_ID and PHOTON_PROJECT_SECRET are required. Run: oria photon setup",
                 retryable=False)
             return False
         client = httpx.AsyncClient(timeout=30.0, trust_env=False)
@@ -877,7 +877,7 @@ class PhotonAdapter(BasePlatformAdapter):
                 raise PhotonSidecarStartupError(
                     f"Photon sidecar deps could not be installed into "
                     f"{_sidecar_dir()} (see log for the npm error). "
-                    f"Run: cd {_sidecar_dir()} && npm ci   (or `hermes photon setup`)",
+                    f"Run: cd {_sidecar_dir()} && npm ci   (or `oria photon setup`)",
                     code="SIDECAR_DEPS_MISSING", retryable=False)
         # `hermes update` bumps the lockfile without reinstalling node_modules; the sidecar
         # would spawn against stale deps and die on every reconnect.
@@ -1534,7 +1534,7 @@ def register(ctx) -> None:
         check_fn=check_requirements, validate_config=validate_config, is_connected=is_connected,
         required_env=["PHOTON_PROJECT_ID", "PHOTON_PROJECT_SECRET"],
         install_hint=(
-            "Run: hermes photon setup  (logs in via device flow, creates a "
+            "Run: oria photon setup    (logs in via device flow, creates a "
             "Spectrum project, links your phone number, installs the "
             "spectrum-ts sidecar)."),
         setup_fn=_cli.gateway_setup,  # surfaces Photon in the unified `hermes gateway setup` wizard

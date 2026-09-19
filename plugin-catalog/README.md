@@ -1,9 +1,9 @@
-# Hermes Plugin Catalog
+# Oria Plugin Catalog
 
-Curated, Nous-approved Hermes plugins. Each YAML file in this directory
+Curated, Nous-approved Oria plugins. Each YAML file in this directory
 (except `removed.yaml`) is one catalog entry, discoverable via
-`hermes plugins catalog` / `hermes plugins search` and installable with
-`hermes plugins install <name>`.
+`oria plugins catalog` / `oria plugins search` and installable with
+`oria plugins install <name>`.
 
 ## Admission policy
 
@@ -21,7 +21,7 @@ meaningful:
    remote `plugin.js` loaders). The exact SHA pin *is* the trust model; a
    self-updater lets an installed copy move to a commit nobody reviewed.
    Updates reach users only through a SHA-bump PR here plus
-   `hermes plugins update <name>`. Keep the updater in the standalone
+   `oria plugins update <name>`. Keep the updater in the standalone
    distribution if you want one; strip it from the catalog build.
 4. **SHA bumps are new PRs.** Updating an entry's pin is a new PR whose diff
    (old SHA → new SHA) is re-reviewed like any other change — reviewers are
@@ -29,7 +29,7 @@ meaningful:
 5. **Owner-or-major-contributor submissions, or a maintainer-curated sweep.**
    An entry may be submitted by the plugin repository's owner or a major
    contributor to it; drive-by submissions of third-party repos are declined.
-   Hermes maintainers may also add entries in batches from a reviewed sweep
+   Oria maintainers may also add entries in batches from a reviewed sweep
    of community plugins (every pin validated and scanned at the pinned
    commit, self-updater and credential-store checks run, English-first UI).
    Authors of swept-in entries keep control: a PR from the owner adjusting

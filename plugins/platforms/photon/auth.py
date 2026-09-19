@@ -704,11 +704,11 @@ def print_credential_summary(emit: Any = print) -> None:
         "Photon iMessage status",
         "──────────────────────",
         "  device token        : " + (
-            "✓ stored" if load_photon_token() else "✗ missing (run `hermes photon setup`)"),
+            "✓ stored" if load_photon_token() else "✗ missing (run `oria photon setup`)"),
         "  project id          : " + (sid if sid else "✗ missing"),
         "  project secret      : " + ("✓ stored" if sec else "✗ missing"),
-        "  my number           : " + (phone if phone else "✗ missing (run `hermes photon setup --phone ...`)"),
-        "  assigned number     : " + (assigned if assigned else "✗ missing (run `hermes photon setup`)")]
+        "  my number           : " + (phone if phone else "✗ missing (run `oria photon setup --phone ...`)"),
+        "  assigned number     : " + (assigned if assigned else "✗ missing (run `oria photon setup`)")]
     emit("\n".join(rows))
 
 
@@ -722,7 +722,7 @@ def credential_summary() -> Dict[str, str]:
     def _present_token() -> str:
         return (
             "✓ stored" if load_photon_token()
-            else "✗ missing (run `hermes photon setup`)"
+            else "✗ missing (run `oria photon setup`)"
         )
 
     def _present_project_id() -> str:
@@ -735,11 +735,11 @@ def credential_summary() -> Dict[str, str]:
 
     def _present_phone() -> str:
         phone, _assigned = load_user_numbers()
-        return phone or "✗ missing (run `hermes photon setup --phone ...`)"
+        return phone or "✗ missing (run `oria photon setup --phone ...`)"
 
     def _present_assigned_phone() -> str:
         _phone, assigned = load_user_numbers()
-        return assigned or "✗ missing (run `hermes photon setup`)"
+        return assigned or "✗ missing (run `oria photon setup`)"
 
     return {
         "device_token": _present_token(),

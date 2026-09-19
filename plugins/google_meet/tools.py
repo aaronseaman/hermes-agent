@@ -69,7 +69,7 @@ MEET_JOIN_SCHEMA = _schema(
      "node": _str("Name of a registered remote node to run the bot on (useful when the gateway "
                   "runs on a headless Linux box but the user's Chrome with a signed-in Google "
                   "profile lives on their Mac). Pass 'auto' to use the single registered node. "
-                  "Default: run locally. Nodes are approved via `hermes meet node approve`.")},
+                  "Default: run locally. Nodes are approved via `oria meet node approve`.")},
     required=["url"])
 
 MEET_STATUS_SCHEMA = _schema(
@@ -121,7 +121,7 @@ def _dispatch(node: Optional[str], op: str, remote, local) -> str:
     client, node_name = resolve_node(node)
     if client is None:
         return _err(f"no registered meet node matches {node!r} — "
-                    "run `hermes meet node approve <name> <url> <token>` first")
+                    "run `oria meet node approve <name> <url> <token>` first")
     try:
         res = remote(client)
     except Exception as e:

@@ -1,14 +1,14 @@
-# A2A — Agent-to-Agent protocol for Hermes
+# A2A — Agent-to-Agent protocol for Oria
 
 Talk to other agents, and let other agents talk to you, over the open
 [A2A protocol](https://a2a-protocol.org) **v1.0**. Works with any A2A-compliant
-peer (another Hermes, LangChain, CrewAI, Google ADK, OpenClaw, …). Stdlib only —
+peer (another Oria, LangChain, CrewAI, Google ADK, OpenClaw, …). Stdlib only —
 no `a2a-sdk` dependency.
 
 ## Enable
 
 ```bash
-hermes gateway setup      # pick A2A, or:
+oria gateway setup        # pick A2A, or:
 ```
 
 ```yaml
@@ -42,7 +42,7 @@ The agent gets five tools:
 
 ## Inbound — be callable
 
-When the `a2a` platform is enabled, Hermes serves a v1.0 Agent Card at
+When the `a2a` platform is enabled, Oria serves a v1.0 Agent Card at
 `http://<host>:<port>/.well-known/agent-card.json` (the legacy
 `/.well-known/agent.json` path is also answered for pre-1.0 clients) and
 accepts JSON-RPC
