@@ -23,7 +23,7 @@ import logging
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
 
 from agent.capability_resolver import (
-    Candidate, Contract, Policy, ResolverConfigError, non_negative, optional_bool, quality_tier,
+    AFFINITIES, Candidate, Contract, Policy, ResolverConfigError, non_negative, optional_bool, quality_tier,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,6 +52,33 @@ def _declared_cost(entry: Mapping[str, Any], where: str) -> Optional[Tuple[float
     if not isinstance(raw, Mapping) or "input" not in raw or "output" not in raw:
         raise ResolverConfigError(f"{where}.cost must be a mapping with input and output (USD per million tokens)")
     return non_negative(raw["input"], "cost.input", where), non_negative(raw["output"], "cost.output", where)
+
+
+def _declared_cache_rates(entry: Mapping[str, Any], where: str) -> Tuple[Optional[float], Optional[float]]:
+    """``cost: {cache_read, cache_write}`` (optional): what cached prompt tokens bill at on a route
+    ``agent.usage_pricing`` does not price. Undeclared = billed as input (no cache discount assumed)."""
+    raw = entry.get("cost")
+    if not isinstance(raw, Mapping):
+        return None, None
+    return (non_negative(raw.get("cache_read"), "cost.cache_read", where),
+            non_negative(raw.get("cache_write"), "cost.cache_write", where))
+
+
+def _resources(entry: Mapping[str, Any], provider: str, host: str, where: str) -> Tuple[str, ...]:
+    """The scarce resources a call occupies: its provider, its endpoint host, and any declared."""
+    declared = entry.get("resources") or []
+    if not isinstance(declared, list) or not all(isinstance(r, str) and r.strip() for r in declared):
+        raise ResolverConfigError(f"{where}.resources must be a list of resource names, got {declared!r}")
+    found = [f"provider:{provider or 'auto'}"] + ([f"endpoint:{host}"] if host else []) + [r.strip() for r in declared]
+    return tuple(dict.fromkeys(found))
+
+
+def _affinity(entry: Mapping[str, Any], where: str) -> str:
+    # A model call's warm state is its provider-side prompt cache; whether it saves anything is measured.
+    raw = entry.get("affinity", "context")
+    if raw not in AFFINITIES:
+        raise ResolverConfigError(f"{where}.affinity must be one of {', '.join(AFFINITIES)}, got {raw!r}")
+    return raw
 
 
 def _metadata(provider: str, model: str) -> Any:
@@ -132,17 +159,23 @@ def build_candidate(entry: Mapping[str, Any], *, label: str, order: int, policy:
     context = non_negative(entry.get("context_window"), "context_window", label)
     if context is None and info is not None and info.context_window:
         context = info.context_window
+    cache_read, cache_write = _declared_cache_rates(entry, label)
+    host = _host(url)
     return Candidate(
         label=label, kind=KIND, order=order, display=f"{provider or 'auto'}/{model or 'default'}",
         # Stable across calls; never carries a credential or a URL path/query.
-        identity=f"{KIND}:{provider or 'auto'}/{model or 'default'}@{_host(url)}",
+        identity=f"{KIND}:{provider or 'auto'}/{model or 'default'}@{host}",
         contract=Contract(
             quality=quality_tier(entry.get("quality"), "quality", label), local=local,
             latency_ms=int(latency) if latency is not None else None,
             input_usd_per_mtok=cost[0] if cost else None, output_usd_per_mtok=cost[1] if cost else None,
+            cache_read_usd_per_mtok=cache_read, cache_write_usd_per_mtok=cache_write,
             context_window=int(context) if context else None,
             structured_output=info.structured_output if info is not None else None,
             image_input=info.supports_vision() if info is not None else None,
+            affinity=_affinity(entry, label), resources=_resources(entry, provider, host, label),
+            # A model call has no effects of its own; a candidate may still declare otherwise.
+            reversible=optional_bool(entry.get("reversible"), "reversible", label),
         ),
         healthy=_healthy(provider, url),
         target={} if own_route else route,

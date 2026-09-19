@@ -12,19 +12,22 @@
 Each call is its own request: nothing from any conversation is added, the main conversation's
 messages and prompt cache are untouched, and ``instructions`` are sent verbatim so a
 capability's prompt stays cache-stable. :class:`agent.capability_resolver.Resolver` chooses
-among the capability's implementations (``_KINDS``: models today); the chosen one runs, and if
-it fails the next ADMITTED candidate runs — never one the policy rejected.
+among the capability's implementations (``_KINDS``: models today), learning from the profile's
+call ledger when it is on (``agent/capability_profile*.py``). ``agent/semantic_call_cascade.py``
+runs them under the admission controller (``agent/admission.py``): if one fails, the next
+ADMITTED candidate runs, never one the policy rejected. With a mechanical verifier (an enforced
+``output_schema`` or a ``verify`` predicate) a ``cost`` policy runs as a verified cascade.
 
 Raises, before anything is sent: ``UnsatisfiablePolicyError`` when no implementation satisfies
 the policy, :class:`ResolverConfigError` for malformed config/policy, ``ValueError``
-for malformed inputs/schema. After sending: :class:`SemanticOutputError` when the reply does
-not validate against ``output_schema``, or the last implementation's own error when every
-admitted implementation failed.
+for malformed inputs/schema, ``AdmissionTimeout`` when no implementation could be admitted
+within ``agent.admission.max_wait_s``. After sending: :class:`SemanticOutputError` when the reply
+does not verify (and no cascade rung is left within budget), or the last implementation's own
+error when every admitted implementation failed.
 """
 
 from __future__ import annotations
 
-import logging
 import time
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Mapping, NamedTuple, Optional, Sequence
@@ -34,8 +37,6 @@ from agent import semantic_call_models
 from agent.capability_resolver import (
     Candidate, Policy, Request, Resolution, Resolver, ResolverConfigError, merge_policy,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class _Kind(NamedTuple):
@@ -121,6 +122,7 @@ def semantic_call(
     reasoning: Optional[Dict[str, Any]] = None, timeout: Optional[float] = None,
     main_runtime: Optional[Dict[str, Any]] = None, cancel_check: Optional[Callable[[], bool]] = None,
     scope: str = "", resolver: Optional[Resolver] = None,
+    verify: Optional[Callable[[Any], Any]] = None,
 ) -> SemanticResult:
     """Run one capability call; see the module docstring.
 
@@ -129,12 +131,16 @@ def semantic_call(
     hard-cancels the in-flight attempt when it returns True (raises
     ``AuxiliaryExplicitCancellation``); ``main_runtime`` is the session runtime snapshot for
     capabilities that inherit the main model; ``scope`` keys incumbent stickiness (a session or
-    sandbox id; ``""`` = per profile).
+    sandbox id; ``""`` = per profile). ``verify`` is a mechanical predicate over the output
+    (the validated JSON when a schema is enforced, else the text) returning a bool or
+    ``(bool, reasons)``; with it or an enforced schema, a ``cost`` policy runs as a verified cascade.
     """
     if not isinstance(capability, str) or not capability.strip():
         raise ValueError("capability must be a non-empty string")
-    from agent.auxiliary_client import AuxiliaryExplicitCancellation, _get_auxiliary_task_config
+    from agent.auxiliary_client import _get_auxiliary_task_config
+    from agent.capability_routing_config import load_admission, load_learned_routing
     from agent.model_metadata import estimate_messages_tokens_rough
+    from agent.semantic_call_cascade import run
     started = time.monotonic()
     spec = output_schema if isinstance(output_schema, OutputSpec) or output_schema is None \
         else OutputSpec(output_schema)
@@ -144,40 +150,59 @@ def semantic_call(
     merged = merge_policy(task_config.get("policy"), policy, capability=capability)
     request = Request(input_tokens=estimate_messages_tokens_rough(messages), max_output_tokens=max_tokens,
                       needs_image=has_image, wants_schema=schema is not None)
-    resolver = resolver or Resolver()
+    settings = load_learned_routing()
+    resolver = resolver or _default_resolver(settings)
+    verifier = _verifier(schema if spec is not None and spec.enforce else None, verify)
     resolution = resolver.resolve(capability, candidates_for(capability, task_config, merged), merged, request,
-                                  scope=scope)
+                                  scope=scope, cascade=verifier is not None and settings.cascade_enabled)
     extra_body = {"response_format": io.response_format(schema, spec.name, spec.strict)} if schema is not None else None
     # Only a policy with constraints a cross-provider fallback could break fences the call; any
     # other policy leaves auxiliary fallback exactly as it is for every other task.
     fence = merged.describe() if merged.fences_fallback else None
-    explanation = resolution.explanation
-    for position, candidate in enumerate(resolution.ranked):
-        try:
-            response, route_info = _KINDS[candidate.kind].invoke(
-                candidate, capability, messages, fence=fence, extra_body=extra_body, max_tokens=max_tokens,
-                temperature=temperature, reasoning=reasoning,
-                timeout=_effective_timeout(capability, timeout, merged.max_latency_ms),
-                main_runtime=main_runtime, cancel_check=cancel_check)
-            break
-        except AuxiliaryExplicitCancellation:
-            raise
-        except Exception as exc:
-            if position + 1 >= len(resolution.ranked):
-                raise
-            nxt = resolution.ranked[position + 1]
-            logger.info("semantic_call %s: %s failed (%s); trying %s", capability, candidate.label,
-                        type(exc).__name__, nxt.label)
-            explanation += f"; {candidate.label} failed ({type(exc).__name__}), moved to {nxt.label}"
-    resolver.served(capability, candidate, scope=scope)
-    text = io.response_text(response)
-    output = None
-    if schema is not None and spec.enforce:
-        output, errors = io.validate_output(text, schema)
-        if errors:
-            raise SemanticOutputError(capability, text, errors, explanation)
+    call_timeout = _effective_timeout(capability, timeout, merged.max_latency_ms)
+
+    def invoke(candidate: Candidate):
+        return _KINDS[candidate.kind].invoke(
+            candidate, capability, messages, fence=fence, extra_body=extra_body, max_tokens=max_tokens,
+            temperature=temperature, reasoning=reasoning, timeout=call_timeout, main_runtime=main_runtime,
+            cancel_check=cancel_check)
+
+    served = run(capability, resolution, invoke=invoke, verify=verifier, scope=scope,
+                 output_error=lambda text, errors, why: SemanticOutputError(capability, text, errors, why),
+                 max_attempts=settings.cascade_max_attempts, admission_settings=load_admission())
+    resolver.served(capability, served.candidate, scope=scope)
     return SemanticResult(
-        text=text, output=output, served_by=candidate, provider=route_info.get("provider", ""),
-        model=route_info.get("model", ""), explanation=explanation, resolution=resolution,
+        text=served.text, output=served.output, served_by=served.candidate,
+        provider=served.route_info.get("provider", ""), model=served.route_info.get("model", ""),
+        explanation=served.explanation, resolution=resolution,
         latency_ms=max(0, int((time.monotonic() - started) * 1000)),
     )
+
+
+def _default_resolver(settings: Any) -> Resolver:
+    """Learning reads the active profile's ledger; with the ledger off, declared priors only."""
+    if not settings.learning:
+        return Resolver(settings=settings)
+    from agent.capability_profile_ledger import profile_for
+    return Resolver(observed=profile_for(), settings=settings)
+
+
+def _verifier(schema: Optional[Dict[str, Any]], predicate: Optional[Callable[[Any], Any]]):
+    """A mechanical verifier ``text -> (output, errors, failed_outcome)``, or None when there is none."""
+    if schema is None and predicate is None:
+        return None
+
+    def verify(text: str):
+        output = None
+        if schema is not None:
+            output, errors = io.validate_output(text, schema)
+            if errors:
+                return None, errors, "malformed"
+        if predicate is not None:
+            verdict = predicate(output if schema is not None else text)
+            ok, reasons = (verdict[0], list(verdict[1])) if isinstance(verdict, tuple) else (bool(verdict), [])
+            if not ok:
+                return output, reasons or ["the caller's verify predicate rejected the output"], "rejected"
+        return output, [], ""
+
+    return verify

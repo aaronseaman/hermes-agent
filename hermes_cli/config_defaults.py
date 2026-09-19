@@ -164,6 +164,32 @@ DEFAULT_CONFIG = {
             "retention_days": 14,
             "max_mb": 64,
         },
+        # semantic_call's resolver learns per-(capability, implementation) profiles from the ledger's
+        # capability records, so learning is on exactly when call_ledger is. prior_strength = how
+        # many calls the declared prior counts as; below min_samples the prior alone is used.
+        # exploration_rate: chance of trying an under-sampled implementation (never under a strict
+        # policy or on one declared reversible: false); seed makes that draw reproducible.
+        # cascade: with a mechanical verifier (enforced output_schema or a verify predicate), a cost
+        # policy tries the cheapest-per-verified-success implementation first and escalates on
+        # verification failure, up to max_attempts and within the policy's cost/latency budget.
+        "learned_routing": {
+            "exploration_rate": 0.05,
+            "prior_strength": 10,
+            "min_samples": 5,
+            "seed": 0,
+            "cascade": {"enabled": True, "max_attempts": 3},
+        },
+        # Admission for semantic_call: per-resource concurrency ceilings (resource names:
+        # provider:<name>, endpoint:<host>, or any a candidate declares under resources:), backoff
+        # after a provider's rate-limit/overload signal (base_s * 2^k, capped, or Retry-After), and a
+        # bounded queue wait before failing with a clear error. Never estimates remaining quota.
+        # auxiliary.<task>.max_concurrency is the same mechanism for resource aux_task:<task>.
+        "admission": {
+            "max_wait_s": 60,
+            "backoff_base_s": 2,
+            "backoff_max_s": 300,
+            "ceilings": {},
+        },
         # Embedder-supplied text appended to the system prompt's environment-hints block, so a host
         # wrapping Hermes (sandbox runner, managed platform) can describe proxy/credential/ mount
         # layout without editing SOUL.md. Env HERMES_ENVIRONMENT_HINT overrides it.

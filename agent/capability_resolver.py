@@ -8,19 +8,18 @@ modalities) and an opaque ``target`` that only its kind's invoker reads. The res
 looks inside ``target``, so a new kind of implementation is a new candidate builder + invoker
 (``agent/semantic_call.py::_KINDS``), not a change here.
 
-``Resolver.resolve`` admits candidates that satisfy the :class:`Policy`'s hard constraints,
-ranks the rest on the objective (config order breaks ties), then applies **incumbent
-stickiness**: the implementation that last served this capability in this scope keeps the job
-unless a challenger beats it by more than the switching margin, so near-equal candidates do not
-thrash. Every :class:`Resolution` carries an ``explanation``. No admitted candidate raises
+``Resolver.resolve`` admits candidates that satisfy the :class:`Policy`'s hard constraints, then
+orders the rest. ``order`` is the user's config order. ``cost``/``latency``/``quality`` rank by
+utility (``capability_resolver_utility.py``) and apply **incumbent stickiness**: the
+implementation that last served this capability in this scope keeps the job unless a challenger
+beats it by more than the switching penalty, so near-equal candidates do not thrash. Every
+:class:`Resolution` carries an ``explanation``. No admitted candidate raises
 :class:`UnsatisfiablePolicyError` before anything is sent — an unmet policy never falls through
 to some other (possibly expensive) implementation.
 
-Stage-4 seam: :class:`ObservedProfile`. Scoring reads each candidate's *effective* latency and
-cost — a measured :class:`Observation` when the profile source has one, else the declared
-prior. Today the only source is :class:`NoObservations`; the ledger-backed source (stage 4)
-implements ``observe`` over ``agent/call_ledger`` records and is passed to ``Resolver(observed=)``.
-Nothing else changes.
+Scoring reads each candidate's declared prior shrunk toward what an :class:`ObservedProfile`
+measured (``agent/capability_profile.py::estimate``). The ledger-backed source is
+``agent/capability_profile_ledger.py``; :class:`NoObservations` scores on declared contracts only.
 """
 
 from __future__ import annotations
@@ -35,8 +34,6 @@ from typing import Any, Mapping, Optional, Protocol, Sequence, Tuple
 QUALITY_TIERS = ("low", "medium", "high")
 # "order" = first admitted candidate in config order: the user's declared preference, no hidden one.
 OBJECTIVES = ("order", "cost", "latency", "quality")
-# A challenger must beat the incumbent's objective score by this fraction to take over.
-DEFAULT_STICKINESS = 0.15
 # Output-token assumption for a cost estimate when the caller sets no max_tokens.
 DEFAULT_OUTPUT_TOKENS_FOR_COST = 1024
 _INCUMBENT_CAP = 512
@@ -94,7 +91,11 @@ class Policy:
     min_quality: Optional[str] = None
     max_cost_usd: Optional[float] = None
     local_only: bool = False
-    stickiness: float = DEFAULT_STICKINESS
+    # A fixed switching margin in utility units; None = derived per switch from the contracts and
+    # the measurements (``capability_resolver_utility.switching_penalty``).
+    stickiness: Optional[float] = None
+    # Never explore: the resolver only picks its best-known implementation.
+    strict: bool = False
 
     @property
     def fences_fallback(self) -> bool:
@@ -108,10 +109,13 @@ class Policy:
                                ("max_cost_usd", self.max_cost_usd)) if v is not None]
         if self.local_only:
             parts.append("local_only")
+        if self.strict:
+            parts.append("strict")
         return ", ".join(parts)
 
 
-_POLICY_KEYS = frozenset({"optimize", "max_latency_ms", "min_quality", "max_cost_usd", "local_only", "stickiness"})
+_POLICY_KEYS = frozenset({"optimize", "max_latency_ms", "min_quality", "max_cost_usd", "local_only", "stickiness",
+                          "strict"})
 
 
 def _parse_policy(raw: Any, where: str) -> dict:
@@ -138,6 +142,7 @@ def _parse_policy(raw: Any, where: str) -> dict:
         "max_cost_usd": non_negative(raw.get("max_cost_usd"), "max_cost_usd", where),
         "local_only": optional_bool(raw.get("local_only"), "local_only", where),
         "stickiness": stickiness,
+        "strict": optional_bool(raw.get("strict"), "strict", where),
     }
 
 
@@ -149,7 +154,7 @@ def merge_policy(configured: Any, requested: Any, *, capability: str) -> Policy:
     """``auxiliary.<capability>.policy`` tightened by the caller's policy.
 
     The caller picks the objective and stickiness but can only TIGHTEN constraints: a sandbox
-    script cannot lift a profile's ``local_only`` or lower its ``min_quality``.
+    script cannot lift a profile's ``local_only`` or ``strict``, or lower its ``min_quality``.
     """
     cfg = _parse_policy(configured, f"auxiliary.{capability}.policy")
     req = _parse_policy(requested, "policy")
@@ -164,7 +169,8 @@ def merge_policy(configured: Any, requested: Any, *, capability: str) -> Policy:
         min_quality=max(tiers, key=QUALITY_TIERS.index) if tiers else None,
         max_cost_usd=_tighter(cfg.get("max_cost_usd"), req.get("max_cost_usd")),
         local_only=bool(cfg.get("local_only")) or bool(req.get("local_only")),
-        stickiness=DEFAULT_STICKINESS if stickiness is None else stickiness,
+        stickiness=stickiness,
+        strict=bool(cfg.get("strict")) or bool(req.get("strict")),
     )
 
 
@@ -178,18 +184,34 @@ class Request:
     wants_schema: bool = False
 
 
+# What switching away from an implementation throws away (``Contract.affinity``): nothing; a
+# cached prompt prefix (the ledger measures it as the cache saving); or a warm stateful session.
+AFFINITIES = ("none", "context", "session")
+
+
 @dataclass(frozen=True)
 class Contract:
-    """Declared properties of one implementation. ``None`` = unknown."""
+    """Declared properties of one implementation. ``None`` = unknown.
+
+    ``resources`` are the scarce resources a call occupies (``provider:<name>``, ``endpoint:<host>``,
+    plus any declared, e.g. ``sandbox:<name>``). They are the admission controller's keys, and the
+    dependencies a switch must warm up. ``reversible=False`` declares effects that can't be undone,
+    so the implementation is never explored.
+    """
 
     quality: Optional[str] = None
     local: Optional[bool] = None
     latency_ms: Optional[int] = None
     input_usd_per_mtok: Optional[float] = None
     output_usd_per_mtok: Optional[float] = None
+    cache_read_usd_per_mtok: Optional[float] = None
+    cache_write_usd_per_mtok: Optional[float] = None
     context_window: Optional[int] = None
     structured_output: Optional[bool] = None
     image_input: Optional[bool] = None
+    affinity: str = "none"
+    resources: Tuple[str, ...] = ()
+    reversible: Optional[bool] = None
 
     def estimated_cost_usd(self, request: Request) -> Optional[float]:
         if self.input_usd_per_mtok is None or self.output_usd_per_mtok is None:
@@ -220,11 +242,19 @@ class Candidate:
 
 @dataclass(frozen=True)
 class Observation:
-    """What the ledger measured for one implementation of one capability."""
+    """What the ledger measured for one implementation of one capability (raw, not shrunk).
+
+    ``successes``/``malformed`` count outcomes among ``samples``; ``None`` = this source measures no
+    reliability. ``latency_ms`` is the p50. ``cost_usd`` and ``cache_saving_usd`` are cache-adjusted
+    means per call."""
 
     samples: int
     latency_ms: Optional[float] = None
     cost_usd: Optional[float] = None
+    successes: Optional[int] = None
+    malformed: Optional[int] = None
+    latency_p95_ms: Optional[float] = None
+    cache_saving_usd: Optional[float] = None
 
 
 class ObservedProfile(Protocol):
@@ -242,12 +272,19 @@ class NoObservations:
 
 @dataclass(frozen=True)
 class Scored:
-    """A candidate with the numbers scoring reads: observation first, declared prior second."""
+    """A candidate with the numbers scoring reads: the declared prior, shrunk toward what was
+    measured once there is enough of it (``estimate``). ``latency_ms`` is the p50 and
+    ``latency_p95_ms`` the p95 that ``max_latency_ms`` checks; ``utility``/``terms`` are set for the
+    utility objectives."""
 
     candidate: Candidate
     latency_ms: Optional[float]
     cost_usd: Optional[float]
     observed: bool
+    estimate: Any = None
+    latency_p95_ms: Optional[float] = None
+    utility: Optional[float] = None
+    terms: Tuple[Tuple[str, float], ...] = ()
 
     @property
     def label(self) -> str:
@@ -268,6 +305,8 @@ class Resolution:
     rejected: Tuple[Tuple[Candidate, str], ...]
     incumbent: Optional[str]               # identity that served last time in this scope
     explanation: str
+    cascade: bool = False                  # ``ranked`` is a verified cascade: escalate on verification failure
+    scored: Tuple[Scored, ...] = ()        # aligned with ``ranked``: the estimates behind the decision
 
 
 class IncumbentStore:
@@ -301,35 +340,56 @@ def _incumbent_key(capability: str, scope: str) -> tuple:
 
 
 class Resolver:
-    def __init__(self, observed: Optional[ObservedProfile] = None, incumbents: Optional[IncumbentStore] = None):
+    """``settings`` (``agent.capability_routing_config.LearnedRoutingSettings``) carries the
+    shrinkage strength, minimum samples, exploration rate and seed; the default explores nothing."""
+
+    def __init__(self, observed: Optional[ObservedProfile] = None, incumbents: Optional[IncumbentStore] = None,
+                 settings: Any = None):
+        from agent.capability_routing_config import LearnedRoutingSettings
         self._observed = observed or NoObservations()
         self._incumbents = incumbents or _INCUMBENTS
+        self.settings = settings or LearnedRoutingSettings()
 
     def _score(self, capability: str, candidate: Candidate, request: Request) -> Scored:
+        from agent.capability_profile import SUCCESS_PRIOR, Prior, estimate
         obs = self._observed.observe(capability, candidate.identity)
-        declared_cost = candidate.contract.estimated_cost_usd(request)
-        if obs is not None and obs.samples > 0:
-            latency = obs.latency_ms if obs.latency_ms is not None else candidate.contract.latency_ms
-            cost = obs.cost_usd if obs.cost_usd is not None else declared_cost
-            return Scored(candidate, latency, cost, observed=True)
-        return Scored(candidate, candidate.contract.latency_ms, declared_cost, observed=False)
+        contract = candidate.contract
+        prior = Prior(success=SUCCESS_PRIOR[contract.quality], cost_usd=contract.estimated_cost_usd(request),
+                      latency_ms=contract.latency_ms)
+        est = estimate(obs, prior, prior_strength=self.settings.prior_strength,
+                       min_samples=self.settings.min_samples)
+        return Scored(candidate, est.latency_p50_ms, est.cost_usd, observed=not est.under_sampled,
+                      estimate=est, latency_p95_ms=est.latency_p95_ms)
 
     def resolve(self, capability: str, candidates: Sequence[Candidate], policy: Policy, request: Request,
-                *, scope: str = "") -> Resolution:
-        """Rank ``candidates``; raise :class:`UnsatisfiablePolicyError` when none is admitted."""
-        from agent.capability_resolver_scoring import explain, rank, sticky_choice
+                *, scope: str = "", cascade: bool = False) -> Resolution:
+        """Rank ``candidates``; raise :class:`UnsatisfiablePolicyError` when none is admitted.
+
+        ``cascade`` (the caller has a mechanical verifier and cascades are enabled) orders the
+        admitted candidates as a verified cascade; it applies to the ``cost`` objective only, where
+        trying cheap first is the point. Under any other objective the order is the ranking.
+        """
+        from agent.capability_resolver_scoring import explain, order_choice, rank
+        from agent.capability_resolver_utility import select
         scored = [self._score(capability, c, request) for c in candidates]
         ranked, rejected = rank(scored, policy, request)
         if not ranked:
             raise UnsatisfiablePolicyError(capability, policy, [(s.candidate, why) for s, why in rejected])
         incumbent = self._incumbents.get(_incumbent_key(capability, scope))
-        chosen, sticky_note = sticky_choice(ranked, incumbent, policy, request)
-        ordered = [chosen] + [s for s in ranked if s is not chosen]
+        cascade = cascade and policy.optimize == "cost" and len(ranked) > 1
+        if policy.optimize == "order":
+            chosen, note = order_choice(ranked, incumbent, request)
+            ordered = [chosen] + [s for s in ranked if s is not chosen]
+        else:
+            ordered, note = select(ranked, incumbent, policy, request,
+                                   exploration_rate=self.settings.effective_exploration_rate,
+                                   seed=self.settings.seed, capability=capability, scope=scope, cascade=cascade)
         return Resolution(
-            capability=capability, policy=policy, request=request, chosen=chosen.candidate,
+            capability=capability, policy=policy, request=request, chosen=ordered[0].candidate,
             ranked=tuple(s.candidate for s in ordered),
             rejected=tuple((s.candidate, why) for s, why in rejected), incumbent=incumbent,
-            explanation=explain(capability, policy, ordered, rejected, sticky_note),
+            explanation=explain(capability, policy, ordered, rejected, note), cascade=cascade,
+            scored=tuple(ordered),
         )
 
     def served(self, capability: str, candidate: Candidate, *, scope: str = "") -> None:
